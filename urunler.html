@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ürünler – efemiletisim.com</title>
+  <meta name="description" content="Akıllı saatler, kulaklıklar ve tabletler. Apple, Samsung, Sony ve daha fazlası. Ücretsiz kargo, güvenli alışveriş.">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+
+<!-- Duyuru Şeridi -->
+<div id="announcement-bar" class="announcement-bar">
+  🎉 Tüm ürünlerde <strong>ÜCRETSİZ KARGO</strong>! &nbsp;|&nbsp; Kod: <strong>EFEMI10</strong> ile %10 indirim!
+  <button class="announcement-close" id="announcement-close">✕</button>
+</div>
+
+<!-- Navbar -->
+<nav id="navbar">
+  <div class="container">
+    <div class="navbar-inner">
+      <a href="index.html" class="navbar-logo">
+        <div class="logo-icon">📱</div>
+        <div class="logo-text">
+          <span class="logo-name" style="display:block;line-height:1">efem</span>
+          <span class="logo-sub" style="display:block;line-height:1">iletişim</span>
+        </div>
+      </a>
+      <div class="navbar-search">
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="search-input" placeholder="Ürün, marka ara..." autocomplete="off">
+        </div>
+        <div class="search-dropdown" id="search-dropdown"></div>
+      </div>
+      <nav class="navbar-nav">
+        <a href="index.html" class="nav-link">Ana Sayfa</a>
+        <div class="nav-dropdown">
+          <a href="urunler.html" class="nav-link active">Ürünler ▾</a>
+          <div class="nav-dropdown-menu">
+            <a href="urunler.html?kat=saat" class="nav-dropdown-item"><span class="icon">⌚</span> Akıllı Saatler</a>
+            <a href="urunler.html?kat=kulaklik" class="nav-dropdown-item"><span class="icon">🎧</span> Kulaklıklar</a>
+            <a href="urunler.html?kat=tablet" class="nav-dropdown-item"><span class="icon">📱</span> Tabletler</a>
+          </div>
+        </div>
+      </nav>
+      <div class="navbar-actions">
+        <a href="hesap.html" class="btn btn-ghost btn-sm" id="nav-login-link">👤 Giriş Yap</a>
+        <div class="nav-dropdown hidden" id="nav-user-menu">
+          <button class="btn btn-ghost btn-sm">👤 <span id="nav-user-name">Kullanıcı</span> ▾</button>
+          <div class="nav-dropdown-menu">
+            <a href="profil.html" class="nav-dropdown-item">📋 Profilim</a>
+            <a href="profil.html?tab=orders" class="nav-dropdown-item">📦 Siparişlerim</a>
+            <span class="nav-dropdown-item" onclick="logout()" style="color:var(--error)">🚪 Çıkış Yap</span>
+          </div>
+        </div>
+        <a href="sepet.html" class="cart-btn">
+          🛒 Sepet
+          <span class="cart-badge" id="cart-badge-1" style="display:none">0</span>
+        </a>
+        <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="mobile-menu" id="mobile-menu">
+  <a href="index.html" class="mobile-nav-link">🏠 Ana Sayfa</a>
+  <a href="urunler.html?kat=saat" class="mobile-nav-link">⌚ Akıllı Saatler</a>
+  <a href="urunler.html?kat=kulaklik" class="mobile-nav-link">🎧 Kulaklıklar</a>
+  <a href="urunler.html?kat=tablet" class="mobile-nav-link">📱 Tabletler</a>
+  <a href="hesap.html" class="mobile-nav-link">👤 Hesabım</a>
+  <a href="sepet.html" class="mobile-nav-link">🛒 Sepetim</a>
+</div>
+
+<main>
+  <!-- Sayfa Başlığı + Breadcrumb -->
+  <div style="background:var(--surface);border-bottom:1px solid var(--border);padding:var(--space-4) 0">
+    <div class="container">
+      <div class="breadcrumb">
+        <a href="index.html">🏠 Ana Sayfa</a>
+        <span class="sep">›</span>
+        <span class="current" id="breadcrumb-current">Tüm Ürünler</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="products-page-layout">
+
+      <!-- Sol: Filtre Sidebar -->
+      <aside>
+        <div class="filter-sidebar">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-5)">
+            <h3 style="font-size:1rem;font-weight:700">Filtreler</h3>
+            <button class="btn btn-ghost btn-sm" onclick="resetFilters()">Sıfırla</button>
+          </div>
+
+          <!-- Kategori -->
+          <div class="filter-group">
+            <div class="filter-group-title">Kategori</div>
+            <div style="display:flex;flex-direction:column;gap:var(--space-2)">
+              <label class="form-check">
+                <input type="radio" name="cat" value="all" checked onchange="filterByCategory(this.value)">
+                <span class="form-check-label">Tümü (20)</span>
+              </label>
+              <label class="form-check">
+                <input type="radio" name="cat" value="saat" onchange="filterByCategory(this.value)">
+                <span class="form-check-label">⌚ Akıllı Saatler (6)</span>
+              </label>
+              <label class="form-check">
+                <input type="radio" name="cat" value="kulaklik" onchange="filterByCategory(this.value)">
+                <span class="form-check-label">🎧 Kulaklıklar (8)</span>
+              </label>
+              <label class="form-check">
+                <input type="radio" name="cat" value="tablet" onchange="filterByCategory(this.value)">
+                <span class="form-check-label">📱 Tabletler (6)</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Marka -->
+          <div class="filter-group">
+            <div class="filter-group-title">Marka</div>
+            <div id="brand-filters" style="display:flex;flex-direction:column;gap:var(--space-2)">
+              <!-- JS ile doldurulur -->
+            </div>
+          </div>
+
+          <!-- Fiyat Aralığı -->
+          <div class="filter-group">
+            <div class="filter-group-title">Fiyat Aralığı (₺)</div>
+            <div class="price-range-inputs">
+              <input type="number" id="price-min" placeholder="Min" class="form-input" style="text-align:center" onchange="filterByPrice()">
+              <span class="price-range-sep">–</span>
+              <input type="number" id="price-max" placeholder="Max" class="form-input" style="text-align:center" onchange="filterByPrice()">
+            </div>
+          </div>
+
+          <!-- Minimum Puan -->
+          <div class="filter-group">
+            <div class="filter-group-title">Minimum Puan</div>
+            <div style="display:flex;flex-direction:column;gap:var(--space-2)">
+              <label class="form-check">
+                <input type="radio" name="rating" value="0" checked onchange="filterByRating(this.value)">
+                <span class="form-check-label">Tümü</span>
+              </label>
+              <label class="form-check">
+                <input type="radio" name="rating" value="4" onchange="filterByRating(this.value)">
+                <span class="form-check-label">⭐ 4+ ve üzeri</span>
+              </label>
+              <label class="form-check">
+                <input type="radio" name="rating" value="4.5" onchange="filterByRating(this.value)">
+                <span class="form-check-label">⭐ 4.5+ ve üzeri</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Sağ: Ürün Listesi -->
+      <div>
+        <!-- Kategori Butonları (Üst) -->
+        <div class="category-filter-btns" id="cat-btns">
+          <button class="cat-btn active" onclick="quickFilter('all', this)" id="cat-all">🛍 Tümü</button>
+          <button class="cat-btn" onclick="quickFilter('saat', this)" id="cat-saat">⌚ Akıllı Saatler</button>
+          <button class="cat-btn" onclick="quickFilter('kulaklik', this)" id="cat-kulaklik">🎧 Kulaklıklar</button>
+          <button class="cat-btn" onclick="quickFilter('tablet', this)" id="cat-tablet">📱 Tabletler</button>
+        </div>
+
+        <!-- Üst Bar -->
+        <div class="products-topbar">
+          <div class="products-count">
+            <strong id="product-count">18</strong> ürün bulundu
+          </div>
+          <div style="display:flex;align-items:center;gap:var(--space-3)">
+            <div class="view-toggle">
+              <button class="view-btn active" id="grid-view-btn" onclick="setView('grid')" title="Grid Görünüm">⊞</button>
+              <button class="view-btn" id="list-view-btn" onclick="setView('list')" title="Liste Görünüm">☰</button>
+            </div>
+            <select class="sort-select" onchange="sortProducts(this.value)">
+              <option value="featured">Önerilen</option>
+              <option value="newest">En Yeni</option>
+              <option value="price-asc">Fiyat: Düşük → Yüksek</option>
+              <option value="price-desc">Fiyat: Yüksek → Düşük</option>
+              <option value="rating">En Çok Beğenilen</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Ürün Grid -->
+        <div class="products-grid" id="products-grid"></div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<!-- Footer (kısa) -->
+<footer>
+  <div class="container">
+    <div class="footer-bottom">
+      <span>© 2024 efemiletisim.com</span>
+      <div class="footer-payment-icons">
+        <span class="payment-icon">VISA</span>
+        <span class="payment-icon">MC</span>
+        <span class="payment-icon">🔒 SSL</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<div id="toast-container"></div>
+<button id="scroll-top-btn" class="btn-icon btn-icon-lg"
+  style="position:fixed;bottom:24px;right:24px;z-index:99;display:none;background:var(--primary);color:white;border-color:var(--primary);box-shadow:var(--shadow-lg)">↑</button>
+<style>#scroll-top-btn.visible { display: flex !important; }</style>
+
+<script src="js/data.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/products.js"></script>
+<script src="js/main.js"></script>
+<script>
+let filteredProducts = [...PRODUCTS];
+
+document.addEventListener('DOMContentLoaded', () => {
+  // URL parametresini kontrol et
+  const kat = getUrlParam('kat');
+  const q   = getUrlParam('q');
+
+  if (kat) {
+    currentFilters.category = kat;
+    const btn = document.getElementById('cat-' + kat);
+    if (btn) {
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }
+    // Sidebar radio
+    const radio = document.querySelector(`input[name="cat"][value="${kat}"]`);
+    if (radio) radio.checked = true;
+
+    const labels = { saat: 'Akıllı Saatler', kulaklik: 'Kulaklıklar', tablet: 'Tabletler' };
+    document.getElementById('breadcrumb-current').textContent = labels[kat] || 'Tüm Ürünler';
+  }
+
+  if (q) {
+    document.getElementById('search-input').value = q;
+  }
+
+  renderBrandFilters();
+  renderAllProducts();
+});
+
+function renderAllProducts() {
+  filteredProducts = applyFilters({});
+  document.getElementById('product-count').textContent = filteredProducts.length;
+  renderProductGrid(filteredProducts, 'products-grid');
+}
+
+function quickFilter(category, btn) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  // Sidebar radio güncelle
+  const radio = document.querySelector(`input[name="cat"][value="${category}"]`);
+  if (radio) radio.checked = true;
+  applyFilters({ category });
+  renderAllProducts();
+}
+
+function filterByCategory(value) {
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  const catBtn = document.getElementById('cat-' + (value === 'all' ? 'all' : value));
+  if (catBtn) catBtn.classList.add('active');
+  applyFilters({ category: value });
+  renderAllProducts();
+}
+
+function filterByPrice() {
+  const min = parseFloat(document.getElementById('price-min').value) || 0;
+  const max = parseFloat(document.getElementById('price-max').value) || Infinity;
+  applyFilters({ minPrice: min, maxPrice: max });
+  renderAllProducts();
+}
+
+function filterByRating(value) {
+  applyFilters({ minRating: parseFloat(value) });
+  renderAllProducts();
+}
+
+function filterByBrand(value) {
+  applyFilters({ brand: value });
+  renderAllProducts();
+}
+
+function sortProducts(value) {
+  applyFilters({ sort: value });
+  renderAllProducts();
+}
+
+function resetFilters() {
+  Object.assign(currentFilters, { category:'all', brand:'all', minPrice:0, maxPrice:Infinity, minRating:0, sort:'featured' });
+  document.querySelectorAll('input[name="cat"]')[0].checked  = true;
+  document.querySelectorAll('input[name="rating"]')[0].checked = true;
+  document.getElementById('price-min').value = '';
+  document.getElementById('price-max').value = '';
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('cat-all').classList.add('active');
+  renderBrandFilters();
+  renderAllProducts();
+}
+
+function renderBrandFilters() {
+  const brands = getUniqueBrands();
+  document.getElementById('brand-filters').innerHTML = `
+    <label class="form-check">
+      <input type="radio" name="brand" value="all" checked onchange="filterByBrand(this.value)">
+      <span class="form-check-label">Tümü</span>
+    </label>
+    ${brands.map(b => `
+      <label class="form-check">
+        <input type="radio" name="brand" value="${b}" onchange="filterByBrand(this.value)">
+        <span class="form-check-label">${b}</span>
+      </label>
+    `).join('')}
+  `;
+}
+
+function setView(type) {
+  const grid = document.getElementById('products-grid');
+  const gridBtn = document.getElementById('grid-view-btn');
+  const listBtn = document.getElementById('list-view-btn');
+
+  if (type === 'list') {
+    grid.style.gridTemplateColumns = '1fr';
+    listBtn.classList.add('active');
+    gridBtn.classList.remove('active');
+  } else {
+    grid.style.gridTemplateColumns = '';
+    gridBtn.classList.add('active');
+    listBtn.classList.remove('active');
+  }
+}
+</script>
+</body>
+</html>

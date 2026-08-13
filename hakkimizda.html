@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hakkımızda – efemiletisim.com</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📱</text></svg>">
+  <style>
+    .about-hero {
+      background: linear-gradient(135deg, var(--bg-alt) 0%, #E2E8F0 100%);
+      padding: 80px 20px;
+      text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .about-hero h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--secondary);
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+    .about-hero p {
+      font-size: 1.125rem;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .about-section {
+      padding: 64px 20px;
+    }
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: center;
+    }
+    .about-text h2 {
+      font-size: 1.75rem;
+      color: var(--secondary);
+      margin-bottom: 24px;
+    }
+    .about-text p {
+      color: var(--text-primary);
+      line-height: 1.7;
+      margin-bottom: 16px;
+      font-size: 1.0625rem;
+    }
+    .about-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-top: 32px;
+      padding-top: 32px;
+      border-top: 1px solid var(--border);
+    }
+    .stat-item {
+      text-align: center;
+    }
+    .stat-val {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1.2;
+    }
+    .stat-label {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-top: 8px;
+    }
+    .partners-section {
+      background: white;
+      padding: 64px 20px;
+      text-align: center;
+      border-top: 1px solid var(--border);
+    }
+    .partners-section h3 {
+      font-size: 1.25rem;
+      color: var(--secondary);
+      margin-bottom: 32px;
+    }
+    .partners-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .partner-tag {
+      background: var(--bg-alt);
+      border: 1px solid var(--border);
+      padding: 12px 24px;
+      border-radius: 99px;
+      font-weight: 700;
+      color: var(--secondary);
+      font-size: 0.9375rem;
+    }
+    .company-info {
+      background: var(--bg-body);
+      padding: 64px 20px;
+    }
+    .info-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .info-card h4 {
+      font-size: 1.125rem;
+      margin-bottom: 24px;
+      color: var(--secondary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9375rem;
+    }
+    .info-row:last-child {
+      border-bottom: none;
+    }
+    .info-label {
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .info-val {
+      font-weight: 700;
+      color: var(--secondary);
+    }
+    
+    @media (max-width: 768px) {
+      .about-grid { grid-template-columns: 1fr; gap: 32px; }
+      .about-hero h1 { font-size: 2rem; }
+      .about-stats { grid-template-columns: 1fr; gap: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── Duyuru Şeridi ─── -->
+<div id="announcement-bar" class="announcement-bar">
+  🎉 Tüm ürünlerde <strong>ÜCRETSİZ KARGO</strong> fırsatı! &nbsp;|&nbsp;
+  Kampanya kodu: <strong>EFEMI10</strong> ile %10 ek indirim kazanın!
+  <button class="announcement-close" id="announcement-close">✕</button>
+</div>
+
+<!-- ─── Navbar ─── -->
+<nav id="navbar">
+  <div class="container">
+    <div class="navbar-inner">
+      <!-- Logo -->
+      <a href="index.html" class="navbar-logo">
+        <div class="logo-icon">📱</div>
+        <div class="logo-text">
+          <span class="logo-name" style="display:block;line-height:1">efem</span>
+          <span class="logo-sub" style="display:block;line-height:1">iletişim</span>
+        </div>
+      </a>
+
+      <!-- Arama -->
+      <div class="navbar-search">
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="search-input" placeholder="Ürün, marka ara..." autocomplete="off">
+        </div>
+        <div class="search-dropdown" id="search-dropdown"></div>
+      </div>
+
+      <!-- Sağ Menü -->
+      <div class="navbar-menu">
+        <a href="hakkimizda.html" class="nav-icon-btn" title="Hakkımızda">🏢</a>
+        <a href="urunler.html" class="nav-icon-btn" title="Tüm Ürünler">🛍</a>
+        
+        <a href="hesap.html" class="nav-icon-btn" title="Hesabım">
+          <span style="font-size:1.25rem">👤</span>
+        </a>
+        <a href="sepet.html" class="nav-icon-btn cart-btn" title="Sepetim">
+          <span style="font-size:1.25rem">🛒</span>
+          <span class="cart-badge" id="nav-cart-badge">0</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ─── İçerik ─── -->
+<main>
+  <div class="about-hero">
+    <div class="container">
+      <h1>Hikayemiz</h1>
+      <p>Teknolojiye olan tutkumuzla, 2015 yılından bu yana kaliteli hizmeti müşterilerimizle buluşturuyoruz.</p>
+    </div>
+  </div>
+
+  <section class="about-section container">
+    <div class="about-grid">
+      <div class="about-text">
+        <h2>Güvenilir Teknoloji Ortağınız</h2>
+        <p>
+          2015 yılında çıktığımız bu yolculukta, müşteri memnuniyetini her zaman odak noktamıza alarak hizmet verdik. Sektördeki yenilikleri yakından takip ediyor, en güncel ürünleri güvenle sizlere ulaştırıyoruz.
+        </p>
+        <p>
+          Gururla söyleyebiliriz ki; <strong>Vodafone İş Ortağı</strong> olarak kalitemizi tescilledik. Adana Seyhan'da işlettiğimiz 2 mağazamızla hem dijitalde hem de fiziksel mağazalarımızda sizlere en iyi alışveriş deneyimini sunmak için çalışıyoruz.
+        </p>
+        
+        <div class="about-stats">
+          <div class="stat-item">
+            <div class="stat-val">2015</div>
+            <div class="stat-label">Kuruluş Yılı</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-val">2</div>
+            <div class="stat-label">Aktif Mağaza</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-val">100%</div>
+            <div class="stat-label">Müşteri Memnuniyeti</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div style="background:var(--bg-alt); border-radius: 24px; padding: 40px; text-align: center; border: 1px solid var(--border);">
+          <div style="font-size: 5rem; margin-bottom: 20px;">🤝</div>
+          <h3 style="color:var(--secondary); font-size:1.5rem; margin-bottom: 12px;">Vodafone İş Ortağı</h3>
+          <p style="color:var(--text-muted); font-size: 1.0625rem;">
+            Güçlü altyapımız ve güvenilir hizmet anlayışımızla Vodafone ayrıcalıklarını mağazalarımızda sizlerle buluşturuyoruz.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="partners-section">
+    <div class="container">
+      <h3>Sektörün Önde Gelen Markalarıyla Birlikteyiz</h3>
+      <p style="color:var(--text-muted); max-width: 600px; margin: 0 auto 32px auto;">Uzun yıllardır süregelen köklü iş birliklerimiz sayesinde, sizlere her zaman orijinal, garantili ve güvenilir ürünler sunuyoruz.</p>
+      
+      <div class="partners-grid">
+        <div class="partner-tag">Datagate</div>
+        <div class="partner-tag">İndeks</div>
+        <div class="partner-tag">Genpa</div>
+        <div class="partner-tag">KVK</div>
+        <div class="partner-tag">Başarı</div>
+        <div class="partner-tag">Ouno Servis</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="company-info">
+    <div class="container">
+      <div class="info-card">
+        <h4><span style="font-size:1.5rem">📄</span> Şirket Bilgileri</h4>
+        <div class="info-row">
+          <span class="info-label">Ticaret Unvanı</span>
+          <span class="info-val">Efem İletişim</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Ticaret Sicil No</span>
+          <span class="info-val">70140</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Mersis No</span>
+          <span class="info-val">0325058015600016</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Vergi No</span>
+          <span class="info-val">3250560156</span>
+        </div>
+        <div class="info-row" style="margin-top: 16px; border: none; flex-direction: column;">
+          <span class="info-label" style="margin-bottom: 8px;">Kayıtlı Adres</span>
+          <span class="info-val" style="line-height: 1.5;">Yeni Mahalle 87071 Sokak No:5 Z32 M1 Avm<br>Seyhan / Adana</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ─── Footer ─── -->
+<footer>
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="navbar-logo" style="justify-content:flex-start;margin-bottom:var(--space-4)">
+          <div class="logo-icon">📱</div>
+          <div class="logo-text">
+            <span class="logo-name" style="display:block;line-height:1">efem</span>
+            <span class="logo-sub" style="display:block;line-height:1">iletişim</span>
+          </div>
+        </div>
+        <p class="footer-desc">
+          Türkiye'nin güvenilir teknoloji aksesuarı mağazası.
+          Akıllı saatler, kulaklıklar ve tabletlerde en iyi fiyat garantisi.
+        </p>
+        <div class="footer-social">
+          <a href="#" class="social-btn" title="Instagram">📸</a>
+          <a href="#" class="social-btn" title="Twitter">🐦</a>
+          <a href="#" class="social-btn" title="Facebook">👍</a>
+          <a href="#" class="social-btn" title="YouTube">▶️</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Kategoriler</h4>
+        <div class="footer-links">
+          <a href="urunler.html?kat=saat" class="footer-link">⌚ Akıllı Saatler</a>
+          <a href="urunler.html?kat=kulaklik" class="footer-link">🎧 Kulaklıklar</a>
+          <a href="urunler.html?kat=tablet" class="footer-link">📱 Tabletler</a>
+          <a href="urunler.html" class="footer-link">🛍 Tüm Ürünler</a>
+          <a href="hakkimizda.html" class="footer-link">🏢 Hakkımızda</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Hesabım</h4>
+        <div class="footer-links">
+          <a href="hesap.html" class="footer-link">👤 Giriş Yap</a>
+          <a href="hesap.html?tab=register" class="footer-link">📝 Kayıt Ol</a>
+          <a href="profil.html?tab=orders" class="footer-link">📦 Siparişlerim</a>
+          <a href="sepet.html" class="footer-link">🛒 Sepetim</a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>İletişim</h4>
+        <div class="footer-contact-item">
+          <span class="icon">📍</span>
+          <span>Yeni Mahalle 87071 Sokak No:5 Z32 M1 Avm Seyhan/Adana</span>
+        </div>
+        <div class="footer-contact-item">
+          <span class="icon">📞</span>
+          <span>0543 440 25 25</span>
+        </div>
+        <div class="footer-contact-item">
+          <span class="icon">✉️</span>
+          <span>info@efemiletisim.com</span>
+        </div>
+        <div class="footer-contact-item">
+          <span class="icon">🕐</span>
+          <span>Her Gün: 10:00–18:00</span>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2024 efemiletisim.com – Tüm hakları saklıdır.</span>
+      <div class="footer-payment-icons">
+        <span class="payment-icon">VISA</span>
+        <span class="payment-icon">MC</span>
+        <span class="payment-icon">AMEX</span>
+        <span class="payment-icon">🔒 SSL</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- Toast -->
+<div id="toast-container"></div>
+
+<!-- Scripts -->
+<script src="js/data.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/products.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

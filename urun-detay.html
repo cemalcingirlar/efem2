@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="page-title">Ürün Detayı – efemiletisim.com</title>
+  <meta name="description" id="page-desc" content="efemiletisim.com ürün detay sayfası">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+
+<div id="announcement-bar" class="announcement-bar">
+  🎉 Tüm ürünlerde <strong>ÜCRETSİZ KARGO</strong>! Kod: <strong>EFEMI10</strong> ile %10 indirim!
+  <button class="announcement-close" id="announcement-close">✕</button>
+</div>
+
+<nav id="navbar">
+  <div class="container">
+    <div class="navbar-inner">
+      <a href="index.html" class="navbar-logo">
+        <div class="logo-icon">📱</div>
+        <div class="logo-text">
+          <span class="logo-name" style="display:block;line-height:1">efem</span>
+          <span class="logo-sub" style="display:block;line-height:1">iletişim</span>
+        </div>
+      </a>
+      <div class="navbar-search">
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="search-input" placeholder="Ürün, marka ara..." autocomplete="off">
+        </div>
+        <div class="search-dropdown" id="search-dropdown"></div>
+      </div>
+      <nav class="navbar-nav">
+        <a href="index.html" class="nav-link">Ana Sayfa</a>
+        <div class="nav-dropdown">
+          <a href="urunler.html" class="nav-link">Ürünler ▾</a>
+          <div class="nav-dropdown-menu">
+            <a href="urunler.html?kat=saat" class="nav-dropdown-item"><span class="icon">⌚</span> Akıllı Saatler</a>
+            <a href="urunler.html?kat=kulaklik" class="nav-dropdown-item"><span class="icon">🎧</span> Kulaklıklar</a>
+            <a href="urunler.html?kat=tablet" class="nav-dropdown-item"><span class="icon">📱</span> Tabletler</a>
+          </div>
+        </div>
+      </nav>
+      <div class="navbar-actions">
+        <a href="hesap.html" class="btn btn-ghost btn-sm" id="nav-login-link">👤 Giriş Yap</a>
+        <div class="nav-dropdown hidden" id="nav-user-menu">
+          <button class="btn btn-ghost btn-sm">👤 <span id="nav-user-name">Kullanıcı</span> ▾</button>
+          <div class="nav-dropdown-menu">
+            <a href="profil.html" class="nav-dropdown-item">📋 Profilim</a>
+            <a href="profil.html?tab=orders" class="nav-dropdown-item">📦 Siparişlerim</a>
+            <span class="nav-dropdown-item" onclick="logout()" style="color:var(--error)">🚪 Çıkış Yap</span>
+          </div>
+        </div>
+        <a href="sepet.html" class="cart-btn">
+          🛒 Sepet
+          <span class="cart-badge" id="cart-badge-1" style="display:none">0</span>
+        </a>
+        <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="mobile-menu" id="mobile-menu">
+  <a href="index.html" class="mobile-nav-link">🏠 Ana Sayfa</a>
+  <a href="urunler.html?kat=saat" class="mobile-nav-link">⌚ Akıllı Saatler</a>
+  <a href="urunler.html?kat=kulaklik" class="mobile-nav-link">🎧 Kulaklıklar</a>
+  <a href="urunler.html?kat=tablet" class="mobile-nav-link">📱 Tabletler</a>
+  <a href="hesap.html" class="mobile-nav-link">👤 Hesabım</a>
+  <a href="sepet.html" class="mobile-nav-link">🛒 Sepetim</a>
+</div>
+
+<main>
+  <div style="background:var(--surface);border-bottom:1px solid var(--border);padding:var(--space-4) 0">
+    <div class="container">
+      <div class="breadcrumb">
+        <a href="index.html">🏠 Ana Sayfa</a>
+        <span class="sep">›</span>
+        <a href="urunler.html" id="bc-cat-link">Ürünler</a>
+        <span class="sep">›</span>
+        <span class="current" id="bc-product-name">Ürün</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="container" id="product-detail-container">
+    <!-- JS ile doldurulur -->
+    <div style="text-align:center;padding:var(--space-20)">
+      <div class="skeleton" style="height:400px;max-width:600px;margin:0 auto"></div>
+    </div>
+  </div>
+
+  <!-- Benzer Ürünler -->
+  <div class="container" style="padding-bottom:var(--space-16)">
+    <div style="margin-bottom:var(--space-8)">
+      <div class="section-label">Benzer Ürünler</div>
+      <h2 class="section-title" style="font-size:1.5rem">Bunları da beğenebilirsiniz</h2>
+    </div>
+    <div class="products-grid" id="related-products"></div>
+  </div>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="footer-bottom">
+      <span>© 2024 efemiletisim.com</span>
+      <div class="footer-payment-icons">
+        <span class="payment-icon">VISA</span>
+        <span class="payment-icon">MC</span>
+        <span class="payment-icon">🔒 SSL</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<div id="toast-container"></div>
+<button id="scroll-top-btn" class="btn-icon btn-icon-lg"
+  style="position:fixed;bottom:24px;right:24px;z-index:99;display:none;background:var(--primary);color:white;border-color:var(--primary);box-shadow:var(--shadow-lg)">↑</button>
+<style>#scroll-top-btn.visible { display: flex !important; }</style>
+
+<script src="js/data.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/products.js"></script>
+<script src="js/main.js"></script>
+<script>
+let currentProduct = null;
+let selectedQty    = 1;
+
+document.addEventListener('DOMContentLoaded', () => {
+  const id = getUrlParam('id');
+  if (!id) { window.location.href = 'urunler.html'; return; }
+
+  currentProduct = getProductById(id);
+  if (!currentProduct) { window.location.href = 'urunler.html'; return; }
+
+  // Meta güncelle
+  document.getElementById('page-title').textContent = currentProduct.name + ' – efemiletisim.com';
+  document.getElementById('page-desc').content = currentProduct.desc;
+  document.getElementById('bc-product-name').textContent = currentProduct.name;
+
+  const catLinks = { saat: 'urunler.html?kat=saat', kulaklik: 'urunler.html?kat=kulaklik', tablet: 'urunler.html?kat=tablet' };
+  const catLink = document.getElementById('bc-cat-link');
+  catLink.href = catLinks[currentProduct.category] || 'urunler.html';
+  catLink.textContent = currentProduct.categoryLabel;
+
+  renderProductDetail(currentProduct);
+  renderRelated(currentProduct);
+});
+
+function renderProductDetail(p) {
+  const discount = discountPercent(p.originalPrice, p.price);
+  const stockHTML = p.stock > 0
+    ? `<span class="stock-status"><span class="stock-dot"></span> Stokta Var (${p.stock} adet)</span>`
+    : `<span class="stock-status"><span class="stock-dot out"></span> Stokta Yok</span>`;
+
+  const thumbsHTML = p.images.length > 1
+    ? p.images.map((img, i) => `
+        <div class="gallery-thumb ${i === 0 ? 'active' : ''}" onclick="changeImage('${img}', this)">
+          <img src="${img}" alt="${p.name}" onerror="this.src='assets/images/placeholder.jpg'">
+        </div>`).join('')
+    : '';
+
+  document.getElementById('product-detail-container').innerHTML = `
+    <div class="product-detail-layout">
+      <!-- Galeri -->
+      <div class="product-gallery">
+        <div class="gallery-main">
+          <img id="main-img" src="${p.images[0]}" alt="${p.name}"
+               onerror="this.src='assets/images/placeholder.jpg'">
+        </div>
+        ${thumbsHTML ? `<div class="gallery-thumbs">${thumbsHTML}</div>` : ''}
+      </div>
+
+      <!-- Detay -->
+      <div class="product-detail-content">
+        <div class="product-detail-category">
+          ${p.categoryLabel} &nbsp;·&nbsp; ${p.brand}
+          ${p.badge ? `<span class="badge badge-${p.badge === 'bestseller' ? 'warning' : p.badge === 'new' ? 'primary' : p.badge === 'sale' ? 'error' : 'primary'}" style="margin-left:8px">${p.badgeLabel}</span>` : ''}
+        </div>
+
+        <h1 class="product-detail-name">${p.name}</h1>
+
+        <div class="product-detail-rating">
+          <span class="rating-stars">${'★'.repeat(Math.floor(p.rating))}${'☆'.repeat(5 - Math.floor(p.rating))}</span>
+          <span class="rating-text"><strong>${p.rating}</strong> / 5 &nbsp;·&nbsp; ${p.reviewCount} değerlendirme</span>
+        </div>
+
+        <div class="product-detail-price">
+          <span class="detail-price-current">${formatPrice(p.price)}</span>
+          ${p.originalPrice ? `<span class="detail-price-original">${formatPrice(p.originalPrice)}</span>
+          <span class="price-discount">%${discount} İndirim</span>` : ''}
+        </div>
+
+        ${stockHTML}
+
+        <p class="product-detail-desc">${p.desc}</p>
+
+        <!-- Özellikler -->
+        <div>
+          <h3 style="font-size:1rem;margin-bottom:var(--space-3)">📋 Teknik Özellikler</h3>
+          <table class="specs-table">
+            ${p.specs.map(s => `
+              <tr>
+                <td>${s.key}</td>
+                <td>${s.value}</td>
+              </tr>`).join('')}
+          </table>
+        </div>
+
+        <!-- Kargo bilgisi -->
+        <div style="background:var(--surface-2);border-radius:var(--radius-md);padding:var(--space-4);display:flex;gap:var(--space-4)">
+          <div style="display:flex;align-items:center;gap:var(--space-2);font-size:0.875rem">
+            <span style="font-size:1.25rem">🚚</span>
+            <div>
+              <div style="font-weight:700;color:var(--success)">Ücretsiz Kargo</div>
+              <div style="color:var(--text-muted)">Tüm siparişlerde geçerli</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:var(--space-2);font-size:0.875rem">
+            <span style="font-size:1.25rem">↩️</span>
+            <div>
+              <div style="font-weight:700">14 Gün İade</div>
+              <div style="color:var(--text-muted)">Koşulsuz iade garantisi</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Miktar + Butonlar -->
+        <div class="product-actions">
+          <div class="product-qty-row">
+            <span style="font-weight:600;font-size:0.875rem">Adet:</span>
+            <div class="qty-control">
+              <button class="qty-btn" onclick="changeDetailQty(-1)">−</button>
+              <span class="qty-num" id="detail-qty">1</span>
+              <button class="qty-btn" onclick="changeDetailQty(1)">+</button>
+            </div>
+            <span style="font-size:0.8125rem;color:var(--text-muted)">Stok: ${p.stock} adet</span>
+          </div>
+          <div class="product-action-btns">
+            <button class="btn btn-primary btn-lg" onclick="handleAddToCart(${p.id}, this)" ${p.stock === 0 ? 'disabled' : ''}>
+              🛒 Sepete Ekle
+            </button>
+            <a href="sepet.html" class="btn btn-accent btn-icon btn-icon-lg" title="Hemen satın al"
+               onclick="addToCart(${p.id}, 1)">⚡</a>
+          </div>
+          <button class="btn btn-ghost w-full" onclick="toggleFavorite(${p.id})" id="fav-btn">
+            ${isFavorite(p.id) ? '❤️ Favorilerde' : '🤍 Favorilere Ekle'}
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function changeImage(src, thumbEl) {
+  document.getElementById('main-img').src = src;
+  document.querySelectorAll('.gallery-thumb').forEach(t => t.classList.remove('active'));
+  thumbEl.classList.add('active');
+}
+
+function changeDetailQty(delta) {
+  selectedQty = Math.max(1, Math.min(selectedQty + delta, currentProduct.stock));
+  document.getElementById('detail-qty').textContent = selectedQty;
+}
+
+function renderRelated(p) {
+  const related = PRODUCTS
+    .filter(r => r.category === p.category && r.id !== p.id)
+    .slice(0, 4);
+  renderProductGrid(related, 'related-products');
+}
+</script>
+</body>
+</html>

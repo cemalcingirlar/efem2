@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ödeme – efemiletisim.com</title>
+  <meta name="description" content="Güvenli ödeme. İyzico altyapısı ile 256-bit SSL şifreleme.">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+
+<nav id="navbar">
+  <div class="container">
+    <div class="navbar-inner">
+      <a href="index.html" class="navbar-logo">
+        <div class="logo-icon">📱</div>
+        <div class="logo-text">
+          <span class="logo-name" style="display:block;line-height:1">efem</span>
+          <span class="logo-sub" style="display:block;line-height:1">iletişim</span>
+        </div>
+      </a>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:var(--space-3)">
+        <span style="font-size:0.875rem;color:var(--text-muted)">🔒 Güvenli Ödeme</span>
+        <a href="sepet.html" class="btn btn-ghost btn-sm">← Sepete Dön</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <div class="page-header">
+    <div class="container">
+      <div class="breadcrumb" style="padding:0 0 var(--space-3)">
+        <a href="index.html">🏠 Ana Sayfa</a>
+        <span class="sep">›</span>
+        <a href="sepet.html">Sepet</a>
+        <span class="sep">›</span>
+        <span class="current">Ödeme</span>
+      </div>
+      <h1>💳 Güvenli Ödeme</h1>
+    </div>
+  </div>
+
+  <!-- Adım Göstergesi -->
+  <div class="container">
+    <div class="stepper">
+      <div class="step" id="step-1-indicator">
+        <div class="step-circle">1</div>
+        <div class="step-label">Adres</div>
+      </div>
+      <div class="step-line" id="line-1"></div>
+      <div class="step" id="step-2-indicator">
+        <div class="step-circle">2</div>
+        <div class="step-label">Ödeme</div>
+      </div>
+      <div class="step-line" id="line-2"></div>
+      <div class="step" id="step-3-indicator">
+        <div class="step-circle">3</div>
+        <div class="step-label">Onay</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="checkout-layout">
+      <!-- Sol: Adımlar -->
+      <div id="checkout-steps">
+        <!-- Adım 1: Adres -->
+        <div id="step-1" class="checkout-step">
+          <!-- Teslimat Yöntemi Seçici -->
+          <div class="checkout-section" style="margin-bottom:var(--space-4)">
+            <div class="checkout-section-title">
+              <span class="num">1</span>
+              Teslimat Yöntemi
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)">
+              <!-- Kargo -->
+              <label id="delivery-kargo-label" class="delivery-option active" onclick="selectDelivery('kargo')" style="display:flex;align-items:flex-start;gap:var(--space-3);padding:var(--space-4);background:var(--surface-2);border:2px solid var(--primary);border-radius:var(--radius-lg);cursor:pointer;transition:border-color .2s,background .2s">
+                <input type="radio" name="delivery" value="kargo" id="delivery-kargo" checked style="margin-top:3px;accent-color:var(--primary)">
+                <div>
+                  <div style="font-weight:700;color:var(--text-primary);margin-bottom:4px">🚚 Ücretsiz Kargo</div>
+                  <div style="font-size:0.8125rem;color:var(--text-muted)">2–4 iş günü içinde kapınıza</div>
+                  <div style="font-size:0.875rem;font-weight:700;color:var(--success);margin-top:4px">Ücretsiz</div>
+                </div>
+              </label>
+              <!-- Mağazadan Teslim -->
+              <label id="delivery-magaza-label" class="delivery-option" onclick="selectDelivery('magaza')" style="display:flex;align-items:flex-start;gap:var(--space-3);padding:var(--space-4);background:var(--surface-2);border:2px solid var(--border);border-radius:var(--radius-lg);cursor:pointer;transition:border-color .2s,background .2s">
+                <input type="radio" name="delivery" value="magaza" id="delivery-magaza" style="margin-top:3px;accent-color:var(--primary)">
+                <div>
+                  <div style="font-weight:700;color:var(--text-primary);margin-bottom:4px">🏪 Mağazadan Teslim Al</div>
+                  <div style="font-size:0.8125rem;color:var(--text-muted)">efem iletişim mağazasından teslim al</div>
+                  <div style="font-size:0.75rem;color:var(--text-muted);margin-top:6px">📍 Mağaza Adresimiz:<br>Atatürk Cad. No:12, Merkez</div>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Adres Formu (kargoda görünür) -->
+          <div class="checkout-section" id="address-form-section">
+            <div class="checkout-section-title" style="margin-bottom:var(--space-4)">
+              📦 Teslimat Adresi
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4)">
+              <div class="form-group">
+                <label class="form-label">Ad <span class="required">*</span></label>
+                <input type="text" class="form-input" id="addr-ad" placeholder="Adınız">
+                <span class="form-error" id="addr-ad-error"></span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Soyad <span class="required">*</span></label>
+                <input type="text" class="form-input" id="addr-soyad" placeholder="Soyadınız">
+                <span class="form-error" id="addr-soyad-error"></span>
+              </div>
+              <div class="form-group" style="grid-column:1/-1">
+                <label class="form-label">Telefon <span class="required">*</span></label>
+                <input type="tel" class="form-input" id="addr-telefon" placeholder="05XX XXX XX XX">
+                <span class="form-error" id="addr-telefon-error"></span>
+              </div>
+              <div class="form-group" style="grid-column:1/-1">
+                <label class="form-label">Adres <span class="required">*</span></label>
+                <textarea class="form-textarea" id="addr-adres" placeholder="Mahalle, sokak, bina no, daire..." rows="3"></textarea>
+                <span class="form-error" id="addr-adres-error"></span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Şehir <span class="required">*</span></label>
+                <select class="form-select" id="addr-sehir">
+                  <option value="">Şehir seçin...</option>
+                  <option>İstanbul</option>
+                  <option>Ankara</option>
+                  <option>İzmir</option>
+                  <option>Bursa</option>
+                  <option>Antalya</option>
+                  <option>Adana</option>
+                  <option>Konya</option>
+                  <option>Gaziantep</option>
+                  <option>Kocaeli</option>
+                  <option>Mersin</option>
+                </select>
+                <span class="form-error" id="addr-sehir-error"></span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">İlçe <span class="required">*</span></label>
+                <input type="text" class="form-input" id="addr-ilce" placeholder="İlçe">
+                <span class="form-error" id="addr-ilce-error"></span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Posta Kodu <span class="required">*</span></label>
+                <input type="text" class="form-input" id="addr-posta" placeholder="34XXX" maxlength="5">
+                <span class="form-error" id="addr-posta-error"></span>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:var(--space-5)">
+            <button class="btn btn-primary btn-block btn-lg" onclick="goToStep2()">
+              Ödeme Adımına Geç →
+            </button>
+          </div>
+        </div>
+
+        <!-- Adım 2: Ödeme -->
+        <div id="step-2" class="checkout-step hidden">
+          <div class="checkout-section">
+            <div class="checkout-section-title">
+              <span class="num">2</span>
+              Ödeme Yöntemi
+            </div>
+
+            <!-- Ödeme Yöntemi Sekmeleri -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);margin-bottom:var(--space-6)">
+              <button id="tab-kart" onclick="selectPaymentMethod('kart')" class="btn btn-primary" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:var(--space-4)">
+                💳 Kredi / Banka Kartı
+              </button>
+              <button id="tab-eft" onclick="selectPaymentMethod('eft')" class="btn btn-ghost" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:var(--space-4);border:2px solid var(--border)">
+                🏦 EFT / Havale
+              </button>
+            </div>
+
+            <!-- Kredi Kartı Paneli -->
+            <div id="panel-kart">
+              <!-- Kart Önizleme -->
+              <div style="background:linear-gradient(135deg,#1e3a8a,#2563eb);border-radius:var(--radius-xl);padding:var(--space-6);color:white;margin-bottom:var(--space-6);position:relative;overflow:hidden;min-height:160px">
+                <div style="position:absolute;top:-30px;right:-30px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,0.05)"></div>
+                <div style="position:absolute;bottom:-40px;left:40px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.03)"></div>
+                <div style="font-size:0.75rem;opacity:0.7;margin-bottom:var(--space-4);letter-spacing:0.1em">KART BİLGİLERİ</div>
+                <div id="preview-number" style="font-size:1.25rem;font-weight:700;letter-spacing:0.15em;margin-bottom:var(--space-4)">•••• •••• •••• ••••</div>
+                <div style="display:flex;justify-content:space-between;align-items:flex-end">
+                  <div>
+                    <div style="font-size:0.625rem;opacity:0.6;text-transform:uppercase;letter-spacing:0.05em">Kart Sahibi</div>
+                    <div id="preview-name" style="font-weight:600;font-size:0.9375rem;margin-top:2px">KART SAHİBİ</div>
+                  </div>
+                  <div style="text-align:right">
+                    <div style="font-size:0.625rem;opacity:0.6;text-transform:uppercase;letter-spacing:0.05em">Son Tarih</div>
+                    <div id="preview-expiry" style="font-weight:600;font-size:0.9375rem;margin-top:2px">AA/YY</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Kart Formu -->
+              <div style="display:grid;gap:var(--space-4)">
+                <div class="form-group">
+                  <label class="form-label">Kart Numarası <span class="required">*</span></label>
+                  <div class="card-number-wrap">
+                    <input type="text" class="form-input" id="card-number"
+                           placeholder="1234 5678 9012 3456" maxlength="19">
+                    <div class="card-type-icons" id="card-type-icons">💳</div>
+                  </div>
+                  <span class="form-error" id="card-number-error"></span>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Kart Üzerindeki Ad <span class="required">*</span></label>
+                  <input type="text" class="form-input" id="card-name"
+                         placeholder="JOHN DOE" style="text-transform:uppercase">
+                  <span class="form-error" id="card-name-error"></span>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4)">
+                  <div class="form-group">
+                    <label class="form-label">Son Kullanma <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="card-expiry"
+                           placeholder="AA/YY" maxlength="5">
+                    <span class="form-error" id="card-expiry-error"></span>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">CVV/CVC <span class="required">*</span></label>
+                    <input type="text" class="form-input" id="card-cvc"
+                           placeholder="•••" maxlength="4">
+                    <span class="form-error" id="card-cvc-error"></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- İyzico badge -->
+              <div class="iyzico-badge">
+                <span class="lock">🔒</span>
+                Ödemeleriniz İyzico güvencesiyle işlenmektedir &nbsp;·&nbsp; 256-bit SSL
+              </div>
+
+              <!-- Test kartları bilgisi -->
+              <div id="test-cards-info"></div>
+            </div>
+
+            <!-- EFT / Havale Paneli -->
+            <div id="panel-eft" style="display:none">
+              <div style="background:linear-gradient(135deg,#064e3b,#065f46);border-radius:var(--radius-xl);padding:var(--space-6);color:white;margin-bottom:var(--space-6);position:relative;overflow:hidden">
+                <div style="position:absolute;top:-20px;right:-20px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.05)"></div>
+                <div style="font-size:2rem;margin-bottom:var(--space-3)">🏦</div>
+                <div style="font-weight:700;font-size:1.125rem;margin-bottom:var(--space-2)">EFT / Havale ile Öde</div>
+                <div style="font-size:0.875rem;opacity:0.85">Aşağıdaki banka hesabına sipariş tutarını transfer edin.<br>Açıklama kısmına sipariş numaranızı yazmayı unutmayın.</div>
+              </div>
+
+              <!-- Banka Bilgileri -->
+              <div style="display:grid;gap:var(--space-3);margin-bottom:var(--space-5)">
+                <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-4)">
+                  <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:var(--space-3)">Ziraat Bankası</div>
+                  <div style="display:grid;gap:var(--space-2)">
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                      <span style="font-size:0.875rem;color:var(--text-muted)">Hesap Adı</span>
+                      <span style="font-weight:600;font-size:0.9375rem">Efem İletişim Ltd. Şti.</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                      <span style="font-size:0.875rem;color:var(--text-muted)">IBAN</span>
+                      <div style="display:flex;align-items:center;gap:var(--space-2)">
+                        <span style="font-weight:600;font-size:0.9375rem;font-family:monospace" id="iban-ziraat">TR12 0001 0023 4567 8901 23</span>
+                        <button onclick="copyIBAN('iban-ziraat')" title="Kopyala" style="background:none;border:none;cursor:pointer;font-size:1rem;padding:4px">📋</button>
+                      </div>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                      <span style="font-size:0.875rem;color:var(--text-muted)">Şube / Hesap No</span>
+                      <span style="font-weight:600;font-size:0.9375rem">0023 / 45678901</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-4)">
+                  <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:var(--space-3)">İş Bankası</div>
+                  <div style="display:grid;gap:var(--space-2)">
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                      <span style="font-size:0.875rem;color:var(--text-muted)">Hesap Adı</span>
+                      <span style="font-weight:600;font-size:0.9375rem">Efem İletişim Ltd. Şti.</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                      <span style="font-size:0.875rem;color:var(--text-muted)">IBAN</span>
+                      <div style="display:flex;align-items:center;gap:var(--space-2)">
+                        <span style="font-weight:600;font-size:0.9375rem;font-family:monospace" id="iban-isbank">TR98 0006 4000 0012 3456 7890</span>
+                        <button onclick="copyIBAN('iban-isbank')" title="Kopyala" style="background:none;border:none;cursor:pointer;font-size:1rem;padding:4px">📋</button>
+                      </div>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:center">
+                      <span style="font-size:0.875rem;color:var(--text-muted)">Şube / Hesap No</span>
+                      <span style="font-weight:600;font-size:0.9375rem">0064 / 12345678</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div style="background:rgba(234,179,8,0.1);border:1px solid rgba(234,179,8,0.3);border-radius:var(--radius-md);padding:var(--space-4);font-size:0.875rem;color:var(--warning, #d97706);margin-bottom:var(--space-4)">
+                ⚠️ EFT ile yapılan ödemeler banka işlem saatlerine göre <strong>1–2 iş günü</strong> içinde onaylanır. Siparişiniz ödeme onaylandıktan sonra hazırlanmaya başlar.
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr auto;gap:var(--space-3);margin-top:var(--space-5)">
+              <button class="btn btn-primary btn-lg" id="pay-btn" onclick="handlePayment()">
+                🔒 Siparişi Tamamla
+              </button>
+              <button class="btn btn-ghost" onclick="goToStep1()">← Geri</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Adım 3: Başarı -->
+        <div id="step-3" class="checkout-step hidden">
+          <div class="success-page">
+            <div class="success-icon-wrap">✅</div>
+            <h2 style="color:var(--success);margin-bottom:var(--space-3)">Siparişiniz Alındı!</h2>
+            <p style="font-size:1rem;margin-bottom:var(--space-2)">
+              Teşekkürler! Siparişiniz başarıyla oluşturuldu.
+            </p>
+            <p style="color:var(--text-muted);margin-bottom:var(--space-2)" id="order-id-display"></p>
+            <p style="color:var(--text-muted);margin-bottom:var(--space-8)">
+              Sipariş durumunuzu profilinizdeki <strong>Siparişlerim</strong> bölümünden takip edebilirsiniz.
+            </p>
+            <div style="display:flex;gap:var(--space-4);justify-content:center;flex-wrap:wrap">
+              <a href="profil.html?tab=orders" class="btn btn-primary btn-lg">📦 Siparişlerimi Gör</a>
+              <a href="urunler.html" class="btn btn-ghost btn-lg">🛍 Alışverişe Devam Et</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sağ: Sipariş Özeti -->
+      <div>
+        <div class="price-summary" id="checkout-summary">
+          <h3>Sipariş Özeti</h3>
+          <div id="checkout-items-list"></div>
+          <div class="price-row">
+            <span class="label">Ara Toplam</span>
+            <span id="checkout-subtotal">-</span>
+          </div>
+          <div class="price-row free">
+            <span class="label">🚚 Kargo</span>
+            <span>Ücretsiz</span>
+          </div>
+          <div class="price-row total">
+            <span>Toplam</span>
+            <span id="checkout-total" style="color:var(--primary)">-</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div id="toast-container"></div>
+
+<script src="js/data.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/products.js"></script>
+<script src="js/payment.js"></script>
+<script src="js/main.js"></script>
+<script type="module">
+import { onAuthChange, saveOrderToFirestore } from './js/firebase-auth.js';
+// Firebase auth state: kullanıcı yoksa hesap sayfasına yönlendir
+onAuthChange(user => {
+  if (!user || !user.emailVerified) {
+    window.location.href = 'hesap.html?redirect=' + encodeURIComponent(window.location.href);
+  } else {
+    window._fbUser = user;
+  }
+});
+// saveOrder'u Firebase'e bırak
+window._firebaseSaveOrder = async (orderData) => {
+  if (!window._fbUser) return null;
+  return await saveOrderToFirestore(window._fbUser.uid, orderData);
+};
+</script>
+<script>
+let addressData  = null;
+let currentStep  = 1;
+let deliveryMode = 'kargo';  // 'kargo' | 'magaza'
+let paymentMode  = 'kart';   // 'kart'  | 'eft'
+
+document.addEventListener('DOMContentLoaded', () => {
+  const cart = getCart();
+  if (cart.length === 0) { window.location.href = 'sepet.html'; return; }
+
+  renderCheckoutSummary();
+  initPaymentForm();
+
+  // Test kart bilgisi ekle
+  document.getElementById('test-cards-info').innerHTML = showTestCards();
+
+  // Kullanıcı bilgilerini otomatik doldur
+  const user = getCurrentUser();
+  if (user) {
+    document.getElementById('addr-ad').value    = user.ad   || '';
+    document.getElementById('addr-soyad').value = user.soyad || '';
+  }
+
+  setStep(1);
+});
+
+/* ─── Teslimat yöntemi seçici ─── */
+function selectDelivery(mode) {
+  deliveryMode = mode;
+  const isKargo = mode === 'kargo';
+
+  document.getElementById('delivery-kargo').checked = isKargo;
+  document.getElementById('delivery-magaza').checked = !isKargo;
+
+  // Aktif stil
+  document.getElementById('delivery-kargo-label').style.borderColor  = isKargo  ? 'var(--primary)' : 'var(--border)';
+  document.getElementById('delivery-magaza-label').style.borderColor = !isKargo ? 'var(--primary)' : 'var(--border)';
+
+  // Adres formu görünürlüğü
+  const formSection = document.getElementById('address-form-section');
+  if (formSection) formSection.style.display = isKargo ? '' : 'none';
+}
+
+/* ─── Ödeme yöntemi sekme geçişi ─── */
+function selectPaymentMethod(mode) {
+  paymentMode = mode;
+  const isKart = mode === 'kart';
+
+  document.getElementById('panel-kart').style.display = isKart ? '' : 'none';
+  document.getElementById('panel-eft').style.display  = !isKart ? '' : 'none';
+
+  document.getElementById('tab-kart').className = isKart  ? 'btn btn-primary' : 'btn btn-ghost';
+  document.getElementById('tab-eft').className  = !isKart ? 'btn btn-primary' : 'btn btn-ghost';
+  document.getElementById('tab-eft').style.border  = !isKart ? '' : '2px solid var(--border)';
+  document.getElementById('tab-kart').style.border = isKart  ? '' : '2px solid var(--border)';
+
+  // Buton metnini güncelle
+  document.getElementById('pay-btn').textContent =
+    isKart ? '🔒 Siparişi Tamamla' : '📋 Siparişi Onayla (EFT ile Öde)';
+}
+
+/* ─── IBAN kopyala ─── */
+function copyIBAN(elId) {
+  const text = document.getElementById(elId)?.textContent?.trim();
+  if (!text) return;
+  navigator.clipboard.writeText(text.replace(/\s/g, '')).then(() => {
+    showToast('IBAN kopyalandı!', 'success');
+  });
+}
+
+function renderCheckoutSummary() {
+  const cart      = getCart();
+  const subtotal  = getCartSubtotal();
+  const total     = getCartTotal();
+
+  document.getElementById('checkout-items-list').innerHTML = cart.map(item => `
+    <div class="price-row" style="align-items:flex-start;padding:var(--space-3) 0;border-bottom:1px solid var(--border)">
+      <div>
+        <div style="font-size:0.875rem;font-weight:500">${item.name}</div>
+        <div style="font-size:0.75rem;color:var(--text-muted)">${item.qty} adet</div>
+      </div>
+      <span style="font-weight:600">${formatPrice(item.price * item.qty)}</span>
+    </div>
+  `).join('');
+
+  document.getElementById('checkout-subtotal').textContent = formatPrice(subtotal);
+  document.getElementById('checkout-total').textContent    = formatPrice(total);
+}
+
+function setStep(n) {
+  currentStep = n;
+
+  // Adım göstergesi
+  [1,2,3].forEach(i => {
+    const ind = document.getElementById(`step-${i}-indicator`);
+    ind.classList.remove('active', 'done');
+    if (i < n) ind.classList.add('done');
+    if (i === n) ind.classList.add('active');
+  });
+
+  [1,2].forEach(i => {
+    const line = document.getElementById(`line-${i}`);
+    line.classList.toggle('done', i < n);
+  });
+
+  // Paneller
+  [1,2,3].forEach(i => {
+    document.getElementById(`step-${i}`).classList.toggle('hidden', i !== n);
+  });
+}
+
+function goToStep1() { setStep(1); }
+
+function goToStep2() {
+  if (deliveryMode === 'kargo') {
+    // Adres validasyonu (kargoda zorunlu)
+    const data = {
+      ad:      document.getElementById('addr-ad').value,
+      soyad:   document.getElementById('addr-soyad').value,
+      telefon: document.getElementById('addr-telefon').value,
+      adres:   document.getElementById('addr-adres').value,
+      sehir:   document.getElementById('addr-sehir').value,
+      ilce:    document.getElementById('addr-ilce').value,
+      posta:   document.getElementById('addr-posta').value
+    };
+
+    const errors = validateAddressForm(data);
+    if (errors.length > 0) {
+      showFormErrors(errors);
+      showToast('Lütfen tüm zorunlu alanları doldurun.', 'error');
+      return;
+    }
+    addressData = data;
+  } else {
+    // Mağazadan teslim: sadece ad/soyad/telefon yeterli
+    const ad      = document.getElementById('addr-ad').value.trim();
+    const soyad   = document.getElementById('addr-soyad').value.trim();
+    addressData = { ad, soyad, teslimat: 'magaza' };
+  }
+
+  setStep(2);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function handlePayment() {
+  const total = getCartTotal();
+
+  if (paymentMode === 'eft') {
+    // EFT siparişi
+    const order = window._firebaseSaveOrder
+      ? await window._firebaseSaveOrder({
+          items:         getCart(),
+          total:         total,
+          address:       addressData,
+          delivery:      deliveryMode,
+          paymentMethod: 'eft',
+          paymentId:     'EFT-PENDING-' + Date.now()
+        })
+      : saveOrder({ items: getCart(), total, address: addressData, delivery: deliveryMode, paymentMethod: 'eft', paymentId: 'EFT-PENDING-' + Date.now() });
+    clearCart();
+    if (order) {
+      document.getElementById('order-id-display').textContent =
+        `Sipariş No: ${order.id} · EFT ile ödeme bekleniyor`;
+    }
+    setStep(3);
+    showToast('Siparişiniz oluşturuldu! EFT transferi sonrası onaylanacak. 🏦', 'success');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+
+  // Kredi kartı ödeme
+  const cardData = {
+    number: document.getElementById('card-number')?.value || '',
+    name:   document.getElementById('card-name')?.value   || '',
+    expiry: document.getElementById('card-expiry')?.value || '',
+    cvc:    document.getElementById('card-cvc')?.value    || ''
+  };
+
+  const errors = validatePaymentForm(cardData);
+  if (errors.length > 0) {
+    showFormErrors(errors);
+    showToast('Lütfen kart bilgilerini kontrol edin.', 'error');
+    return;
+  }
+
+  processPayment(cardData, total, async (result) => {
+    if (result.status === 'success') {
+      const order = window._firebaseSaveOrder
+        ? await window._firebaseSaveOrder({
+            items:         getCart(),
+            total:         total,
+            address:       addressData,
+            delivery:      deliveryMode,
+            paymentMethod: 'kart',
+            paymentId:     result.paymentId
+          })
+        : saveOrder({
+            items:         getCart(),
+            total:         total,
+            address:       addressData,
+            delivery:      deliveryMode,
+            paymentMethod: 'kart',
+            paymentId:     result.paymentId
+          });
+
+      clearCart();
+
+      if (order) {
+        document.getElementById('order-id-display').textContent = `Sipariş No: ${order.id}`;
+      }
+
+      setStep(3);
+      showToast('Siparişiniz başarıyla alındı! 🎉', 'success');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else {
+      const payBtn = document.getElementById('pay-btn');
+      payBtn.textContent = '🔒 Siparişi Tamamla';
+      payBtn.disabled = false;
+      showToast('Ödeme başarısız: ' + result.errorMessage, 'error');
+    }
+  });
+}
+</script>
+</body>
+</html>

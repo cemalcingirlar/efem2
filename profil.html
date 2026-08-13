@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profilim – efemiletisim.com</title>
+  <meta name="description" content="Kullanıcı profili, sipariş geçmişi ve hesap ayarları.">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+
+<nav id="navbar">
+  <div class="container">
+    <div class="navbar-inner">
+      <a href="index.html" class="navbar-logo">
+        <div class="logo-icon">📱</div>
+        <div class="logo-text">
+          <span class="logo-name" style="display:block;line-height:1">efem</span>
+          <span class="logo-sub" style="display:block;line-height:1">iletişim</span>
+        </div>
+      </a>
+      <div class="navbar-search">
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="search-input" placeholder="Ürün ara..." autocomplete="off">
+        </div>
+        <div class="search-dropdown" id="search-dropdown"></div>
+      </div>
+      <nav class="navbar-nav">
+        <a href="index.html" class="nav-link">Ana Sayfa</a>
+        <a href="urunler.html" class="nav-link">Ürünler</a>
+      </nav>
+      <div class="navbar-actions">
+        <div class="nav-dropdown" id="nav-user-menu">
+          <button class="btn btn-ghost btn-sm">👤 <span id="nav-user-name">Kullanıcı</span> ▾</button>
+          <div class="nav-dropdown-menu">
+            <a href="profil.html" class="nav-dropdown-item">📋 Profilim</a>
+            <a href="profil.html?tab=orders" class="nav-dropdown-item">📦 Siparişlerim</a>
+            <span class="nav-dropdown-item" onclick="logout()" style="color:var(--error)">🚪 Çıkış Yap</span>
+          </div>
+        </div>
+        <!-- Fallback giriş butonu (normalde gizli) -->
+        <a href="hesap.html" class="btn btn-ghost btn-sm hidden" id="nav-login-link">👤 Giriş Yap</a>
+        <a href="sepet.html" class="cart-btn">
+          🛒 Sepet
+          <span class="cart-badge" id="cart-badge-1" style="display:none">0</span>
+        </a>
+        <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="mobile-menu" id="mobile-menu">
+  <a href="index.html" class="mobile-nav-link">🏠 Ana Sayfa</a>
+  <a href="urunler.html" class="mobile-nav-link">🛍 Ürünler</a>
+  <a href="profil.html?tab=orders" class="mobile-nav-link">📦 Siparişlerim</a>
+  <a href="sepet.html" class="mobile-nav-link">🛒 Sepetim</a>
+  <span class="mobile-nav-link" onclick="logout()" style="color:var(--error)">🚪 Çıkış Yap</span>
+</div>
+
+<main>
+  <div class="page-header">
+    <div class="container">
+      <h1>👤 Hesabım</h1>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="profile-layout">
+      <!-- Sol: Sidebar -->
+      <aside>
+        <div class="profile-sidebar">
+          <div class="profile-user-info">
+            <div class="profile-avatar" id="profile-avatar">?</div>
+            <div class="profile-name" id="profile-name">Yükleniyor...</div>
+            <div class="profile-email" id="profile-email">-</div>
+          </div>
+          <nav class="profile-nav">
+            <div class="profile-nav-item active" id="nav-profile" onclick="showTab('profile')">
+              <span class="icon">👤</span> Profilim
+            </div>
+            <div class="profile-nav-item" id="nav-orders" onclick="showTab('orders')">
+              <span class="icon">📦</span> Siparişlerim
+            </div>
+            <div class="profile-nav-item" id="nav-favorites" onclick="showTab('favorites')">
+              <span class="icon">❤️</span> Favorilerim
+            </div>
+            <div style="border-top:1px solid var(--border);margin:var(--space-2) 0;padding-top:var(--space-2)">
+              <div class="profile-nav-item" onclick="logout()" style="color:var(--error)">
+                <span class="icon">🚪</span> Çıkış Yap
+              </div>
+            </div>
+          </nav>
+        </div>
+      </aside>
+
+      <!-- Sağ: İçerik -->
+      <div id="profile-content">
+
+        <!-- Profil Tab -->
+        <div id="tab-profile" class="profile-tab">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-6);margin-bottom:var(--space-5)">
+            <h3 style="margin-bottom:var(--space-5)">Kişisel Bilgiler</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4)" id="profile-form">
+              <div class="form-group">
+                <label class="form-label">Ad</label>
+                <input type="text" class="form-input" id="edit-ad">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Soyad</label>
+                <input type="text" class="form-input" id="edit-soyad">
+              </div>
+              <div class="form-group" style="grid-column:1/-1">
+                <label class="form-label">E-posta</label>
+                <input type="email" class="form-input" id="edit-email" readonly style="background:var(--surface-2)">
+                <span class="form-hint">E-posta değiştirilemez</span>
+              </div>
+              <div class="form-group" style="grid-column:1/-1">
+                <button class="btn btn-primary" onclick="saveProfile()">💾 Bilgileri Güncelle</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- İstatistikler -->
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-4)">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-5);text-align:center">
+              <div style="font-size:2rem;font-weight:800;color:var(--primary)" id="stat-orders">0</div>
+              <div style="font-size:0.875rem;color:var(--text-muted);margin-top:4px">Toplam Sipariş</div>
+            </div>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-5);text-align:center">
+              <div style="font-size:2rem;font-weight:800;color:var(--accent)" id="stat-total">₺0</div>
+              <div style="font-size:0.875rem;color:var(--text-muted);margin-top:4px">Toplam Harcama</div>
+            </div>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-5);text-align:center">
+              <div style="font-size:2rem;font-weight:800;color:var(--error)" id="stat-favs">0</div>
+              <div style="font-size:0.875rem;color:var(--text-muted);margin-top:4px">Favori Ürün</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Siparişler Tab -->
+        <div id="tab-orders" class="profile-tab hidden">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-5)">
+            <h3>Siparişlerim</h3>
+            <a href="urunler.html" class="btn btn-primary btn-sm">🛍 Yeni Sipariş</a>
+          </div>
+          <div id="orders-list">
+            <div class="empty-state">
+              <div class="icon">📦</div>
+              <h3>Henüz Siparişiniz Yok</h3>
+              <p>İlk siparişinizi oluşturun!</p>
+              <a href="urunler.html" class="btn btn-primary">🛍 Alışverişe Başla</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Favoriler Tab -->
+        <div id="tab-favorites" class="profile-tab hidden">
+          <div style="margin-bottom:var(--space-5)">
+            <h3>Favorilerim</h3>
+          </div>
+          <div class="products-grid" id="fav-products-grid"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="footer-bottom">
+      <span>© 2024 efemiletisim.com</span>
+    </div>
+  </div>
+</footer>
+
+<div id="toast-container"></div>
+
+<script src="js/data.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/products.js"></script>
+<script src="js/main.js"></script>
+<script type="module">
+import { onAuthChange, firebaseLogout, getUserProfile, saveOrderToFirestore } from './js/firebase-auth.js';
+
+// Logout butonunu global yap
+window.logout = async function() {
+  await firebaseLogout();
+  window.location.href = 'hesap.html';
+};
+
+// Sipariş kaydetme fonksiyonunu override et (odeme.html ile uyumlu)
+window.saveOrder = async function(orderData) {
+  if (!window._fbUser) return null;
+  return await saveOrderToFirestore(window._fbUser.uid, orderData);
+};
+</script>
+<script>
+let currentUser  = null;
+let firestoreOrders = [];
+
+// Firebase auth state — kullanıcı yoksa login'e yönlendir
+(async () => {
+  const { onAuthChange, getUserProfile } = await import('./js/firebase-auth.js');
+  onAuthChange(async (user) => {
+    if (!user || !user.emailVerified) {
+      window.location.href = 'hesap.html';
+      return;
+    }
+    window._fbUser = user;
+    const profile  = await getUserProfile(user.uid);
+    currentUser = {
+      uid:   user.uid,
+      ad:    profile?.ad    || user.displayName?.split(' ')[0] || '',
+      soyad: profile?.soyad || user.displayName?.split(' ').slice(1).join(' ') || '',
+      email: user.email
+    };
+    firestoreOrders = [...(profile?.orders || [])].reverse(); // Yeniden eskiye
+    renderProfileInfo();
+    const tab = getUrlParam('tab');
+    if (tab === 'orders' || tab === 'favorites') showTab(tab);
+  });
+})();
+
+function renderProfileInfo() {
+  if (!currentUser) return;
+  document.getElementById('profile-avatar').textContent = currentUser.ad ? currentUser.ad[0].toUpperCase() : '?';
+  document.getElementById('profile-name').textContent   = (currentUser.ad + ' ' + currentUser.soyad).trim();
+  document.getElementById('profile-email').textContent  = currentUser.email;
+
+  document.getElementById('edit-ad').value    = currentUser.ad    || '';
+  document.getElementById('edit-soyad').value = currentUser.soyad || '';
+  document.getElementById('edit-email').value = currentUser.email || '';
+
+  const totalSpent = firestoreOrders.reduce((s, o) => s + (o.total || 0), 0);
+  const favCount   = getFavorites().length;
+
+  document.getElementById('stat-orders').textContent = firestoreOrders.length;
+  document.getElementById('stat-total').textContent  = formatPrice(totalSpent);
+  document.getElementById('stat-favs').textContent   = favCount;
+}
+
+function showTab(tab) {
+  document.querySelectorAll('.profile-tab').forEach(t => t.classList.add('hidden'));
+  document.querySelectorAll('.profile-nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.remove('hidden');
+  document.getElementById('nav-' + tab)?.classList.add('active');
+  if (tab === 'orders')    renderOrders();
+  if (tab === 'favorites') renderFavorites();
+}
+
+function saveProfile() {
+  showToast('Profil güncelleme yakında eklenecek.', 'info');
+}
+
+function renderOrders() {
+  const orders    = firestoreOrders;
+  const container = document.getElementById('orders-list');
+
+  if (orders.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">📦</div>
+        <h3>Henüz Siparişiniz Yok</h3>
+        <p>İlk siparişinizi oluşturun!</p>
+        <a href="urunler.html" class="btn btn-primary">🛍 Alışverişe Başla</a>
+      </div>`;
+    return;
+  }
+
+  const statusMap = {
+    processing: { cls: 'processing', label: '⏳ Hazırlanıyor' },
+    shipping:   { cls: 'shipping',   label: '🚚 Kargoda' },
+    delivered:  { cls: 'delivered',  label: '✅ Teslim Edildi' },
+    cancelled:  { cls: 'cancelled',  label: '❌ İptal Edildi' }
+  };
+
+  container.innerHTML = orders.map(o => {
+    const s = statusMap[o.status] || statusMap.processing;
+    const date = new Date(o.date).toLocaleDateString('tr-TR', { day:'numeric', month:'long', year:'numeric' });
+    return `
+      <div class="order-card">
+        <div class="order-card-header">
+          <div>
+            <div class="order-id">${o.id}</div>
+            <div class="order-date">${date}</div>
+          </div>
+          <span class="order-status ${s.cls}">${s.label}</span>
+        </div>
+        <div class="order-card-body">
+          <div style="display:flex;flex-direction:column;gap:var(--space-2);margin-bottom:var(--space-4)">
+            ${(o.items || []).map(item => `
+              <div style="display:flex;justify-content:space-between;font-size:0.875rem">
+                <span>${item.name} × ${item.qty}</span>
+                <span style="font-weight:600">${formatPrice(item.price * item.qty)}</span>
+              </div>`).join('')}
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-weight:700;font-size:1rem">
+              Toplam: <span style="color:var(--primary)">${formatPrice(o.total)}</span>
+            </div>
+            <div style="font-size:0.8125rem;color:var(--text-muted)">🚚 Ücretsiz Kargo</div>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderFavorites() {
+  const favIds = getFavorites();
+  const favProducts = PRODUCTS.filter(p => favIds.includes(p.id));
+  const grid = document.getElementById('fav-products-grid');
+
+  if (favProducts.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1">
+        <div class="icon">❤️</div>
+        <h3>Favori Ürününüz Yok</h3>
+        <p>Beğendiğiniz ürünleri favorilere ekleyin.</p>
+        <a href="urunler.html" class="btn btn-primary">🛍 Ürünlere Bak</a>
+      </div>`;
+    return;
+  }
+
+  renderProductGrid(favProducts, 'fav-products-grid');
+}
+
+function getUrlParam(name) {
+  return new URLSearchParams(window.location.search).get(name);
+}
+</script>
+</body>
+</html>

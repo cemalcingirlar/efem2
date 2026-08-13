@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Giriş / Kayıt – efemiletisim.com</title>
+  <meta name="description" content="efemiletisim.com hesabınıza giriş yapın veya yeni hesap oluşturun.">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+  <style>
+    /* ─── Doğrulama Ekranı ─── */
+    .verify-screen {
+      text-align: center;
+      padding: var(--space-6) var(--space-4);
+    }
+    .verify-icon {
+      font-size: 4rem;
+      margin-bottom: var(--space-4);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50%       { transform: scale(1.08); }
+    }
+    .verify-screen h2 {
+      color: var(--text-primary);
+      margin-bottom: var(--space-2);
+    }
+    .verify-screen p {
+      color: var(--text-muted);
+      font-size: 0.9375rem;
+      margin-bottom: var(--space-4);
+      line-height: 1.6;
+    }
+    .verify-email-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: var(--space-3) var(--space-5);
+      font-weight: 600;
+      color: var(--primary);
+      font-size: 0.9375rem;
+      margin-bottom: var(--space-6);
+      word-break: break-all;
+    }
+    .resend-timer {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      margin-top: var(--space-3);
+    }
+    /* ─── Loading overlay ─── */
+    .auth-loading {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+    .auth-loading.active { display: flex; }
+    .auth-loading .spinner {
+      width: 48px; height: 48px;
+      border: 4px solid rgba(255,255,255,0.2);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .auth-loading p { color: white; font-size: 0.9375rem; }
+    /* ─── Şifre gücü ─── */
+    .password-strength {
+      height: 4px;
+      border-radius: 2px;
+      margin-top: var(--space-2);
+      transition: all 0.3s;
+      background: var(--border);
+    }
+    .password-strength.weak   { background: linear-gradient(90deg, #ef4444 30%, var(--border) 30%); }
+    .password-strength.medium { background: linear-gradient(90deg, #f59e0b 60%, var(--border) 60%); }
+    .password-strength.strong { background: #22c55e; }
+  </style>
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div class="auth-loading" id="auth-loading">
+  <div class="spinner"></div>
+  <p id="loading-text">İşleniyor...</p>
+</div>
+
+<nav id="navbar">
+  <div class="container">
+    <div class="navbar-inner">
+      <a href="index.html" class="navbar-logo">
+        <div class="logo-icon">📱</div>
+        <div class="logo-text">
+          <span class="logo-name" style="display:block;line-height:1">efem</span>
+          <span class="logo-sub" style="display:block;line-height:1">iletişim</span>
+        </div>
+      </a>
+      <div style="margin-left:auto">
+        <a href="urunler.html" class="btn btn-ghost btn-sm">🛍 Alışverişe Devam Et</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <div class="auth-page">
+    <div class="auth-card">
+      <!-- Logo -->
+      <a href="index.html" class="auth-logo">
+        <div class="logo-icon" style="width:48px;height:48px;font-size:1.5rem">📱</div>
+        <div class="logo-text">
+          <span class="logo-name" style="font-size:1.25rem">efemi</span>
+          <span class="logo-sub">iletişim</span>
+        </div>
+      </a>
+
+      <!-- ═══════════════════════════════════
+           PANEL 1: GİRİŞ / KAYIT SEKMELERI
+           ═══════════════════════════════════ -->
+      <div id="main-auth-panel">
+        <!-- Tab Başlıkları -->
+        <div class="tabs" id="auth-tabs">
+          <button class="tab-btn active" id="tab-login"    onclick="switchTab('login')">Giriş Yap</button>
+          <button class="tab-btn"        id="tab-register" onclick="switchTab('register')">Kayıt Ol</button>
+        </div>
+
+        <!-- ─── GİRİŞ FORMU ─── -->
+        <div class="tab-panel active" id="panel-login">
+          <div class="auth-title">
+            <h2>Tekrar Hoş Geldiniz 👋</h2>
+            <p>Hesabınıza giriş yapın</p>
+          </div>
+          <div class="auth-form">
+            <div class="form-group">
+              <label class="form-label">E-posta <span class="required">*</span></label>
+              <input type="email" class="form-input" id="login-email" placeholder="ornek@mail.com"
+                     autocomplete="email">
+              <span class="form-error" id="login-email-error"></span>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="display:flex;justify-content:space-between">
+                <span>Şifre <span class="required">*</span></span>
+                <a href="#" style="font-size:0.8125rem;color:var(--primary)" onclick="showForgotPassword(event)">
+                  Şifremi Unuttum
+                </a>
+              </label>
+              <input type="password" class="form-input" id="login-password" placeholder="••••••••"
+                     autocomplete="current-password">
+              <span class="form-error" id="login-password-error"></span>
+            </div>
+            <label class="form-check">
+              <input type="checkbox" id="remember-me">
+              <span class="form-check-label">Beni Hatırla</span>
+            </label>
+            <span id="login-error" style="color:var(--error);font-size:0.875rem;display:none"></span>
+            <button class="btn btn-primary btn-block btn-lg" id="login-btn" onclick="handleLogin()">
+              Giriş Yap →
+            </button>
+          </div>
+          <div class="auth-divider">veya</div>
+          <div class="auth-footer">
+            Hesabınız yok mu? <a href="#" onclick="switchTab('register')">Kayıt olun</a>
+          </div>
+        </div>
+
+        <!-- ─── KAYIT FORMU ─── -->
+        <div class="tab-panel" id="panel-register">
+          <div class="auth-title">
+            <h2>Hesap Oluştur 🎉</h2>
+            <p>Birkaç adımda kayıt olun</p>
+          </div>
+          <div class="auth-form">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4)">
+              <div class="form-group">
+                <label class="form-label">Ad <span class="required">*</span></label>
+                <input type="text" class="form-input" id="reg-ad" placeholder="Adınız" autocomplete="given-name">
+                <span class="form-error" id="reg-ad-error"></span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Soyad <span class="required">*</span></label>
+                <input type="text" class="form-input" id="reg-soyad" placeholder="Soyadınız" autocomplete="family-name">
+                <span class="form-error" id="reg-soyad-error"></span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">E-posta <span class="required">*</span></label>
+              <input type="email" class="form-input" id="reg-email" placeholder="ornek@mail.com" autocomplete="email">
+              <span class="form-error" id="reg-email-error"></span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Şifre <span class="required">*</span></label>
+              <input type="password" class="form-input" id="reg-password"
+                     placeholder="En az 6 karakter" autocomplete="new-password"
+                     oninput="checkPasswordStrength(this.value)">
+              <div class="password-strength" id="pwd-strength"></div>
+              <span class="form-hint" id="pwd-hint">En az 6 karakter kullanın</span>
+              <span class="form-error" id="reg-password-error"></span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Şifre Tekrar <span class="required">*</span></label>
+              <input type="password" class="form-input" id="reg-password2"
+                     placeholder="Şifrenizi tekrar girin" autocomplete="new-password">
+              <span class="form-error" id="reg-password2-error"></span>
+            </div>
+            <label class="form-check">
+              <input type="checkbox" id="reg-terms" required>
+              <span class="form-check-label">
+                <a href="#" style="color:var(--primary)">Kullanım Koşulları</a>'nı kabul ediyorum
+              </span>
+            </label>
+            <span id="reg-error" style="color:var(--error);font-size:0.875rem;display:none"></span>
+            <button class="btn btn-primary btn-block btn-lg" id="register-btn" onclick="handleRegister()">
+              Hesap Oluştur →
+            </button>
+          </div>
+          <div class="auth-footer">
+            Zaten hesabınız var mı? <a href="#" onclick="switchTab('login')">Giriş yapın</a>
+          </div>
+        </div>
+      </div><!-- /main-auth-panel -->
+
+      <!-- ═══════════════════════════════════
+           PANEL 2: E-POSTA DOĞRULAMA BEKLENİYOR
+           ═══════════════════════════════════ -->
+      <div id="verify-panel" style="display:none">
+        <div class="verify-screen">
+          <div class="verify-icon">📬</div>
+          <h2>E-postanızı Doğrulayın</h2>
+          <p>
+            Hesabınızı aktifleştirmek için aşağıdaki adrese bir doğrulama linki gönderdik:
+          </p>
+          <div class="verify-email-badge">
+            ✉️ <span id="verify-email-display"></span>
+          </div>
+          <p style="font-size:0.875rem">
+            Gelen kutunuzu (ve spam/gereksiz klasörünü) kontrol edin.<br>
+            Maildeki <strong>"E-postayı Doğrula"</strong> linkine tıkladıktan sonra<br>
+            aşağıdaki butona basarak devam edin.
+          </p>
+
+          <button class="btn btn-primary btn-block btn-lg" style="margin-bottom:var(--space-3)"
+                  onclick="checkVerifiedAndLogin()">
+            ✅ Doğruladım, Giriş Yap
+          </button>
+
+          <button class="btn btn-ghost btn-block" id="resend-btn" onclick="handleResend()">
+            📨 Doğrulama Mailini Tekrar Gönder
+          </button>
+          <div class="resend-timer" id="resend-timer"></div>
+
+          <div style="margin-top:var(--space-5);padding-top:var(--space-4);border-top:1px solid var(--border)">
+            <a href="#" style="font-size:0.875rem;color:var(--text-muted)" onclick="backToLogin()">
+              ← Farklı hesapla giriş yap
+            </a>
+          </div>
+        </div>
+      </div><!-- /verify-panel -->
+
+      <!-- ═══════════════════════════════════
+           PANEL 3: ŞİFRE SIFIRLAMA
+           ═══════════════════════════════════ -->
+      <div id="forgot-panel" style="display:none">
+        <div class="auth-title" style="text-align:center;padding:var(--space-4) 0 0">
+          <div style="font-size:2.5rem;margin-bottom:var(--space-3)">🔑</div>
+          <h2>Şifre Sıfırlama</h2>
+          <p>Kayıtlı e-posta adresinizi girin, sıfırlama linki göndereceğiz.</p>
+        </div>
+        <div class="auth-form">
+          <div class="form-group">
+            <label class="form-label">E-posta <span class="required">*</span></label>
+            <input type="email" class="form-input" id="forgot-email" placeholder="ornek@mail.com">
+            <span class="form-error" id="forgot-email-error"></span>
+          </div>
+          <span id="forgot-success" style="color:var(--success);font-size:0.875rem;display:none"></span>
+          <span id="forgot-error"   style="color:var(--error);font-size:0.875rem;display:none"></span>
+          <button class="btn btn-primary btn-block btn-lg" onclick="handleForgotPassword()">
+            📧 Sıfırlama Linki Gönder
+          </button>
+          <button class="btn btn-ghost btn-block" onclick="backToLogin()" style="margin-top:var(--space-2)">
+            ← Girişe Dön
+          </button>
+        </div>
+      </div><!-- /forgot-panel -->
+
+    </div><!-- /auth-card -->
+  </div>
+</main>
+
+<div id="toast-container"></div>
+
+<!-- Firebase SDK (modular v10 CDN) -->
+<script type="module">
+  import {
+    firebaseRegister,
+    firebaseLogin,
+    firebaseLogout,
+    firebaseForgotPassword,
+    resendVerificationEmail,
+    onAuthChange,
+    getUserProfile
+  } from "./js/firebase-auth.js";
+
+  import { auth } from "./js/firebase-config.js";
+  import { signInWithEmailAndPassword, signOut } from
+    "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+  /* ─── Helpers (ana.js henüz module değil, inline ─── */
+  function showToast(msg, type = "info") {
+    const c = document.getElementById("toast-container");
+    if (!c) return;
+    const t = document.createElement("div");
+    t.className = `toast toast-${type}`;
+    t.textContent = msg;
+    c.appendChild(t);
+    setTimeout(() => t.classList.add("show"), 10);
+    setTimeout(() => { t.classList.remove("show"); setTimeout(() => t.remove(), 300); }, 3500);
+  }
+
+  function getUrlParam(name) {
+    return new URLSearchParams(window.location.search).get(name);
+  }
+
+  function setLoading(active, text = "İşleniyor...") {
+    document.getElementById("auth-loading").classList.toggle("active", active);
+    document.getElementById("loading-text").textContent = text;
+  }
+
+  /* ─── State ─── */
+  let pendingEmail    = "";
+  let pendingPassword = "";
+  let resendCountdown = null;
+
+  /* ─── Global expose (inline onclick için) ─── */
+  window.switchTab              = switchTab;
+  window.handleLogin            = handleLogin;
+  window.handleRegister         = handleRegister;
+  window.showForgotPassword     = showForgotPassword;
+  window.handleForgotPassword   = handleForgotPassword;
+  window.backToLogin            = backToLogin;
+  window.handleResend           = handleResend;
+  window.checkVerifiedAndLogin  = checkVerifiedAndLogin;
+  window.checkPasswordStrength  = checkPasswordStrength;
+
+  /* ─── onAuthStateChanged: Giriş yapılmışsa profil'e yönlendir ─── */
+  onAuthChange(async (user) => {
+    if (user && user.emailVerified) {
+      const redirect = getUrlParam("redirect");
+      window.location.href = redirect || "profil.html";
+    }
+  });
+
+  /* ─── Tab geçişi ─── */
+  function switchTab(tab) {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+    document.getElementById("tab-" + tab).classList.add("active");
+    document.getElementById("panel-" + tab).classList.add("active");
+  }
+
+  /* ─── Giriş ─── */
+  async function handleLogin() {
+    const email    = document.getElementById("login-email").value.trim();
+    const password = document.getElementById("login-password").value;
+
+    document.getElementById("login-email-error").textContent    = "";
+    document.getElementById("login-password-error").textContent = "";
+    document.getElementById("login-error").style.display        = "none";
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      document.getElementById("login-email-error").textContent = "Geçerli bir e-posta girin.";
+      return;
+    }
+    if (!password) {
+      document.getElementById("login-password-error").textContent = "Şifrenizi girin.";
+      return;
+    }
+
+    setLoading(true, "Giriş yapılıyor...");
+    const result = await firebaseLogin(email, password);
+    setLoading(false);
+
+    if (result.success) {
+      showToast("Başarıyla giriş yapıldı! 🎉", "success");
+    } else if (result.needsVerification) {
+      pendingEmail    = email;
+      pendingPassword = password;
+      showVerifyPanel(email);
+    } else {
+      const el = document.getElementById("login-error");
+      el.textContent = "❌ " + result.msg;
+      el.style.display = "block";
+      showToast(result.msg, "error");
+    }
+  }
+
+  /* ─── Kayıt ─── */
+  async function handleRegister() {
+    const ad        = document.getElementById("reg-ad").value.trim();
+    const soyad     = document.getElementById("reg-soyad").value.trim();
+    const email     = document.getElementById("reg-email").value.trim();
+    const password  = document.getElementById("reg-password").value;
+    const password2 = document.getElementById("reg-password2").value;
+    const terms     = document.getElementById("reg-terms").checked;
+
+    ["reg-ad","reg-soyad","reg-email","reg-password","reg-password2"].forEach(id => {
+      document.getElementById(id + "-error").textContent = "";
+      document.getElementById(id).classList.remove("error");
+    });
+    document.getElementById("reg-error").style.display = "none";
+
+    let hasError = false;
+    function regErr(id, msg) {
+      document.getElementById(id + "-error").textContent = msg;
+      document.getElementById(id).classList.add("error");
+      hasError = true;
+    }
+
+    if (!ad)     regErr("reg-ad",    "Adınızı girin.");
+    if (!soyad)  regErr("reg-soyad", "Soyadınızı girin.");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) regErr("reg-email", "Geçerli bir e-posta girin.");
+    if (password.length < 6)   regErr("reg-password",  "Şifre en az 6 karakter olmalı.");
+    if (password !== password2) regErr("reg-password2", "Şifreler eşleşmiyor.");
+    if (!terms) {
+      const el = document.getElementById("reg-error");
+      el.textContent = "❌ Kullanım koşullarını kabul etmeniz gerekiyor.";
+      el.style.display = "block";
+      hasError = true;
+    }
+    if (hasError) return;
+
+    setLoading(true, "Hesap oluşturuluyor...");
+    const result = await firebaseRegister(ad, soyad, email, password);
+    setLoading(false);
+
+    if (result.success) {
+      pendingEmail    = email;
+      pendingPassword = password;
+      showVerifyPanel(email);
+      showToast("Hesabınız oluşturuldu! Doğrulama maili gönderildi. 📬", "success");
+    } else {
+      const el = document.getElementById("reg-error");
+      el.textContent = "❌ " + result.msg;
+      el.style.display = "block";
+      showToast(result.msg, "error");
+    }
+  }
+
+  /* ─── Doğrulama panelini göster ─── */
+  function showVerifyPanel(email) {
+    document.getElementById("main-auth-panel").style.display = "none";
+    document.getElementById("forgot-panel").style.display    = "none";
+    document.getElementById("verify-panel").style.display    = "block";
+    document.getElementById("verify-email-display").textContent = email;
+    startResendCooldown();
+  }
+
+  /* ─── "Doğruladım, Giriş Yap" butonu ─── */
+  async function checkVerifiedAndLogin() {
+    if (!pendingEmail || !pendingPassword) { backToLogin(); return; }
+    setLoading(true, "Doğrulama kontrol ediliyor...");
+    try {
+      const cred = await signInWithEmailAndPassword(auth, pendingEmail, pendingPassword);
+      await cred.user.reload();
+      if (cred.user.emailVerified) {
+        showToast("E-posta doğrulandı! Giriş yapılıyor... 🎉", "success");
+        setLoading(false);
+        // onAuthStateChanged otomatik yönlendirir
+      } else {
+        await signOut(auth);
+        setLoading(false);
+        showToast("E-posta henüz doğrulanmadı. Lütfen maili kontrol edin.", "error");
+      }
+    } catch {
+      setLoading(false);
+      showToast("Giriş sırasında hata oluştu. Lütfen tekrar deneyin.", "error");
+    }
+  }
+
+  /* ─── Tekrar gönder ─── */
+  async function handleResend() {
+    if (!pendingEmail || !pendingPassword) return;
+    setLoading(true, "Mail gönderiliyor...");
+    const result = await resendVerificationEmail(pendingEmail, pendingPassword);
+    setLoading(false);
+    if (result.success) {
+      showToast("Doğrulama maili tekrar gönderildi! 📨", "success");
+      startResendCooldown();
+    } else {
+      showToast(result.msg, "error");
+    }
+  }
+
+  /* ─── Tekrar gönder geri sayımı (60 sn) ─── */
+  function startResendCooldown() {
+    const btn   = document.getElementById("resend-btn");
+    const timer = document.getElementById("resend-timer");
+    let sec = 60;
+    btn.disabled = true;
+    if (resendCountdown) clearInterval(resendCountdown);
+    resendCountdown = setInterval(() => {
+      timer.textContent = `Tekrar göndermek için ${sec}s bekleyin`;
+      sec--;
+      if (sec < 0) {
+        clearInterval(resendCountdown);
+        btn.disabled = false;
+        timer.textContent = "";
+      }
+    }, 1000);
+  }
+
+  /* ─── Şifremi Unuttum ─── */
+  function showForgotPassword(e) {
+    e.preventDefault();
+    document.getElementById("main-auth-panel").style.display = "none";
+    document.getElementById("verify-panel").style.display    = "none";
+    document.getElementById("forgot-panel").style.display    = "block";
+    // Giriş formundaki e-postayı kopyala
+    const email = document.getElementById("login-email").value.trim();
+    if (email) document.getElementById("forgot-email").value = email;
+  }
+
+  async function handleForgotPassword() {
+    const email = document.getElementById("forgot-email").value.trim();
+    document.getElementById("forgot-error").style.display   = "none";
+    document.getElementById("forgot-success").style.display = "none";
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      document.getElementById("forgot-email-error").textContent = "Geçerli bir e-posta girin.";
+      return;
+    }
+    setLoading(true, "Sıfırlama maili gönderiliyor...");
+    const result = await firebaseForgotPassword(email);
+    setLoading(false);
+
+    if (result.success) {
+      const el = document.getElementById("forgot-success");
+      el.textContent = `✅ ${email} adresine sıfırlama linki gönderildi.`;
+      el.style.display = "block";
+      showToast("Sıfırlama maili gönderildi! 📧", "success");
+    } else {
+      const el = document.getElementById("forgot-error");
+      el.textContent = "❌ " + result.msg;
+      el.style.display = "block";
+      showToast(result.msg, "error");
+    }
+  }
+
+  /* ─── Girişe dön ─── */
+  function backToLogin() {
+    document.getElementById("verify-panel").style.display  = "none";
+    document.getElementById("forgot-panel").style.display  = "none";
+    document.getElementById("main-auth-panel").style.display = "block";
+    switchTab("login");
+    pendingEmail = "";
+    pendingPassword = "";
+    if (resendCountdown) clearInterval(resendCountdown);
+  }
+
+  /* ─── Şifre güç göstergesi ─── */
+  function checkPasswordStrength(value) {
+    const bar  = document.getElementById("pwd-strength");
+    const hint = document.getElementById("pwd-hint");
+    if (!value) {
+      bar.className = "password-strength";
+      hint.textContent = "En az 6 karakter kullanın";
+      return;
+    }
+    const hasUpper  = /[A-Z]/.test(value);
+    const hasNumber = /[0-9]/.test(value);
+    const hasSpecial = /[^A-Za-z0-9]/.test(value);
+    const score = (value.length >= 8 ? 1 : 0) + (hasUpper ? 1 : 0) +
+                  (hasNumber ? 1 : 0) + (hasSpecial ? 1 : 0);
+
+    if (score <= 1) {
+      bar.className = "password-strength weak";
+      hint.textContent = "Zayıf şifre";
+      hint.style.color = "#ef4444";
+    } else if (score <= 2) {
+      bar.className = "password-strength medium";
+      hint.textContent = "Orta güçlü şifre";
+      hint.style.color = "#f59e0b";
+    } else {
+      bar.className = "password-strength strong";
+      hint.textContent = "Güçlü şifre ✓";
+      hint.style.color = "#22c55e";
+    }
+  }
+
+  /* ─── URL tab parametresi ─── */
+  const tab = new URLSearchParams(window.location.search).get("tab");
+  if (tab === "register") switchTab("register");
+</script>
+
+<!-- Ana JS (auth.js'ye bağımlı olmayan yardımcılar için) -->
+<script src="js/data.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/main.js"></script>
+
+</body>
+</html>

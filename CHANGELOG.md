@@ -3,6 +3,80 @@
 Bu dosya projede yapılan her ekleme, değişiklik ve kaldırmayı kayıt altına alır.
 En yeni kayıtlar en üstte.
 
+## 2026-08-14 (devam 8)
+
+### Karanlık mod, footer, admin panel, sipariş yönetimi
+- Fix: Karanlık modda `--secondary` (sabit koyu lacivert) metin rengi olarak kullanılan yerler
+  (feature-title, section-title, fiyatlar, logo, başlıklar) `--text-primary`'ye çevrildi —
+  koyu metin koyu zeminde görünmez oluyordu. Sadece amber/dekoratif sabit-koyu zeminler
+  (btn-dark, footer bg, rozetler) olduğu gibi bırakıldı.
+- Add: Footer — sahte sosyal linkler (Twitter/Facebook/YouTube, hepsi `#`'e gidiyordu)
+  kaldırıldı, yerine yalnızca gerçek kanallar (Instagram, WhatsApp — `site-config.js`).
+  Ödeme rozetleri düz metinden gerçek marka işaretlerine (VISA/Mastercard/troy/iyzico/SSL)
+  çevrildi, tüm sayfalarda tutarlı.
+- Fix: Ürün kartına tıklayınca detay sayfası açılmıyordu — kod hatası değil, yerel test
+  sunucusunun (`npx serve`) `.html` → uzantısız yönlendirmesi `?id=` parametresini
+  düşürüyordu. Yerel sunucu değiştirildi, prod (Vercel `cleanUrls`) bu sorunu yaşamaz.
+- Add: Admin panel — artık sabit (BASE_PRODUCTS) ürünler de düzenlenebiliyor; düzenleme
+  tarayıcıda "override" olarak saklanıyor (orijinal bozulmuyor), "Sıfırla" ile geri alınabilir.
+  Dashboard'a envanter değeri, kategori dağılımı, stok sağlığı grafiklerİ eklendi.
+- Add: `hesap.html`'e "Admin girişi" linki eklendi (admin.html'e yönlendiriyor).
+- Add: `docs/ARKADAS-YAPILACAKLAR.md`'a domain bağlama (Vercel + Firebase Authorized Domains)
+  adım adım rehberi eklendi.
+- Add: Gemini ile üretilen çizim-stili görseller (`assets/images/*-sketch.*`,
+  `category-*.webp`) siteye bağlandı: ana sayfa kategori kartları, hakkımızda sayfası
+  hikaye bölümü. Hero ve ödeme sayfası için bilerek kullanılmadı (koyu hero zeminiyle
+  krem çizim stili çakışıyor, checkout'ta dikkat dağıtmasın diye) — 404 sayfası yok, o da
+  atlandı.
+- Add: Ürün kartlarında mouse ile üzerine gelince 2 saniyede bir görsel geçişi + nokta
+  göstergesi (`js/products.js` → `startCardImageCycle`) — şu an her ürün 1 görsel olduğu
+  için pasif, ürün başına görsel eklenince otomatik devreye giriyor. `urun-detay.html`'in
+  zaten var olan thumbnail galerisi de aynı mekanizmayı kullanıyor.
+- Add: Ürün detay sayfasına "hızlı bakış" öne çıkan özellikler kutusu (ilk 4 teknik özellik,
+  ikon+kısa metin).
+- Redesign: Admin ürün ekle/düzenle modalı dar tek sütundan geniş iki sütunlu (görsel solda,
+  form alanları sağda) düzene geçti.
+- Add: Admin panelde bilgisayardan görsel yükleme (dosya seçilip otomatik 800px'e
+  küçültülüp sıkıştırılarak kaydediliyor, localStorage'ı şişirmesin diye) — URL yapıştırma
+  hâlâ alternatif olarak duruyor.
+- Add: Admin panele Sipariş Yönetimi sekmesi — sipariş listesi, durum güncelleme
+  (Hazırlanıyor/Kargoda/Teslim Edildi/İptal), sipariş detay görünümü, arama/filtre.
+  Checkout akışı (üye + misafir) artık `efemi_all_orders` yerel defterine de yazıyor
+  (gerçek çok-cihazlı sipariş yönetimi için hâlâ Firestore backend gerekiyor, bkz.
+  ARKADAS-YAPILACAKLAR.md Prompt 3). Uçtan uca gerçek checkout ile test edildi.
+
+## 2026-08-14 (devam 7)
+
+### Müşteri deneyimi + tasarım (öncelik listesi uygulandı)
+- Fix: `js/main.js` — `initScrollAnimations()`/`initStatCounters()` above-the-fold içeriği (hero,
+  sayaçlar, ilk ekrandaki ürün kartları) artık `IntersectionObserver`'ın ilk callback'ini
+  beklemeden anında görünür/animasyonlu; scroll edilene kadar soluk kalma hatası giderildi.
+- Add: Karanlık mod — token bazlı (`css/main.css` `:root[data-theme="dark"]`), sistem tercihiyle
+  ilk açılışta otomatik, sonrasında `localStorage` ile hatırlanıyor. Tüm müşteri sayfalarına
+  (`index`, `urunler`, `urun-detay`, `sepet`, `odeme`, `hesap`, `profil`, `hakkimizda`,
+  `gizlilik-kvkk`, `iptal-iade`, `mesafeli-satis-sozlesmesi`) `<head>` içine flaş-önleyici inline
+  script + navbar'a tema değiştirme butonu eklendi. Ana mavi (`--primary`) değişmedi.
+- Add: `odeme.html` — Ödeme adımına VISA/Mastercard/Troy/SSL güven rozeti şeridi (stepper ve
+  İyzico rozeti zaten mevcuttu, sadece kart marka rozetleri belirginleştirildi).
+- Add: `urun-detay.html` — Galeri artık dokunmatikte kaydırılabiliyor (swipe ile sonraki/önceki
+  görsel). Stok tükendiğinde "Haber Ver" formu (e-posta → Firestore `stockAlerts`). Ürün altına
+  Soru & Cevap bölümü (Firestore `productQuestions`, herkes okuyabilir/soru sorabilir, yanıt
+  alanı şimdilik Firebase Console'dan doldurulacak — admin panelinden yanıtlama akışı yok).
+- Add: `firestore.rules` — `stockAlerts`/`productQuestions` koleksiyonları için doğrulamalı
+  `create` kuralları eklendi. **Deploy edilmedi** — `firebase deploy --only firestore:rules`
+  çalıştırılana kadar yeni koleksiyonlara yazma prod'da reddedilir.
+- Add: Skeleton loading — `urunler.html` (#products-grid), `index.html` (#featured-products,
+  #all-products-preview), `urun-detay.html` (#related-products) artık JS render edene kadar boş
+  değil, statik iskelet kartlarla açılıyor (CSS'teki `.skeleton` shimmer'ı zaten vardı, ilk kez
+  gerçek kullanım alanı kazandı).
+- Verify: Ürün kartı hover derinliği (double-bezel + görsel zoom), checkout stepper/İyzico rozeti,
+  favoriler/sipariş geçmişi boş durumları, guest checkout akışı (`sepet.html` → `odeme.html`
+  girişsiz erişilebiliyor) — kod incelemesiyle kontrol edildi, zaten yeterli kalitede; ek değişiklik
+  gerekmedi.
+- Add: `docs/gemini-gorsel-promptlari.md` — siteye "sanatsal hava" katacak çizim tarzı minimalist
+  görseller için hazır Gemini prompt seti (hero, kategori, hakkımızda, boş durumlar, ödeme,
+  gelecekte 404 sayfası).
+
 ## 2026-08-14 (devam 6)
 
 - Add: Kök dizine premium `README.md` — badge'ler, 4 ekran görüntüsü (`docs/screenshots/`),

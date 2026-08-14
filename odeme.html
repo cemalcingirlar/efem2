@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
+  <script>(function(){try{var t=localStorage.getItem("efemi_theme");if(!t){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ödeme – efemiletisim.com</title>
@@ -34,6 +35,39 @@
 
     .delivery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
     .payment-method-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin-bottom: var(--space-6); }
+
+    .checkout-trust-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+      padding: var(--space-3) var(--space-4);
+      margin-bottom: var(--space-4);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+    }
+    .trust-mark {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      letter-spacing: 0.02em;
+    }
+    .trust-mark-visa  { font-style: italic; color: #1A1F71; }
+    :root[data-theme="dark"] .trust-mark-visa { color: #7C8AFF; }
+    .trust-mark-mc    { text-transform: lowercase; color: var(--text-primary); }
+    .mc-dots { display: inline-flex; width: 22px; height: 14px; position: relative; flex-shrink: 0; }
+    .mc-dots::before, .mc-dots::after {
+      content: ''; position: absolute; top: 0; width: 14px; height: 14px; border-radius: 50%;
+    }
+    .mc-dots::before { left: 0;  background: #EB001B; }
+    .mc-dots::after  { left: 8px; background: #F79E1B; mix-blend-mode: multiply; }
+    :root[data-theme="dark"] .mc-dots::after { mix-blend-mode: screen; }
+    .trust-mark-troy  { text-transform: uppercase; color: var(--error); font-weight: 800; }
+    .trust-mark-ssl   { color: var(--success); margin-left: auto; }
     .address-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
     .form-group-full { grid-column: 1 / -1; }
     .checkout-step-actions { margin-top: var(--space-5); }
@@ -134,6 +168,10 @@
       </a>
       <div class="checkout-navbar-right">
         <span class="checkout-secure-note"><svg class="icon" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Güvenli Ödeme</span>
+        <button class="theme-toggle" id="theme-toggle" title="Karanlık / Aydınlık mod">
+          <svg class="icon theme-icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 3v2.2M12 18.8V21M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M3 12h2.2M18.8 12H21M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6"/></svg>
+          <svg class="icon theme-icon-moon" viewBox="0 0 24 24"><path d="M20.5 14.7A8.5 8.5 0 1 1 9.3 3.5a7 7 0 0 0 11.2 11.2Z"/></svg>
+        </button>
         <a href="sepet.html" class="btn btn-ghost btn-sm">← Sepete Dön</a>
       </div>
     </div>
@@ -287,6 +325,14 @@
             <div class="checkout-section-title">
               <span class="num">2</span>
               Ödeme Yöntemi
+            </div>
+
+            <!-- Güven Rozetleri -->
+            <div class="checkout-trust-row">
+              <span class="trust-mark trust-mark-visa">VISA</span>
+              <span class="trust-mark trust-mark-mc"><span class="mc-dots"></span>mastercard</span>
+              <span class="trust-mark trust-mark-troy">troy</span>
+              <span class="trust-mark trust-mark-ssl"><svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> 256-bit SSL</span>
             </div>
 
             <!-- Ödeme Yöntemi Sekmeleri -->
@@ -500,25 +546,36 @@ import { authReady, isLoggedIn, getCurrentUser } from './js/auth.js';
 window.saveOrder = async (orderData) => {
   await authReady;
 
+  const addr = orderData.address || {};
+  const customerName  = [addr.ad, addr.soyad].filter(Boolean).join(' ') || null;
+  const customerEmail = addr.email || null;
+
+  let order;
+  let meta;
+
   if (isLoggedIn()) {
-    const order = await saveOrderToFirestore(getCurrentUser().uid, orderData);
+    order = await saveOrderToFirestore(getCurrentUser().uid, orderData);
     if (!order) throw new Error('Sipariş Firestore\'a kaydedilemedi.');
-    return order;
+    meta = { source: 'member', userId: getCurrentUser().uid, customerName, customerEmail };
+  } else {
+    order = {
+      id:            'EFM' + Date.now().toString().slice(-6),
+      date:          new Date().toISOString(),
+      status:        'processing',
+      statusLabel:   'Hazırlanıyor',
+      guest:         true,
+      items:         orderData.items,
+      total:         orderData.total,
+      address:       orderData.address       || null,
+      delivery:      orderData.delivery      || 'kargo',
+      paymentMethod: orderData.paymentMethod || 'kart',
+      paymentId:     orderData.paymentId     || null
+    };
+    meta = { source: 'guest', userId: null, customerName, customerEmail };
   }
 
-  return {
-    id:            'EFM' + Date.now().toString().slice(-6),
-    date:          new Date().toISOString(),
-    status:        'processing',
-    statusLabel:   'Hazırlanıyor',
-    guest:         true,
-    items:         orderData.items,
-    total:         orderData.total,
-    address:       orderData.address       || null,
-    delivery:      orderData.delivery      || 'kargo',
-    paymentMethod: orderData.paymentMethod || 'kart',
-    paymentId:     orderData.paymentId     || null
-  };
+  addOrderToLedger(order, meta);
+  return order;
 };
 </script>
 <script>

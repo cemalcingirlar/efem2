@@ -72,6 +72,10 @@
   --z-sticky:   200;
   --z-modal:    300;
   --z-toast:    400;
+
+  /* Navbar (frosted glass) — arka plan tema token'larından bağımsız,
+     ayrı tutulur çünkü saydamlık oranı temaya göre değişir. */
+  --navbar-bg: rgba(255,255,255,0.95);
 }
 
 /* ─── Reset & Base ─── */
@@ -370,7 +374,7 @@ p { color: var(--text-secondary); }
 
 .page-header h1 {
   font-size: 2rem;
-  color: var(--secondary);
+  color: var(--text-primary);
 }
 
 /* ─── Boş Durum ─── */
@@ -436,6 +440,57 @@ p { color: var(--text-secondary); }
 }
 
 body { font-family: var(--font-display); }
+
+/* ─── Karanlık Mod ───
+   Ana mavi (--primary) korunur; yüzey/metin/gölge tonları karanlığa uyarlanır. */
+:root[data-theme="dark"] {
+  --primary-light: rgba(37,99,235,0.18);
+  --accent-light:  rgba(245,158,11,0.16);
+
+  --bg:            #0A0D13;
+  --surface:       #12161F;
+  --surface-2:     #1A1F2B;
+  --border:        #262C3A;
+  --border-dark:   #333B4D;
+
+  --text-primary:  #F1F5F9;
+  --text-secondary:#94A3B8;
+  --text-muted:    #64748B;
+
+  --shadow-xs:  0 1px 2px rgba(0,0,0,0.4);
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.4);
+  --shadow-md:  0 4px 6px rgba(0,0,0,0.45), 0 2px 4px rgba(0,0,0,0.4);
+  --shadow-lg:  0 10px 15px rgba(0,0,0,0.5), 0 4px 6px rgba(0,0,0,0.4);
+  --shadow-xl:  0 20px 25px rgba(0,0,0,0.55), 0 10px 10px rgba(0,0,0,0.4);
+  --shadow-ambient:    0 24px 48px -16px rgba(0,0,0,0.55);
+  --shadow-ambient-lg: 0 32px 64px -20px rgba(0,0,0,0.6);
+
+  --navbar-bg: rgba(10,13,19,0.85);
+}
+
+:root[data-theme="dark"] .badge-success,
+:root[data-theme="dark"] .order-status.delivered { background: rgba(16,185,129,0.16); color: #34D399; }
+:root[data-theme="dark"] .badge-error,
+:root[data-theme="dark"] .order-status.cancelled { background: rgba(239,68,68,0.16); color: #F87171; }
+:root[data-theme="dark"] .badge-warning { background: rgba(245,158,11,0.16); color: #FBBF24; }
+
+/* ─── Tema Değiştirme Butonu ─── */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px; height: 38px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+.theme-toggle:hover { border-color: var(--primary); color: var(--primary); }
+.theme-toggle .theme-icon-moon { display: none; }
+:root[data-theme="dark"] .theme-toggle .theme-icon-sun  { display: none; }
+:root[data-theme="dark"] .theme-toggle .theme-icon-moon { display: block; }
 
 h1, h2, h3, h4, h5, h6,
 .btn, .logo-name, .logo-sub,

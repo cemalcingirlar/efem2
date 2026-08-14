@@ -14,6 +14,62 @@ olmadan Prompt 2/3 çalışan bir sisteme oturmaz.
 
 ---
 
+## Adım 0 — Domain Bağlama: efemiletisim.com (önce bunu yap, AI prompt değil)
+
+Bu bölüm bir AI'ye yaptırılacak kod işi değil — Vercel ve Firebase panellerinde elle yapman
+gereken tıklama adımları. Aşağıdaki 1 ve 2 numaralı adımlar olmadan site canlıda ya hiç açılmaz
+ya da açılsa bile giriş/kayıt (Firebase Auth) çalışmaz. Sırayla yap, atlama.
+
+### 1. Domain'i kendi Vercel hesabına bağla
+
+1. [vercel.com](https://vercel.com) → kendi hesabınla giriş yap.
+2. Bu projeyi Vercel'e getir: ya GitHub reposunu Vercel'e import et (Vercel Dashboard →
+   "Add New" → "Project" → repoyu seç), ya da lokalde `vercel` CLI ile `vercel --prod` çalıştır.
+   Repo zaten `vercel.json` içeriyor, ekstra ayara gerek yok.
+3. Proje oluşunca: **Project → Settings → Domains** sekmesine git.
+4. "Add" butonuna bas, `efemiletisim.com` yaz, ekle. Aynı ekrandan `www.efemiletisim.com`'u da
+   ayrıca ekle (ikisi de olsun, sonra biri diğerine yönlendirilir).
+5. Vercel sana ekranda DNS kayıtları gösterecek — genelde apex domain (`efemiletisim.com`, yani
+   `@`) için bir **A kaydı**, `www` için bir **CNAME kaydı**. **Ekranda sana yazan değerleri
+   birebir kullan** — burada örnek bir IP/host yazmıyorum çünkü Vercel bunu hesabına göre
+   üretiyor, elle uydurma.
+6. Domain'i satın aldığın yerin (GoDaddy, Natro, İsimtescil, Turhost vb. — nereden aldıysanız
+   oranın) DNS yönetim paneline gir. Vercel'in gösterdiği A ve CNAME kayıtlarını oraya ekle.
+   Aynı isimde (`@` veya `www`) önceden var olan çakışan A/CNAME kaydı varsa onu sil, ikisi
+   birlikte duramaz.
+7. DNS değişikliğinin yayılması genelde 10 dakika–birkaç saat sürer, bazen 48 saate kadar
+   çıkabilir. Vercel'in Domains ekranında domainin yanında yeşil tik / "Valid Configuration"
+   yazısı çıkınca bağlantı tamamdır.
+8. `www.efemiletisim.com` girenin `efemiletisim.com`'a (veya tersi) otomatik yönlenmesini
+   istiyorsan, aynı Domains ekranında domainin yanındaki "Edit" → "Redirect to" seçeneğini
+   kullan, hangisi ana adres olacaksa onu seç.
+
+### 2. Firebase — domain'i yetkili (authorized) listesine ekle
+
+1. [console.firebase.google.com](https://console.firebase.google.com) → proje `efemiletisim`
+   seç (bu proje zaten `js/firebase-config.js` içinde bağlı, yeni proje açmana gerek yok).
+2. Sol menüden **Authentication** → üstte **Settings** sekmesi → **Authorized domains** bölümü.
+3. "Add domain" butonuna bas, `efemiletisim.com` yaz, kaydet. `www.efemiletisim.com`'u da ayrı
+   bir satır olarak ekle (kullanıcı o adresten de giriş yapabilsin diye).
+4. Bu adımı atlarsan ne olur: canlı sitede `hesap.html` üzerinden giriş/kayıt denendiğinde
+   Firebase `auth/unauthorized-domain` hatası verir, kimse giriş yapamaz — sessizce bozuk kalır,
+   fark etmesi zor olur, o yüzden domain bağlandıktan hemen sonra bunu yap.
+
+### 3. İyzico — sadece gerçek ödemeye geçince (Prompt 1 tamamlandıktan sonra)
+
+Şu an ödeme tamamen simülasyon (yukarıdaki "Ödemenin şu anki gerçek durumu" bölümüne bak), bu
+adımın aciliyeti yok, Prompt 1 bittiğinde hatırla:
+
+1. iyzico Merchant panelinde (gerçek/production hesabına geçtiğinde) entegrasyon/domain ayarı
+   varsa `https://efemiletisim.com` olarak gir.
+2. Sandbox'tan production'a geçerken `IYZICO_API_KEY` / `IYZICO_SECRET_KEY` /
+   `IYZICO_BASE_URL` ortam değişkenlerini Vercel Dashboard → Project → Settings →
+   Environment Variables üzerinden gerçek (production) değerlerle güncelle.
+
+Adım 1 ve 2 bitince bana haber ver, `efemiletisim.com` üzerinden ben de kontrol ederim.
+
+---
+
 ## Öncelik sırası
 
 1. **Prompt 1 — Gerçek iyzico entegrasyonu (Vercel Functions)** — en kritik, şu an ödeme tamamen sahte.

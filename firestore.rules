@@ -5,5 +5,29 @@ service cloud.firestore {
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
+
+    // Stok bildirimi talepleri: herkes (misafir dahil) oluşturabilir,
+    // e-posta içerdiği için kimse okuyamaz/güncelleyemez/silemez.
+    match /stockAlerts/{alertId} {
+      allow create: if request.resource.data.keys().hasAll(['productId', 'email', 'createdAt'])
+                    && request.resource.data.email is string
+                    && request.resource.data.email.size() < 200
+                    && request.resource.data.productId is int;
+      allow read, update, delete: if false;
+    }
+
+    // Ürün soru-cevap: herkes okuyabilir ve soru oluşturabilir;
+    // cevap alanı sadece null olarak oluşturulabilir (yanıtlama şimdilik Firebase Console'dan yapılır,
+    // admin panelinden yanıtlama akışı henüz kurulmadı).
+    match /productQuestions/{questionId} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasAll(['productId', 'question', 'answer', 'createdAt'])
+                    && request.resource.data.question is string
+                    && request.resource.data.question.size() > 0
+                    && request.resource.data.question.size() < 500
+                    && request.resource.data.answer == null
+                    && request.resource.data.productId is int;
+      allow update, delete: if false;
+    }
   }
 }

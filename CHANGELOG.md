@@ -3,6 +3,31 @@
 Bu dosya projede yapılan her ekleme, değişiklik ve kaldırmayı kayıt altına alır.
 En yeni kayıtlar en üstte.
 
+## 2026-08-15 (devam 2)
+
+### Adres senkronu, 81 il, navbar dropdown bug, ürün fotoğrafları
+- Add: `js/site-config.js` → `TURKIYE_ILLERI` (81 il, plaka sırasıyla) tek kaynak olarak eklendi.
+  `odeme.html` Şehir seçimi artık 10 sabit şehir yerine bu listeden JS ile dolduruluyor;
+  `profil.html` adres modalındaki İl serbest metin alanı da aynı listeyle beslenen `<select>`
+  oldu. Bu ikisi aynı yazımı kullanmadığı için (ör. "adana" vs "Adana") kayıtlı adres
+  ödeme ekranına uygulanınca Şehir alanı boş kalıyordu — artık her iki form da aynı
+  kaynaktan aynı değerleri kullandığı için senkron.
+- Fix: Posta Kodu zorunlu alan olmaktan çıkarıldı (`odeme.html` label + `js/payment.js` →
+  `ADDRESS_REQUIRED_FIELDS`). `profil.html` adres modalına da (opsiyonel) Posta Kodu alanı
+  eklendi, checkout formuyla alan seti eşleşsin diye.
+- Add: `odeme.html` — kayıtlı adres kartlarına düzenle (kalem) ikonu eklendi; adres formunu
+  doldurup "Bu kayıtlı adresi güncelle" butonuna basınca o adres Firestore'daki
+  `users/{uid}.addresses` içinde güncelleniyor. Daha önce ödeme ekranından kayıtlı adres
+  sadece seçilebiliyordu, düzenlenemiyordu.
+- Fix: Navbar "Ürünler" mega menüsü, tetikleyici link ile açılan menü arasındaki 8px boşlukta
+  fare hover'ı kırılıp menü kapandığı için tıklanamıyordu (klasik CSS hover-gap sorunu).
+  `.nav-dropdown::after` ile görünmez bir köprü eklendi, boşluk artık hover'ı kesmiyor.
+- Fix: Ürün kartı hover galerisi geçiş süresi 2sn'den 3sn'ye çıkarıldı (`js/products.js`).
+- Add: 20 ürünün her birine internetten (resmi üretici/perakendeci kaynaklarından) 4'er ek
+  gerçek fotoğraf eklendi — toplam 100 görsel (`assets/images/products/`), `js/data.js`
+  içindeki `images` dizileri güncellendi. Artık ürün kartına gelince (hover) zaten var olan
+  galeri geçiş mekanizması gerçek görsellerle çalışıyor.
+
 ## 2026-08-15 (devam)
 
 ### Hakkımızda vergi dairesi/KEP satırları, Firebase mail dili

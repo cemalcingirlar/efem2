@@ -296,16 +296,6 @@
                 <label class="form-label">Şehir <span class="required">*</span></label>
                 <select class="form-select" id="addr-sehir" autocomplete="address-level1">
                   <option value="">Şehir seçin...</option>
-                  <option>İstanbul</option>
-                  <option>Ankara</option>
-                  <option>İzmir</option>
-                  <option>Bursa</option>
-                  <option>Antalya</option>
-                  <option>Adana</option>
-                  <option>Konya</option>
-                  <option>Gaziantep</option>
-                  <option>Kocaeli</option>
-                  <option>Mersin</option>
                 </select>
                 <span class="form-error" id="addr-sehir-error"></span>
               </div>
@@ -316,11 +306,18 @@
                 <span class="form-error" id="addr-ilce-error"></span>
               </div>
               <div class="form-group">
-                <label class="form-label">Posta Kodu <span class="required">*</span></label>
+                <label class="form-label">Posta Kodu</label>
                 <input type="text" class="form-input" id="addr-posta" placeholder="34XXX" maxlength="5"
                        autocomplete="postal-code">
                 <span class="form-error" id="addr-posta-error"></span>
               </div>
+            </div>
+
+            <div id="update-saved-address-row" class="hidden" style="margin-top:var(--space-3)">
+              <button type="button" class="btn btn-ghost btn-sm" onclick="updateSelectedSavedAddress()">
+                <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                Bu kayıtlı adresi güncelle
+              </button>
             </div>
           </div>
 
@@ -628,6 +625,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const cart = getCart();
   if (cart.length === 0) { window.location.href = 'sepet.html'; return; }
 
+  populateCitySelect('addr-sehir');
   renderCheckoutSummary();
   initPaymentForm();
 
@@ -647,21 +645,44 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 });
 
+/* ─── Şehir <select>'ini 81 il ile doldur (site-config.js → TURKIYE_ILLERI) ─── */
+function populateCitySelect(selectId, selected) {
+  const select = document.getElementById(selectId);
+  TURKIYE_ILLERI.forEach(il => {
+    const opt = document.createElement('option');
+    opt.value = il;
+    opt.textContent = il;
+    select.appendChild(opt);
+  });
+  if (selected) select.value = selected;
+}
+
 /* ─── Kayıtlı adreslerden seçim ─── */
+let editingSavedAddressId = null;
+
 function renderSavedAddressPicker(addresses) {
   if (addresses.length === 0) return;
 
   document.getElementById('saved-address-picker').classList.remove('hidden');
   document.getElementById('saved-address-list').innerHTML = addresses.map(a => `
+    <div style="display:flex;align-items:stretch;gap:2px">
     <button type="button" class="btn btn-ghost btn-sm" style="text-align:left;height:auto;padding:var(--space-3) var(--space-4)"
             onclick='applySavedAddress(${JSON.stringify(a).replace(/'/g, "&#39;")})'>
       <strong>${a.etiket}</strong> · ${a.alici}<br>
       <span style="font-size:0.75rem;color:var(--text-muted)">${a.ilce} / ${a.il}</span>
     </button>
+    <button type="button" class="btn btn-ghost btn-sm" title="Bu adresi düzenle" style="padding:0 var(--space-3)"
+            onclick='editSavedAddress(${JSON.stringify(a).replace(/'/g, "&#39;")})'>
+      <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+    </button>
+    </div>
   `).join('');
 }
 
 function applySavedAddress(a) {
+  editingSavedAddressId = null;
+  document.getElementById('update-saved-address-row').classList.add('hidden');
+
   const [ad, ...rest] = (a.alici || '').split(' ');
   document.getElementById('addr-ad').value      = ad || '';
   document.getElementById('addr-soyad').value   = rest.join(' ');
@@ -669,6 +690,45 @@ function applySavedAddress(a) {
   document.getElementById('addr-adres').value   = a.adres   || '';
   document.getElementById('addr-sehir').value   = a.il      || '';
   document.getElementById('addr-ilce').value    = a.ilce    || '';
+  document.getElementById('addr-posta').value   = a.posta   || '';
+}
+
+/* ─── Kayıtlı adresi ödeme ekranından düzenleme ─── */
+function editSavedAddress(a) {
+  applySavedAddress(a);
+  editingSavedAddressId = a.id;
+  document.getElementById('update-saved-address-row').classList.remove('hidden');
+}
+
+async function updateSelectedSavedAddress() {
+  if (!editingSavedAddressId) return;
+  const user = getCurrentUser();
+  const addresses = [...(user?.addresses || [])];
+  const idx = addresses.findIndex(a => a.id === editingSavedAddressId);
+  if (idx < 0) return;
+
+  const ad    = document.getElementById('addr-ad').value.trim();
+  const soyad = document.getElementById('addr-soyad').value.trim();
+
+  addresses[idx] = {
+    ...addresses[idx],
+    alici:   `${ad} ${soyad}`.trim(),
+    telefon: document.getElementById('addr-telefon').value.trim(),
+    adres:   document.getElementById('addr-adres').value.trim(),
+    il:      document.getElementById('addr-sehir').value,
+    ilce:    document.getElementById('addr-ilce').value.trim(),
+    posta:   document.getElementById('addr-posta').value.trim()
+  };
+
+  const result = await saveAddresses(addresses);
+  if (!result.success) {
+    showToast(result.msg || 'Adres güncellenemedi.', 'error');
+    return;
+  }
+  showToast('Kayıtlı adres güncellendi.', 'success');
+  renderSavedAddressPicker(addresses);
+  editingSavedAddressId = null;
+  document.getElementById('update-saved-address-row').classList.add('hidden');
 }
 
 /* ─── Fatura bilgileri formu ─── */

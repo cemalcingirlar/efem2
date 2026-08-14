@@ -76,7 +76,7 @@ function startCardImageCycle(wrapEl, productId) {
     idx = (idx + 1) % product.images.length;
     img.src = product.images[idx];
     dots.forEach((d, i) => d.classList.toggle('active', i === idx));
-  }, 2000);
+  }, 3000);
 
   cardCycleTimers.set(wrapEl, timer);
 }

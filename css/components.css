@@ -329,6 +329,17 @@
 /* Dropdown menü */
 .nav-dropdown { position: relative; }
 
+/* Tetikleyici ile menü arasındaki 8px boşlukta fare hover'ı kırılıp menü
+   kapanmadan (görünmez) köprü — boşluk sıfırlanmadan hover sürekli kalır. */
+.nav-dropdown::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 8px;
+}
+
 .nav-dropdown-menu {
   position: absolute;
   top: calc(100% + 8px);

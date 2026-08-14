@@ -254,16 +254,22 @@
       <div class="address-form-grid" style="margin-bottom:var(--space-4)">
         <div class="form-group">
           <label class="form-label">İl</label>
-          <input type="text" class="form-input" id="addr-modal-il">
+          <select class="form-input" id="addr-modal-il">
+            <option value="">Şehir seçin...</option>
+          </select>
         </div>
         <div class="form-group">
           <label class="form-label">İlçe</label>
           <input type="text" class="form-input" id="addr-modal-ilce">
         </div>
       </div>
-      <div class="form-group">
+      <div class="form-group" style="margin-bottom:var(--space-4)">
         <label class="form-label">Açık Adres</label>
         <textarea class="form-textarea" id="addr-modal-adres" rows="3" placeholder="Mahalle, sokak, bina no, daire..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Posta Kodu</label>
+        <input type="text" class="form-input" id="addr-modal-posta" placeholder="34XXX" maxlength="5">
       </div>
     </div>
     <div class="modal-footer" style="display:flex;gap:var(--space-3);justify-content:flex-end">
@@ -437,6 +443,16 @@ function openAddressModal(id) {
   const addresses = currentUser.addresses || [];
   const addr = id ? addresses.find(a => a.id === id) : null;
 
+  const citySelect = document.getElementById('addr-modal-il');
+  if (citySelect.options.length <= 1) {
+    TURKIYE_ILLERI.forEach(il => {
+      const opt = document.createElement('option');
+      opt.value = il;
+      opt.textContent = il;
+      citySelect.appendChild(opt);
+    });
+  }
+
   document.getElementById('address-modal-title').textContent = addr ? 'Adresi Düzenle' : 'Yeni Adres Ekle';
   document.getElementById('addr-modal-id').value      = addr?.id      || '';
   document.getElementById('addr-modal-etiket').value  = addr?.etiket  || 'Ev';
@@ -445,6 +461,7 @@ function openAddressModal(id) {
   document.getElementById('addr-modal-il').value      = addr?.il      || '';
   document.getElementById('addr-modal-ilce').value    = addr?.ilce    || '';
   document.getElementById('addr-modal-adres').value   = addr?.adres   || '';
+  document.getElementById('addr-modal-posta').value   = addr?.posta   || '';
 
   document.getElementById('address-modal-overlay').classList.add('active');
 }
@@ -472,7 +489,8 @@ async function saveAddressFromModal() {
     telefon: document.getElementById('addr-modal-telefon').value.trim(),
     il,
     ilce,
-    adres
+    adres,
+    posta:   document.getElementById('addr-modal-posta').value.trim()
   };
 
   let addresses = [...(currentUser.addresses || [])];

@@ -170,7 +170,7 @@ function validatePaymentForm(data) {
 }
 
 /* ─── Adres form validasyonu ─── */
-const ADDRESS_REQUIRED_FIELDS = ['ad', 'soyad', 'telefon', 'email', 'adres', 'sehir', 'ilce', 'posta'];
+const ADDRESS_REQUIRED_FIELDS = ['ad', 'soyad', 'telefon', 'email', 'adres', 'sehir', 'ilce'];
 
 function validateAddressForm(data, required = ADDRESS_REQUIRED_FIELDS) {
   const errors = [];

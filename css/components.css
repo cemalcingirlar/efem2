@@ -11,10 +11,10 @@
   justify-content: center;
   gap: var(--space-2);
   padding: 11px 24px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-full);
   font-weight: 600;
   font-size: 0.9375rem;
-  transition: all var(--transition-normal);
+  transition: transform 450ms var(--ease-spring), box-shadow 450ms var(--ease-spring), background 250ms ease;
   cursor: pointer;
   border: 2px solid transparent;
   white-space: nowrap;
@@ -42,8 +42,8 @@
 }
 .btn-primary:hover {
   background: var(--primary-dark);
-  box-shadow: 0 6px 20px rgba(37,99,235,0.4);
-  transform: translateY(-1px);
+  box-shadow: 0 12px 28px -6px rgba(37,99,235,0.45);
+  transform: translateY(-2px);
 }
 
 /* Secondary */
@@ -72,11 +72,12 @@
 .btn-accent {
   background: var(--accent);
   color: var(--secondary);
-  box-shadow: 0 4px 14px rgba(245,158,11,0.3);
+  box-shadow: 0 10px 24px -6px rgba(245,158,11,0.4);
 }
 .btn-accent:hover {
   background: #D97706;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px -6px rgba(245,158,11,0.5);
 }
 
 /* Dark */
@@ -87,9 +88,9 @@
 .btn-dark:hover { background: #1e293b; }
 
 /* Boyutlar */
-.btn-sm { padding: 8px 16px; font-size: 0.8125rem; border-radius: var(--radius-sm); }
-.btn-lg { padding: 14px 32px; font-size: 1rem; border-radius: var(--radius-lg); }
-.btn-xl { padding: 16px 40px; font-size: 1.0625rem; border-radius: var(--radius-lg); }
+.btn-sm { padding: 8px 16px; font-size: 0.8125rem; border-radius: var(--radius-full); }
+.btn-lg { padding: 14px 32px; font-size: 1rem; border-radius: var(--radius-full); }
+.btn-xl { padding: 16px 40px; font-size: 1.0625rem; border-radius: var(--radius-full); }
 
 /* Icon button */
 .btn-icon {
@@ -172,13 +173,22 @@
 
 .logo-icon {
   width: 36px; height: 36px;
-  background: var(--primary);
+  background: white;
+  border: 1px solid var(--border);
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   font-size: 1.125rem;
+  overflow: hidden;
+  padding: 3px;
+}
+
+.logo-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .logo-text {
@@ -452,28 +462,30 @@
    ══════════════════════════════════════ */
 .product-card {
   background: var(--surface);
-  border-radius: var(--radius-lg);
+  border-radius: 26px;
   border: 1px solid var(--border);
-  overflow: hidden;
+  padding: 10px 10px 0;
   display: flex;
   flex-direction: column;
-  transition: all var(--transition-normal);
+  transition: transform 500ms var(--ease-spring), box-shadow 500ms var(--ease-spring), border-color 300ms ease;
   position: relative;
   cursor: pointer;
 }
 
 .product-card:hover {
   border-color: var(--primary);
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-4px);
+  box-shadow: var(--shadow-ambient);
+  transform: translateY(-6px);
 }
 
-/* Görsel */
+/* Görsel — iç "core" katman (double-bezel) */
 .product-img-wrap {
   position: relative;
   aspect-ratio: 1 / 1;
   overflow: hidden;
   background: var(--surface-2);
+  border-radius: 18px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
 }
 
 .product-img-wrap img {
@@ -661,13 +673,19 @@
    ══════════════════════════════════════ */
 .category-card {
   position: relative;
-  border-radius: var(--radius-xl);
+  border-radius: 28px;
   overflow: hidden;
   aspect-ratio: 4/3;
   cursor: pointer;
   display: flex;
   align-items: flex-end;
   text-decoration: none;
+  transition: transform 500ms var(--ease-spring), box-shadow 500ms var(--ease-spring);
+}
+
+.category-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-ambient-lg);
 }
 
 .category-card img {
@@ -700,7 +718,19 @@
   width: 100%;
 }
 
-.category-icon { font-size: 2.5rem; margin-bottom: var(--space-2); }
+.category-icon {
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.25);
+  backdrop-filter: blur(8px);
+  border-radius: var(--radius-full);
+  margin-bottom: var(--space-3);
+}
+.category-icon .icon { width: 24px; height: 24px; stroke-width: 1.6; }
 .category-name { font-size: 1.375rem; font-weight: 700; margin-bottom: var(--space-1); }
 .category-count { font-size: 0.875rem; opacity: 0.75; }
 .category-arrow {
@@ -718,6 +748,26 @@
 .category-card:hover .category-arrow {
   opacity: 1;
   transform: translateX(0);
+}
+
+/* Görsel yoksa gradyan zemin + büyük ikon watermark */
+.category-bg-fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.category-bg-fallback.saat     { background: linear-gradient(135deg,#1e3a8a,#2563eb); }
+.category-bg-fallback.kulaklik { background: linear-gradient(135deg,#1e1b4b,#4338ca); }
+.category-bg-fallback.tablet   { background: linear-gradient(135deg,#0c4a6e,#0284c7); }
+.category-bg-fallback .icon {
+  width: 40%;
+  height: 40%;
+  max-width: 140px;
+  max-height: 140px;
+  stroke-width: 1;
+  color: rgba(255,255,255,0.18);
 }
 
 /* ══════════════════════════════════════
@@ -892,9 +942,26 @@ footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
   font-size: 0.8125rem;
   color: rgba(255,255,255,0.4);
 }
+
+.footer-legal-links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.footer-legal-links a {
+  color: rgba(255,255,255,0.5);
+  text-decoration: none;
+  transition: color 200ms var(--ease-spring);
+}
+
+.footer-legal-links a:hover { color: white; }
 
 .footer-payment-icons {
   display: flex;
@@ -1075,6 +1142,13 @@ footer {
 .price-row .label { color: var(--text-secondary); }
 .price-row.free   { color: var(--success); font-weight: 500; }
 
+.price-row-note {
+  text-align: right;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: var(--space-1);
+}
+
 /* Kupon */
 .coupon-input-row {
   display: flex;
@@ -1098,6 +1172,25 @@ footer {
   background: var(--surface);
   outline: none;
 }
+
+.cart-coupon-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: var(--space-2);
+}
+
+.cart-trust-badges {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.cart-trust-badges span { display: inline-flex; align-items: center; gap: 4px; }
 
 /* ══════════════════════════════════════
    TAB BİLEŞENİ
@@ -1203,6 +1296,7 @@ footer {
   .navbar-search { display: none; }
   .navbar-nav    { display: none; }
   .hamburger     { display: flex; }
+  .navbar-actions { gap: var(--space-2); }
 
   .footer-top {
     grid-template-columns: 1fr;
@@ -1229,3 +1323,37 @@ footer {
 
   .filter-sidebar { position: static; }
 }
+
+/* Çok dar ekranlarda (< 420px) navbar Giriş Yap / Sepet metinleri
+   sığmayıp taşabiliyor — ikon-only'e düşür. */
+@media (max-width: 420px) {
+  .navbar-actions .nav-label { display: none; }
+  #nav-login-link,
+  .cart-btn,
+  #nav-user-menu .btn { padding-left: 12px; padding-right: 12px; gap: 0; }
+}
+
+/* ─── Yukarı kaydır butonu ─── */
+.scroll-top-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: var(--z-sticky);
+  display: none;
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  box-shadow: var(--shadow-lg);
+}
+.scroll-top-btn.visible { display: flex !important; }
+
+/* ─── Giriş / kayıt ekranı logosu ─── */
+.logo-icon-lg {
+  width: 52px;
+  height: 52px;
+  font-size: 1.625rem;
+  border-radius: var(--radius-lg);
+}
+
+.auth-logo .logo-name { font-size: 1.5rem; }
+.auth-logo .logo-sub  { font-size: 0.8125rem; }

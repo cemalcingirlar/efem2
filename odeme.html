@@ -4,10 +4,121 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ödeme – efemiletisim.com</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/logos/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="assets/logos/favicon-512.png">
+  <link rel="apple-touch-icon" href="assets/logos/favicon-180.png">
   <meta name="description" content="Güvenli ödeme. İyzico altyapısı ile 256-bit SSL şifreleme.">
+  <meta name="robots" content="noindex, follow">
+  <link rel="canonical" href="https://efemiletisim.com/odeme.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="efemiletisim.com">
+  <meta property="og:locale" content="tr_TR">
+  <meta property="og:title" content="Ödeme – efemiletisim.com">
+  <meta property="og:description" content="Güvenli ödeme. İyzico altyapısı ile 256-bit SSL şifreleme.">
+  <meta property="og:url" content="https://efemiletisim.com/odeme.html">
+  <meta property="og:image" content="https://efemiletisim.com/assets/logos/og-image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Ödeme – efemiletisim.com">
+  <meta name="twitter:description" content="Güvenli ödeme. İyzico altyapısı ile 256-bit SSL şifreleme.">
+  <meta name="twitter:image" content="https://efemiletisim.com/assets/logos/og-image.jpg">
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/pages.css">
+  <style>
+    /* ─── Ödeme sayfası — özel bileşenler ─── */
+    .checkout-navbar-right { margin-left: auto; display: flex; align-items: center; gap: var(--space-3); }
+    .checkout-secure-note { display: flex; align-items: center; gap: 6px; font-size: 0.875rem; color: var(--text-muted); }
+    .checkout-breadcrumb { padding: 0 0 var(--space-3); }
+
+    .delivery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+    .payment-method-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin-bottom: var(--space-6); }
+    .address-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+    .form-group-full { grid-column: 1 / -1; }
+    .checkout-step-actions { margin-top: var(--space-5); }
+    .checkout-actions-row { display: grid; grid-template-columns: 1fr auto; gap: var(--space-3); margin-top: var(--space-5); }
+
+    .card-preview {
+      position: relative;
+      overflow: hidden;
+      min-height: 160px;
+      padding: var(--space-6);
+      margin-bottom: var(--space-6);
+      color: white;
+      background: linear-gradient(135deg, #1e3a8a, #2563eb);
+      border-radius: var(--radius-xl);
+    }
+    .card-preview::before,
+    .card-preview::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+    }
+    .card-preview::before { top: -30px; right: -30px; width: 150px; height: 150px; }
+    .card-preview::after  { bottom: -40px; left: 40px; width: 200px; height: 200px; background: rgba(255,255,255,0.03); }
+    .card-preview-label  { position: relative; font-size: 0.75rem; opacity: 0.7; margin-bottom: var(--space-4); letter-spacing: 0.1em; }
+    .card-preview-number { position: relative; font-size: 1.25rem; font-weight: 700; letter-spacing: 0.15em; margin-bottom: var(--space-4); }
+    .card-preview-row { position: relative; display: flex; justify-content: space-between; align-items: flex-end; }
+    .card-preview-row .field-label { font-size: 0.625rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 0.05em; }
+    .card-preview-row .field-value { font-weight: 600; font-size: 0.9375rem; margin-top: 2px; }
+    .card-preview-row .align-right { text-align: right; }
+
+    .card-form-grid  { display: grid; gap: var(--space-4); }
+    .card-form-row   { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+    .card-name-input { text-transform: uppercase; }
+
+    .eft-hero {
+      position: relative;
+      overflow: hidden;
+      padding: var(--space-6);
+      margin-bottom: var(--space-6);
+      color: white;
+      background: linear-gradient(135deg, #064e3b, #065f46);
+      border-radius: var(--radius-xl);
+    }
+    .eft-hero::before {
+      content: '';
+      position: absolute;
+      top: -20px; right: -20px;
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.05);
+    }
+    .eft-hero .icon { position: relative; width: 2rem; height: 2rem; margin-bottom: var(--space-3); }
+    .eft-hero-title { position: relative; font-weight: 700; font-size: 1.125rem; margin-bottom: var(--space-2); }
+    .eft-hero-desc  { position: relative; font-size: 0.875rem; opacity: 0.85; }
+
+    .bank-info-list { display: grid; gap: var(--space-3); margin-bottom: var(--space-5); }
+    .bank-info-card { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-4); }
+    .bank-info-name { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--space-3); }
+    .bank-info-rows { display: grid; gap: var(--space-2); }
+    .bank-info-row  { display: flex; justify-content: space-between; align-items: center; }
+    .bank-info-row .label { font-size: 0.875rem; color: var(--text-muted); }
+    .bank-info-row .value { font-weight: 600; font-size: 0.9375rem; }
+    .bank-info-row .value.mono { font-family: monospace; }
+
+    .eft-warning {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-2);
+      background: rgba(234,179,8,0.1);
+      border: 1px solid rgba(234,179,8,0.3);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      font-size: 0.875rem;
+      color: var(--warning, #d97706);
+      margin-bottom: var(--space-4);
+    }
+
+    .success-total   { color: var(--primary); }
+    .success-actions { display: flex; gap: var(--space-4); justify-content: center; flex-wrap: wrap; }
+    .checkout-summary-row        { align-items: flex-start; padding: var(--space-3) 0; border-bottom: 1px solid var(--border); }
+    .checkout-summary-item-name  { font-size: 0.875rem; font-weight: 500; }
+    .checkout-summary-item-qty   { font-size: 0.75rem; color: var(--text-muted); }
+    .checkout-summary-item-price { font-weight: 600; }
+  </style>
 </head>
 <body>
 
@@ -15,14 +126,14 @@
   <div class="container">
     <div class="navbar-inner">
       <a href="index.html" class="navbar-logo">
-        <div class="logo-icon">📱</div>
+        <div class="logo-icon"><img src="assets/logos/icon-square.png" alt="Efem İletişim" loading="eager"></div>
         <div class="logo-text">
-          <span class="logo-name" style="display:block;line-height:1">efem</span>
-          <span class="logo-sub" style="display:block;line-height:1">iletişim</span>
+          <span class="logo-name">efem</span>
+          <span class="logo-sub">iletişim</span>
         </div>
       </a>
-      <div style="margin-left:auto;display:flex;align-items:center;gap:var(--space-3)">
-        <span style="font-size:0.875rem;color:var(--text-muted)">🔒 Güvenli Ödeme</span>
+      <div class="checkout-navbar-right">
+        <span class="checkout-secure-note"><svg class="icon" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Güvenli Ödeme</span>
         <a href="sepet.html" class="btn btn-ghost btn-sm">← Sepete Dön</a>
       </div>
     </div>
@@ -32,14 +143,14 @@
 <main>
   <div class="page-header">
     <div class="container">
-      <div class="breadcrumb" style="padding:0 0 var(--space-3)">
-        <a href="index.html">🏠 Ana Sayfa</a>
+      <div class="breadcrumb checkout-breadcrumb">
+        <a href="index.html"><svg class="icon" viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9h12v-9"/></svg> Ana Sayfa</a>
         <span class="sep">›</span>
         <a href="sepet.html">Sepet</a>
         <span class="sep">›</span>
         <span class="current">Ödeme</span>
       </div>
-      <h1>💳 Güvenli Ödeme</h1>
+      <h1><svg class="icon" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg> Güvenli Ödeme</h1>
     </div>
   </div>
 
@@ -75,23 +186,25 @@
               <span class="num">1</span>
               Teslimat Yöntemi
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)">
+            <div class="delivery-grid">
               <!-- Kargo -->
-              <label id="delivery-kargo-label" class="delivery-option active" onclick="selectDelivery('kargo')" style="display:flex;align-items:flex-start;gap:var(--space-3);padding:var(--space-4);background:var(--surface-2);border:2px solid var(--primary);border-radius:var(--radius-lg);cursor:pointer;transition:border-color .2s,background .2s">
-                <input type="radio" name="delivery" value="kargo" id="delivery-kargo" checked style="margin-top:3px;accent-color:var(--primary)">
+              <label id="delivery-kargo-label" class="delivery-option-card active" onclick="selectDelivery('kargo')">
+                <input type="radio" name="delivery" value="kargo" id="delivery-kargo" checked>
+                <svg class="icon" viewBox="0 0 24 24"><rect x="2" y="8" width="12" height="8" rx="1"/><path d="M14 11h4l3 3v2h-2"/><circle cx="6" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>
                 <div>
-                  <div style="font-weight:700;color:var(--text-primary);margin-bottom:4px">🚚 Ücretsiz Kargo</div>
+                  <div style="font-weight:700;color:var(--text-primary);margin-bottom:4px">Ücretsiz Kargo</div>
                   <div style="font-size:0.8125rem;color:var(--text-muted)">2–4 iş günü içinde kapınıza</div>
                   <div style="font-size:0.875rem;font-weight:700;color:var(--success);margin-top:4px">Ücretsiz</div>
                 </div>
               </label>
               <!-- Mağazadan Teslim -->
-              <label id="delivery-magaza-label" class="delivery-option" onclick="selectDelivery('magaza')" style="display:flex;align-items:flex-start;gap:var(--space-3);padding:var(--space-4);background:var(--surface-2);border:2px solid var(--border);border-radius:var(--radius-lg);cursor:pointer;transition:border-color .2s,background .2s">
-                <input type="radio" name="delivery" value="magaza" id="delivery-magaza" style="margin-top:3px;accent-color:var(--primary)">
+              <label id="delivery-magaza-label" class="delivery-option-card" onclick="selectDelivery('magaza')">
+                <input type="radio" name="delivery" value="magaza" id="delivery-magaza">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M4 9l1-5h14l1 5"/><path d="M4 9a2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0"/><path d="M5 9v10h14V9"/></svg>
                 <div>
-                  <div style="font-weight:700;color:var(--text-primary);margin-bottom:4px">🏪 Mağazadan Teslim Al</div>
+                  <div style="font-weight:700;color:var(--text-primary);margin-bottom:4px">Mağazadan Teslim Al</div>
                   <div style="font-size:0.8125rem;color:var(--text-muted)">efem iletişim mağazasından teslim al</div>
-                  <div style="font-size:0.75rem;color:var(--text-muted);margin-top:6px">📍 Mağaza Adresimiz:<br>Atatürk Cad. No:12, Merkez</div>
+                  <div style="font-size:0.75rem;color:var(--text-muted);margin-top:6px;display:flex;align-items:flex-start;gap:4px"><svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 21s7-6.5 7-11a7 7 0 1 0-14 0c0 4.5 7 11 7 11Z"/><circle cx="12" cy="10" r="2.3"/></svg> Mağaza Adresimiz:<br><span data-text="address"></span></div>
                 </div>
               </label>
             </div>
@@ -100,9 +213,9 @@
           <!-- Adres Formu (kargoda görünür) -->
           <div class="checkout-section" id="address-form-section">
             <div class="checkout-section-title" style="margin-bottom:var(--space-4)">
-              📦 Teslimat Adresi
+              <svg class="icon" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4-9-4Z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg> Teslimat Adresi
             </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4)">
+            <div class="address-form-grid">
               <div class="form-group">
                 <label class="form-label">Ad <span class="required">*</span></label>
                 <input type="text" class="form-input" id="addr-ad" placeholder="Adınız">
@@ -113,12 +226,20 @@
                 <input type="text" class="form-input" id="addr-soyad" placeholder="Soyadınız">
                 <span class="form-error" id="addr-soyad-error"></span>
               </div>
-              <div class="form-group" style="grid-column:1/-1">
+              <div class="form-group">
                 <label class="form-label">Telefon <span class="required">*</span></label>
-                <input type="tel" class="form-input" id="addr-telefon" placeholder="05XX XXX XX XX">
+                <input type="tel" class="form-input" id="addr-telefon" placeholder="05XX XXX XX XX"
+                       autocomplete="tel">
                 <span class="form-error" id="addr-telefon-error"></span>
               </div>
-              <div class="form-group" style="grid-column:1/-1">
+              <div class="form-group">
+                <label class="form-label">E-posta <span class="required">*</span></label>
+                <input type="email" class="form-input" id="addr-email" placeholder="ornek@mail.com"
+                       autocomplete="email">
+                <span class="form-hint">Sipariş onayı ve kargo takibi bu adrese gönderilir.</span>
+                <span class="form-error" id="addr-email-error"></span>
+              </div>
+              <div class="form-group form-group-full">
                 <label class="form-label">Adres <span class="required">*</span></label>
                 <textarea class="form-textarea" id="addr-adres" placeholder="Mahalle, sokak, bina no, daire..." rows="3"></textarea>
                 <span class="form-error" id="addr-adres-error"></span>
@@ -169,53 +290,51 @@
             </div>
 
             <!-- Ödeme Yöntemi Sekmeleri -->
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);margin-bottom:var(--space-6)">
-              <button id="tab-kart" onclick="selectPaymentMethod('kart')" class="btn btn-primary" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:var(--space-4)">
-                💳 Kredi / Banka Kartı
+            <div class="payment-method-grid">
+              <button id="tab-kart" onclick="selectPaymentMethod('kart')" class="btn btn-primary" style="gap:8px">
+                <svg class="icon" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg> Kredi / Banka Kartı
               </button>
-              <button id="tab-eft" onclick="selectPaymentMethod('eft')" class="btn btn-ghost" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:var(--space-4);border:2px solid var(--border)">
-                🏦 EFT / Havale
+              <button id="tab-eft" onclick="selectPaymentMethod('eft')" class="btn btn-ghost" style="gap:8px;border:2px solid var(--border)">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M3 10l9-6 9 6"/><path d="M5 10v9M9 10v9M15 10v9M19 10v9"/><path d="M3 19h18"/></svg> EFT / Havale
               </button>
             </div>
 
             <!-- Kredi Kartı Paneli -->
             <div id="panel-kart">
               <!-- Kart Önizleme -->
-              <div style="background:linear-gradient(135deg,#1e3a8a,#2563eb);border-radius:var(--radius-xl);padding:var(--space-6);color:white;margin-bottom:var(--space-6);position:relative;overflow:hidden;min-height:160px">
-                <div style="position:absolute;top:-30px;right:-30px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,0.05)"></div>
-                <div style="position:absolute;bottom:-40px;left:40px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,0.03)"></div>
-                <div style="font-size:0.75rem;opacity:0.7;margin-bottom:var(--space-4);letter-spacing:0.1em">KART BİLGİLERİ</div>
-                <div id="preview-number" style="font-size:1.25rem;font-weight:700;letter-spacing:0.15em;margin-bottom:var(--space-4)">•••• •••• •••• ••••</div>
-                <div style="display:flex;justify-content:space-between;align-items:flex-end">
+              <div class="card-preview">
+                <div class="card-preview-label">KART BİLGİLERİ</div>
+                <div id="preview-number" class="card-preview-number">•••• •••• •••• ••••</div>
+                <div class="card-preview-row">
                   <div>
-                    <div style="font-size:0.625rem;opacity:0.6;text-transform:uppercase;letter-spacing:0.05em">Kart Sahibi</div>
-                    <div id="preview-name" style="font-weight:600;font-size:0.9375rem;margin-top:2px">KART SAHİBİ</div>
+                    <div class="field-label">Kart Sahibi</div>
+                    <div id="preview-name" class="field-value">KART SAHİBİ</div>
                   </div>
-                  <div style="text-align:right">
-                    <div style="font-size:0.625rem;opacity:0.6;text-transform:uppercase;letter-spacing:0.05em">Son Tarih</div>
-                    <div id="preview-expiry" style="font-weight:600;font-size:0.9375rem;margin-top:2px">AA/YY</div>
+                  <div class="align-right">
+                    <div class="field-label">Son Tarih</div>
+                    <div id="preview-expiry" class="field-value">AA/YY</div>
                   </div>
                 </div>
               </div>
 
               <!-- Kart Formu -->
-              <div style="display:grid;gap:var(--space-4)">
+              <div class="card-form-grid">
                 <div class="form-group">
                   <label class="form-label">Kart Numarası <span class="required">*</span></label>
                   <div class="card-number-wrap">
                     <input type="text" class="form-input" id="card-number"
                            placeholder="1234 5678 9012 3456" maxlength="19">
-                    <div class="card-type-icons" id="card-type-icons">💳</div>
+                    <div class="card-type-icons" id="card-type-icons"><svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></div>
                   </div>
                   <span class="form-error" id="card-number-error"></span>
                 </div>
                 <div class="form-group">
                   <label class="form-label">Kart Üzerindeki Ad <span class="required">*</span></label>
-                  <input type="text" class="form-input" id="card-name"
-                         placeholder="JOHN DOE" style="text-transform:uppercase">
+                  <input type="text" class="form-input card-name-input" id="card-name"
+                         placeholder="JOHN DOE">
                   <span class="form-error" id="card-name-error"></span>
                 </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4)">
+                <div class="card-form-row">
                   <div class="form-group">
                     <label class="form-label">Son Kullanma <span class="required">*</span></label>
                     <input type="text" class="form-input" id="card-expiry"
@@ -233,7 +352,7 @@
 
               <!-- İyzico badge -->
               <div class="iyzico-badge">
-                <span class="lock">🔒</span>
+                <span class="lock"><svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
                 Ödemeleriniz İyzico güvencesiyle işlenmektedir &nbsp;·&nbsp; 256-bit SSL
               </div>
 
@@ -243,66 +362,75 @@
 
             <!-- EFT / Havale Paneli -->
             <div id="panel-eft" style="display:none">
-              <div style="background:linear-gradient(135deg,#064e3b,#065f46);border-radius:var(--radius-xl);padding:var(--space-6);color:white;margin-bottom:var(--space-6);position:relative;overflow:hidden">
-                <div style="position:absolute;top:-20px;right:-20px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,0.05)"></div>
-                <div style="font-size:2rem;margin-bottom:var(--space-3)">🏦</div>
-                <div style="font-weight:700;font-size:1.125rem;margin-bottom:var(--space-2)">EFT / Havale ile Öde</div>
-                <div style="font-size:0.875rem;opacity:0.85">Aşağıdaki banka hesabına sipariş tutarını transfer edin.<br>Açıklama kısmına sipariş numaranızı yazmayı unutmayın.</div>
+              <div class="eft-hero">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M3 10l9-6 9 6"/><path d="M5 10v9M9 10v9M15 10v9M19 10v9"/><path d="M3 19h18"/></svg>
+                <div class="eft-hero-title">EFT / Havale ile Öde</div>
+                <div class="eft-hero-desc">Aşağıdaki banka hesabına sipariş tutarını transfer edin.<br>Açıklama kısmına sipariş numaranızı yazmayı unutmayın.</div>
               </div>
 
               <!-- Banka Bilgileri -->
-              <div style="display:grid;gap:var(--space-3);margin-bottom:var(--space-5)">
-                <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-4)">
-                  <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:var(--space-3)">Ziraat Bankası</div>
-                  <div style="display:grid;gap:var(--space-2)">
-                    <div style="display:flex;justify-content:space-between;align-items:center">
-                      <span style="font-size:0.875rem;color:var(--text-muted)">Hesap Adı</span>
-                      <span style="font-weight:600;font-size:0.9375rem">Efem İletişim Ltd. Şti.</span>
+              <div class="bank-info-list">
+                <div class="bank-info-card">
+                  <div class="bank-info-name">Ziraat Bankası</div>
+                  <div class="bank-info-rows">
+                    <div class="bank-info-row">
+                      <span class="label">Hesap Adı</span>
+                      <span class="value">Efem İletişim Ltd. Şti.</span>
                     </div>
-                    <div style="display:flex;justify-content:space-between;align-items:center">
-                      <span style="font-size:0.875rem;color:var(--text-muted)">IBAN</span>
+                    <div class="bank-info-row">
+                      <span class="label">IBAN</span>
                       <div style="display:flex;align-items:center;gap:var(--space-2)">
-                        <span style="font-weight:600;font-size:0.9375rem;font-family:monospace" id="iban-ziraat">TR12 0001 0023 4567 8901 23</span>
-                        <button onclick="copyIBAN('iban-ziraat')" title="Kopyala" style="background:none;border:none;cursor:pointer;font-size:1rem;padding:4px">📋</button>
+                        <span class="value mono" id="iban-ziraat">TR12 0001 0023 4567 8901 23</span>
+                        <button onclick="copyIBAN('iban-ziraat')" title="Kopyala" class="iban-copy-btn"><svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V5a2 2 0 0 1 2-2h9"/></svg></button>
                       </div>
                     </div>
-                    <div style="display:flex;justify-content:space-between;align-items:center">
-                      <span style="font-size:0.875rem;color:var(--text-muted)">Şube / Hesap No</span>
-                      <span style="font-weight:600;font-size:0.9375rem">0023 / 45678901</span>
+                    <div class="bank-info-row">
+                      <span class="label">Şube / Hesap No</span>
+                      <span class="value">0023 / 45678901</span>
                     </div>
                   </div>
                 </div>
 
-                <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-4)">
-                  <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:var(--space-3)">İş Bankası</div>
-                  <div style="display:grid;gap:var(--space-2)">
-                    <div style="display:flex;justify-content:space-between;align-items:center">
-                      <span style="font-size:0.875rem;color:var(--text-muted)">Hesap Adı</span>
-                      <span style="font-weight:600;font-size:0.9375rem">Efem İletişim Ltd. Şti.</span>
+                <div class="bank-info-card">
+                  <div class="bank-info-name">İş Bankası</div>
+                  <div class="bank-info-rows">
+                    <div class="bank-info-row">
+                      <span class="label">Hesap Adı</span>
+                      <span class="value">Efem İletişim Ltd. Şti.</span>
                     </div>
-                    <div style="display:flex;justify-content:space-between;align-items:center">
-                      <span style="font-size:0.875rem;color:var(--text-muted)">IBAN</span>
+                    <div class="bank-info-row">
+                      <span class="label">IBAN</span>
                       <div style="display:flex;align-items:center;gap:var(--space-2)">
-                        <span style="font-weight:600;font-size:0.9375rem;font-family:monospace" id="iban-isbank">TR98 0006 4000 0012 3456 7890</span>
-                        <button onclick="copyIBAN('iban-isbank')" title="Kopyala" style="background:none;border:none;cursor:pointer;font-size:1rem;padding:4px">📋</button>
+                        <span class="value mono" id="iban-isbank">TR98 0006 4000 0012 3456 7890</span>
+                        <button onclick="copyIBAN('iban-isbank')" title="Kopyala" class="iban-copy-btn"><svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V5a2 2 0 0 1 2-2h9"/></svg></button>
                       </div>
                     </div>
-                    <div style="display:flex;justify-content:space-between;align-items:center">
-                      <span style="font-size:0.875rem;color:var(--text-muted)">Şube / Hesap No</span>
-                      <span style="font-weight:600;font-size:0.9375rem">0064 / 12345678</span>
+                    <div class="bank-info-row">
+                      <span class="label">Şube / Hesap No</span>
+                      <span class="value">0064 / 12345678</span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div style="background:rgba(234,179,8,0.1);border:1px solid rgba(234,179,8,0.3);border-radius:var(--radius-md);padding:var(--space-4);font-size:0.875rem;color:var(--warning, #d97706);margin-bottom:var(--space-4)">
-                ⚠️ EFT ile yapılan ödemeler banka işlem saatlerine göre <strong>1–2 iş günü</strong> içinde onaylanır. Siparişiniz ödeme onaylandıktan sonra hazırlanmaya başlar.
+              <div class="eft-warning">
+                <svg class="icon icon-sm" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:2px"><path d="M12 3l10 18H2L12 3Z"/><path d="M12 9v5"/><circle cx="12" cy="17.3" r="0.3" fill="currentColor" stroke="none"/></svg>
+                <span>EFT ile yapılan ödemeler banka işlem saatlerine göre <strong>1–2 iş günü</strong> içinde onaylanır. Siparişiniz ödeme onaylandıktan sonra hazırlanmaya başlar.</span>
               </div>
             </div>
 
-            <div style="display:grid;grid-template-columns:1fr auto;gap:var(--space-3);margin-top:var(--space-5)">
+            <label class="form-check">
+              <input type="checkbox" id="order-terms">
+              <span class="form-check-label">
+                <a href="mesafeli-satis-sozlesmesi.html" target="_blank" rel="noopener" style="color:var(--primary)">Mesafeli Satış Sözleşmesi</a>'ni ve
+                <a href="iptal-iade.html" target="_blank" rel="noopener" style="color:var(--primary)">İptal/İade Koşulları</a>'nı okudum, kabul ediyorum.
+              </span>
+            </label>
+            <span id="order-terms-error" style="color:var(--error);font-size:0.875rem;display:none">Devam etmek için sözleşmeyi onaylamalısınız.</span>
+
+            <div class="checkout-actions-row">
               <button class="btn btn-primary btn-lg" id="pay-btn" onclick="handlePayment()">
-                🔒 Siparişi Tamamla
+                <svg class="icon" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Siparişi Tamamla
               </button>
               <button class="btn btn-ghost" onclick="goToStep1()">← Geri</button>
             </div>
@@ -312,7 +440,7 @@
         <!-- Adım 3: Başarı -->
         <div id="step-3" class="checkout-step hidden">
           <div class="success-page">
-            <div class="success-icon-wrap">✅</div>
+            <div class="success-icon-wrap"><svg class="icon" viewBox="0 0 24 24" style="width:3rem;height:3rem;color:var(--success)"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9"/></svg></div>
             <h2 style="color:var(--success);margin-bottom:var(--space-3)">Siparişiniz Alındı!</h2>
             <p style="font-size:1rem;margin-bottom:var(--space-2)">
               Teşekkürler! Siparişiniz başarıyla oluşturuldu.
@@ -321,9 +449,9 @@
             <p style="color:var(--text-muted);margin-bottom:var(--space-8)">
               Sipariş durumunuzu profilinizdeki <strong>Siparişlerim</strong> bölümünden takip edebilirsiniz.
             </p>
-            <div style="display:flex;gap:var(--space-4);justify-content:center;flex-wrap:wrap">
-              <a href="profil.html?tab=orders" class="btn btn-primary btn-lg">📦 Siparişlerimi Gör</a>
-              <a href="urunler.html" class="btn btn-ghost btn-lg">🛍 Alışverişe Devam Et</a>
+            <div class="success-actions">
+              <a href="profil.html?tab=orders" class="btn btn-primary btn-lg"><svg class="icon" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4-9-4Z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg> Siparişlerimi Gör</a>
+              <a href="urunler.html" class="btn btn-ghost btn-lg"><svg class="icon" viewBox="0 0 24 24"><path d="M4 9l1-5h14l1 5"/><path d="M4 9a2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0"/><path d="M5 9v10h14V9"/></svg> Alışverişe Devam Et</a>
             </div>
           </div>
         </div>
@@ -339,13 +467,14 @@
             <span id="checkout-subtotal">-</span>
           </div>
           <div class="price-row free">
-            <span class="label">🚚 Kargo</span>
+            <span class="label"><svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="2" y="8" width="12" height="8" rx="1"/><path d="M14 11h4l3 3v2h-2"/><circle cx="6" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg> Kargo</span>
             <span>Ücretsiz</span>
           </div>
           <div class="price-row total">
             <span>Toplam</span>
-            <span id="checkout-total" style="color:var(--primary)">-</span>
+            <span id="checkout-total" class="success-total">-</span>
           </div>
+          <div class="price-row-note">Tüm fiyatlara KDV dahildir.</div>
         </div>
       </div>
     </div>
@@ -354,25 +483,42 @@
 
 <div id="toast-container"></div>
 
+<script src="js/site-config.js"></script>
 <script src="js/data.js"></script>
 <script src="js/cart.js"></script>
 <script src="js/products.js"></script>
 <script src="js/payment.js"></script>
 <script src="js/main.js"></script>
+<script type="module" src="js/auth.js"></script>
 <script type="module">
-import { onAuthChange, saveOrderToFirestore } from './js/firebase-auth.js';
-// Firebase auth state: kullanıcı yoksa hesap sayfasına yönlendir
-onAuthChange(user => {
-  if (!user || !user.emailVerified) {
-    window.location.href = 'hesap.html?redirect=' + encodeURIComponent(window.location.href);
-  } else {
-    window._fbUser = user;
+import { saveOrderToFirestore } from './js/firebase-auth.js';
+import { authReady, isLoggedIn, getCurrentUser } from './js/auth.js';
+
+/* Ödeme sayfası hem üyelere hem misafirlere açıktır.
+   Misafir siparişlerinde sipariş kaydı Firestore'a yazılamaz; sipariş
+   numarası ve özeti kullanıcıya e-posta ile iletilmek üzere döndürülür. */
+window.saveOrder = async (orderData) => {
+  await authReady;
+
+  if (isLoggedIn()) {
+    const order = await saveOrderToFirestore(getCurrentUser().uid, orderData);
+    if (!order) throw new Error('Sipariş Firestore\'a kaydedilemedi.');
+    return order;
   }
-});
-// saveOrder'u Firebase'e bırak
-window._firebaseSaveOrder = async (orderData) => {
-  if (!window._fbUser) return null;
-  return await saveOrderToFirestore(window._fbUser.uid, orderData);
+
+  return {
+    id:            'EFM' + Date.now().toString().slice(-6),
+    date:          new Date().toISOString(),
+    status:        'processing',
+    statusLabel:   'Hazırlanıyor',
+    guest:         true,
+    items:         orderData.items,
+    total:         orderData.total,
+    address:       orderData.address       || null,
+    delivery:      orderData.delivery      || 'kargo',
+    paymentMethod: orderData.paymentMethod || 'kart',
+    paymentId:     orderData.paymentId     || null
+  };
 };
 </script>
 <script>
@@ -381,7 +527,7 @@ let currentStep  = 1;
 let deliveryMode = 'kargo';  // 'kargo' | 'magaza'
 let paymentMode  = 'kart';   // 'kart'  | 'eft'
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const cart = getCart();
   if (cart.length === 0) { window.location.href = 'sepet.html'; return; }
 
@@ -391,14 +537,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // Test kart bilgisi ekle
   document.getElementById('test-cards-info').innerHTML = showTestCards();
 
-  // Kullanıcı bilgilerini otomatik doldur
+  setStep(1);
+
+  // Oturum hazır olduğunda üye bilgilerini otomatik doldur
+  await window.authReady;
   const user = getCurrentUser();
   if (user) {
-    document.getElementById('addr-ad').value    = user.ad   || '';
+    document.getElementById('addr-ad').value    = user.ad    || '';
     document.getElementById('addr-soyad').value = user.soyad || '';
+    document.getElementById('addr-email').value = user.email || '';
   }
-
-  setStep(1);
 });
 
 /* ─── Teslimat yöntemi seçici ─── */
@@ -433,7 +581,7 @@ function selectPaymentMethod(mode) {
 
   // Buton metnini güncelle
   document.getElementById('pay-btn').textContent =
-    isKart ? '🔒 Siparişi Tamamla' : '📋 Siparişi Onayla (EFT ile Öde)';
+    isKart ? 'Siparişi Tamamla' : 'Siparişi Onayla (EFT ile Öde)';
 }
 
 /* ─── IBAN kopyala ─── */
@@ -451,12 +599,12 @@ function renderCheckoutSummary() {
   const total     = getCartTotal();
 
   document.getElementById('checkout-items-list').innerHTML = cart.map(item => `
-    <div class="price-row" style="align-items:flex-start;padding:var(--space-3) 0;border-bottom:1px solid var(--border)">
+    <div class="price-row checkout-summary-row">
       <div>
-        <div style="font-size:0.875rem;font-weight:500">${item.name}</div>
-        <div style="font-size:0.75rem;color:var(--text-muted)">${item.qty} adet</div>
+        <div class="checkout-summary-item-name">${item.name}</div>
+        <div class="checkout-summary-item-qty">${item.qty} adet</div>
       </div>
-      <span style="font-weight:600">${formatPrice(item.price * item.qty)}</span>
+      <span class="checkout-summary-item-price">${formatPrice(item.price * item.qty)}</span>
     </div>
   `).join('');
 
@@ -495,6 +643,7 @@ function goToStep2() {
       ad:      document.getElementById('addr-ad').value,
       soyad:   document.getElementById('addr-soyad').value,
       telefon: document.getElementById('addr-telefon').value,
+      email:   document.getElementById('addr-email').value,
       adres:   document.getElementById('addr-adres').value,
       sehir:   document.getElementById('addr-sehir').value,
       ilce:    document.getElementById('addr-ilce').value,
@@ -509,38 +658,55 @@ function goToStep2() {
     }
     addressData = data;
   } else {
-    // Mağazadan teslim: sadece ad/soyad/telefon yeterli
-    const ad      = document.getElementById('addr-ad').value.trim();
-    const soyad   = document.getElementById('addr-soyad').value.trim();
-    addressData = { ad, soyad, teslimat: 'magaza' };
+    // Mağazadan teslim: ad/soyad/telefon/e-posta yeterli
+    const data = {
+      ad:       document.getElementById('addr-ad').value,
+      soyad:    document.getElementById('addr-soyad').value,
+      telefon:  document.getElementById('addr-telefon').value,
+      email:    document.getElementById('addr-email').value,
+      teslimat: 'magaza'
+    };
+
+    const errors = validateAddressForm(data, ['ad', 'soyad', 'telefon', 'email']);
+    if (errors.length > 0) {
+      showFormErrors(errors);
+      showToast('Lütfen ad, soyad, telefon ve e-posta alanlarını doldurun.', 'error');
+      return;
+    }
+    addressData = data;
   }
 
   setStep(2);
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function handlePayment() {
+async function handlePayment() {
+  const termsError = document.getElementById('order-terms-error');
+  if (!document.getElementById('order-terms').checked) {
+    termsError.style.display = 'block';
+    document.getElementById('order-terms').closest('label').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    showToast('Devam etmek için Mesafeli Satış Sözleşmesi onayı gerekli.', 'error');
+    return;
+  }
+  termsError.style.display = 'none';
+
   const total = getCartTotal();
 
   if (paymentMode === 'eft') {
     // EFT siparişi
-    const order = window._firebaseSaveOrder
-      ? await window._firebaseSaveOrder({
-          items:         getCart(),
-          total:         total,
-          address:       addressData,
-          delivery:      deliveryMode,
-          paymentMethod: 'eft',
-          paymentId:     'EFT-PENDING-' + Date.now()
-        })
-      : saveOrder({ items: getCart(), total, address: addressData, delivery: deliveryMode, paymentMethod: 'eft', paymentId: 'EFT-PENDING-' + Date.now() });
+    const order = await saveOrder({
+      items:         getCart(),
+      total:         total,
+      address:       addressData,
+      delivery:      deliveryMode,
+      paymentMethod: 'eft',
+      paymentId:     'EFT-PENDING-' + Date.now()
+    });
     clearCart();
-    if (order) {
-      document.getElementById('order-id-display').textContent =
-        `Sipariş No: ${order.id} · EFT ile ödeme bekleniyor`;
-    }
+    document.getElementById('order-id-display').textContent =
+      `Sipariş No: ${order.id} · EFT ile ödeme bekleniyor`;
     setStep(3);
-    showToast('Siparişiniz oluşturuldu! EFT transferi sonrası onaylanacak. 🏦', 'success');
+    showToast('Siparişiniz oluşturuldu! EFT transferi sonrası onaylanacak.', 'success');
     window.scrollTo({ top: 0, behavior: 'smooth' });
     return;
   }
@@ -562,36 +728,25 @@ function handlePayment() {
 
   processPayment(cardData, total, async (result) => {
     if (result.status === 'success') {
-      const order = window._firebaseSaveOrder
-        ? await window._firebaseSaveOrder({
-            items:         getCart(),
-            total:         total,
-            address:       addressData,
-            delivery:      deliveryMode,
-            paymentMethod: 'kart',
-            paymentId:     result.paymentId
-          })
-        : saveOrder({
-            items:         getCart(),
-            total:         total,
-            address:       addressData,
-            delivery:      deliveryMode,
-            paymentMethod: 'kart',
-            paymentId:     result.paymentId
-          });
+      const order = await saveOrder({
+        items:         getCart(),
+        total:         total,
+        address:       addressData,
+        delivery:      deliveryMode,
+        paymentMethod: 'kart',
+        paymentId:     result.paymentId
+      });
 
       clearCart();
 
-      if (order) {
-        document.getElementById('order-id-display').textContent = `Sipariş No: ${order.id}`;
-      }
+      document.getElementById('order-id-display').textContent = `Sipariş No: ${order.id}`;
 
       setStep(3);
-      showToast('Siparişiniz başarıyla alındı! 🎉', 'success');
+      showToast('Siparişiniz başarıyla alındı!', 'success');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
       const payBtn = document.getElementById('pay-btn');
-      payBtn.textContent = '🔒 Siparişi Tamamla';
+      payBtn.textContent = 'Siparişi Tamamla';
       payBtn.disabled = false;
       showToast('Ödeme başarısız: ' + result.errorMessage, 'error');
     }

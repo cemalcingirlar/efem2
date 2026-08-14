@@ -190,7 +190,7 @@ p { color: var(--text-secondary); }
 
 /* ─── Animasyonlar ─── */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(16px); }
+  from { opacity: 0; transform: translateY(24px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
@@ -402,3 +402,46 @@ p { color: var(--text-secondary); }
 @media (max-width: 768px) {
   :root { --container-pad: 16px; }
 }
+
+/* ─── SVG İkonlar ───
+   Emoji yerine tutarlı, ince çizgili (line) ikon seti.
+   currentColor kullanır, boyut .icon-N sınıflarıyla ayarlanır. */
+.icon {
+  display: inline-block;
+  vertical-align: -0.15em;
+  width: 1.1em;
+  height: 1.1em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+
+.icon-sm { width: 0.9em; height: 0.9em; }
+.icon-lg { width: 1.4em; height: 1.4em; }
+
+/* ─── Faz 3: Tasarım Yükseltmesi ───
+   Ana mavi (#2563EB) korunuyor; tipografi, hareket ve derinlik yükseltiliyor. */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --font-display: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+  --space-24: 96px;
+  --space-28: 112px;
+  --ease-spring: cubic-bezier(0.32, 0.72, 0, 1);
+  --shadow-ambient: 0 24px 48px -16px rgba(15, 23, 42, 0.16);
+  --shadow-ambient-lg: 0 32px 64px -20px rgba(15, 23, 42, 0.22);
+}
+
+body { font-family: var(--font-display); }
+
+h1, h2, h3, h4, h5, h6,
+.btn, .logo-name, .logo-sub,
+.section-label, .hero-tag {
+  font-family: var(--font-display);
+}
+
+h1 { letter-spacing: -0.03em; }
+h2 { letter-spacing: -0.025em; }

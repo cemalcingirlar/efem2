@@ -7,8 +7,6 @@
     "ignore": [
       "firebase.json",
       "firestore.rules",
-      "update_footer.js",
-      "update_footer.py",
       ".gitignore",
       "**/.*",
       "**/node_modules/**"

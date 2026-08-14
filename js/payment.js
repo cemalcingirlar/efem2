@@ -126,8 +126,9 @@ function initPaymentForm() {
 function updateCardTypeDisplay(type) {
   const icons = document.getElementById('card-type-icons');
   if (!icons) return;
-  const map = { visa: '💳 VISA', mastercard: '💳 MC', amex: '💳 AMEX', unknown: '💳' };
-  icons.textContent = map[type] || '💳';
+  const cardSvg = '<svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>';
+  const labels  = { visa: 'VISA', mastercard: 'MC', amex: 'AMEX', unknown: '' };
+  icons.innerHTML = `${cardSvg} ${labels[type] || ''}`;
 }
 
 function updateCardPreview() {
@@ -169,9 +170,10 @@ function validatePaymentForm(data) {
 }
 
 /* ─── Adres form validasyonu ─── */
-function validateAddressForm(data) {
+const ADDRESS_REQUIRED_FIELDS = ['ad', 'soyad', 'telefon', 'email', 'adres', 'sehir', 'ilce', 'posta'];
+
+function validateAddressForm(data, required = ADDRESS_REQUIRED_FIELDS) {
   const errors = [];
-  const required = ['ad', 'soyad', 'telefon', 'adres', 'sehir', 'ilce', 'posta'];
 
   required.forEach(field => {
     if (!data[field] || !data[field].toString().trim()) {
@@ -181,6 +183,10 @@ function validateAddressForm(data) {
 
   if (data.telefon && !/^(\+90|0)?[5][0-9]{9}$/.test(data.telefon.replace(/\s/g, ''))) {
     errors.push({ field: 'addr-telefon', msg: 'Geçerli bir Türkiye telefon numarası girin.' });
+  }
+
+  if (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email.trim())) {
+    errors.push({ field: 'addr-email', msg: 'Geçerli bir e-posta adresi girin.' });
   }
 
   return errors;
@@ -204,11 +210,11 @@ function showFormErrors(errors) {
 function showTestCards() {
   return `
     <div style="background:var(--surface-2);border-radius:var(--radius-md);padding:var(--space-4);font-size:0.8125rem;margin-top:var(--space-4)">
-      <div style="font-weight:700;margin-bottom:var(--space-2);color:var(--primary)">🧪 Test Kartları (Sandbox Modu)</div>
+      <div style="font-weight:700;margin-bottom:var(--space-2);color:var(--primary)">Test Kartları (Sandbox Modu)</div>
       <div style="display:grid;gap:var(--space-2)">
-        <div>✅ <code style="background:var(--surface);padding:2px 6px;border-radius:4px">4111 1111 1111 1111</code> → Başarılı ödeme</div>
-        <div>✅ <code style="background:var(--surface);padding:2px 6px;border-radius:4px">5526 0800 0000 0006</code> → Başarılı ödeme</div>
-        <div>❌ <code style="background:var(--surface);padding:2px 6px;border-radius:4px">4000 0000 0000 0002</code> → Başarısız ödeme</div>
+        <div><svg class="icon icon-sm" viewBox="0 0 24 24" style="color:var(--success)"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9"/></svg> <code style="background:var(--surface);padding:2px 6px;border-radius:4px">4111 1111 1111 1111</code> → Başarılı ödeme</div>
+        <div><svg class="icon icon-sm" viewBox="0 0 24 24" style="color:var(--success)"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9"/></svg> <code style="background:var(--surface);padding:2px 6px;border-radius:4px">5526 0800 0000 0006</code> → Başarılı ödeme</div>
+        <div><svg class="icon icon-sm" viewBox="0 0 24 24" style="color:var(--error)"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg> <code style="background:var(--surface);padding:2px 6px;border-radius:4px">4000 0000 0000 0002</code> → Başarısız ödeme</div>
       </div>
       <div style="margin-top:var(--space-2);color:var(--text-muted)">Son Tarih: herhangi / CVV: herhangi 3 hane</div>
     </div>

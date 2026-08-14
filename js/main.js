@@ -7,8 +7,13 @@ function showToast(message, type = 'info') {
   const container = document.getElementById('toast-container');
   if (!container) return;
 
-  const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
-  const id    = 'toast-' + Date.now();
+  const icons = {
+    success: '<svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9"/></svg>',
+    error:   '<svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>',
+    warning: '<svg class="icon" viewBox="0 0 24 24"><path d="M12 3l10 18H2L12 3Z"/><path d="M12 9v5"/><circle cx="12" cy="17.3" r="0.3" fill="currentColor" stroke="none"/></svg>',
+    info:    '<svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg>'
+  };
+  const id = 'toast-' + Date.now();
 
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
@@ -16,7 +21,7 @@ function showToast(message, type = 'info') {
   toast.innerHTML = `
     <span class="toast-icon">${icons[type] || icons.info}</span>
     <span class="toast-msg">${message}</span>
-    <button class="toast-close" onclick="closeToast('${id}')">✕</button>
+    <button class="toast-close" onclick="closeToast('${id}')"><svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   `;
 
   container.appendChild(toast);
@@ -62,25 +67,15 @@ function initNavbar() {
     }
   });
 
+  // Navbar oturum durumunu js/auth.js modülü kendisi yönetir.
   updateCartBadge();
-  updateNavAuth();
-  initSearch();
-}
 
-/* ─── Duyuru şeridi ─── */
-function initAnnouncementBar() {
-  const bar = document.getElementById('announcement-bar');
-  if (!bar) return;
-
-  const dismissed = sessionStorage.getItem('announcement-dismissed');
-  if (dismissed) { bar.style.display = 'none'; return; }
-
-  const closeBtn = document.getElementById('announcement-close');
-  if (closeBtn) {
-    closeBtn.addEventListener('click', () => {
-      bar.style.display = 'none';
-      sessionStorage.setItem('announcement-dismissed', '1');
-    });
+  // Arama kutusu her sayfada bulunmaz; varsa products.js yüklenmiş olmalıdır.
+  if (document.getElementById('search-input')) {
+    if (typeof initSearch !== 'function') {
+      throw new Error('initNavbar: sayfada arama kutusu var ancak js/products.js yüklenmemiş.');
+    }
+    initSearch();
   }
 }
 
@@ -99,6 +94,193 @@ function initScrollAnimations() {
     el.style.opacity = '0';
     observer.observe(el);
   });
+}
+
+/* ─── Magnetic buton (imleç yönünde hafif çekim) ─── */
+function initMagneticButtons() {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (!window.matchMedia('(pointer: fine)').matches) return;
+
+  const MAX_OFFSET = 10;
+  const STRENGTH = 0.35;
+
+  document.querySelectorAll('.hero-actions .btn').forEach(el => {
+    el.addEventListener('mouseenter', () => { el.style.transition = 'transform 200ms var(--ease-spring)'; });
+    el.addEventListener('mousemove', (e) => {
+      const rect = el.getBoundingClientRect();
+      const dx = (e.clientX - rect.left - rect.width / 2) * STRENGTH;
+      const dy = (e.clientY - rect.top - rect.height / 2) * STRENGTH;
+      const clampedX = Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, dx));
+      const clampedY = Math.max(-MAX_OFFSET, Math.min(MAX_OFFSET, dy));
+      el.style.transition = 'transform 60ms linear';
+      el.style.transform = `translate(${clampedX}px, ${clampedY - 2}px)`;
+    });
+    el.addEventListener('mouseleave', () => {
+      el.style.transition = 'transform 500ms var(--ease-spring)';
+      el.style.transform = '';
+    });
+  });
+}
+
+/* ─── Sayaç animasyonu (hero istatistikleri) ─── */
+function initStatCounters() {
+  const nums = document.querySelectorAll('.hero-stat .num');
+  if (!nums.length) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const animate = (el) => {
+    const text = el.textContent;
+    const match = text.match(/\d+/);
+    if (!match || match[0] === '0') return;
+    const target = parseInt(match[0], 10);
+    const before = text.slice(0, match.index);
+    const after = text.slice(match.index + match[0].length);
+    const duration = 1100;
+    const start = performance.now();
+
+    function tick(now) {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = before + Math.round(target * eased) + after;
+      if (progress < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        animate(entry.target);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.5 });
+
+  nums.forEach(el => observer.observe(el));
+}
+
+/* ─── site-config.js'ten link ve metin doldurma ─── */
+function initSiteLinks() {
+  if (typeof SITE === 'undefined') {
+    throw new Error('initSiteLinks: site-config.js yüklenmemiş. HTML içinde js/site-config.js, js/main.js dosyasından önce çağrılmalıdır.');
+  }
+
+  const linkResolvers = {
+    whatsapp:  () => whatsappLink(),
+    instagram: () => instagramLink(),
+    phone:     () => phoneLink(),
+    email:     () => `mailto:${SITE.contact.email}`
+  };
+
+  document.querySelectorAll('[data-link]').forEach(el => {
+    const key = el.dataset.link;
+    const resolve = linkResolvers[key];
+    if (!resolve) {
+      throw new Error(`initSiteLinks: bilinmeyen data-link değeri "${key}"`);
+    }
+    el.href = resolve();
+    if (key === 'whatsapp' || key === 'instagram') {
+      el.target = '_blank';
+      el.rel    = 'noopener';
+    }
+  });
+
+  const textResolvers = {
+    phone:     () => SITE.contact.phone,
+    email:     () => SITE.contact.email,
+    address:   () => SITE.contact.address.full,
+    hours:     () => SITE.contact.hours.text,
+    tradeName: () => SITE.legal.tradeName,
+    taxNumber: () => SITE.legal.taxNumber,
+    taxOffice: () => SITE.legal.taxOffice || '[Vergi dairesi bilgisi eklenecek]',
+    mersisNo:  () => SITE.legal.mersisNo,
+    registryNo:() => SITE.legal.registryNo,
+    returnDays:() => SITE.commerce.returnDays,
+    year:      () => new Date().getFullYear()
+  };
+
+  document.querySelectorAll('[data-text]').forEach(el => {
+    const key = el.dataset.text;
+    const resolve = textResolvers[key];
+    if (!resolve) {
+      throw new Error(`initSiteLinks: bilinmeyen data-text değeri "${key}"`);
+    }
+    el.textContent = resolve();
+  });
+}
+
+/* ─── Organization/LocalBusiness JSON-LD (site-config.js'ten üretilir) ─── */
+function injectOrganizationSchema() {
+  if (typeof SITE === 'undefined') {
+    throw new Error('injectOrganizationSchema: site-config.js yüklenmemiş.');
+  }
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'ElectronicsStore',
+    name: SITE.legal.tradeName,
+    alternateName: SITE.brand.fullName,
+    url: SITE.brand.url,
+    logo: `${SITE.brand.url}/assets/logos/icon-square.png`,
+    image: `${SITE.brand.url}/assets/logos/og-image.jpg`,
+    description: SITE.brand.description,
+    telephone: SITE.contact.phoneHref,
+    email: SITE.contact.email,
+    priceRange: '₺₺',
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: `${SITE.contact.address.line1}, ${SITE.contact.address.line2}`,
+      addressLocality: SITE.contact.address.district,
+      addressRegion: SITE.contact.address.city,
+      addressCountry: 'TR'
+    },
+    openingHoursSpecification: {
+      '@type': 'OpeningHoursSpecification',
+      dayOfWeek: ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'],
+      opens: SITE.contact.hours.open,
+      closes: SITE.contact.hours.close
+    },
+    sameAs: [
+      `https://instagram.com/${SITE.social.instagram}`
+    ].filter(Boolean)
+  };
+
+  const script = document.createElement('script');
+  script.type = 'application/ld+json';
+  script.textContent = JSON.stringify(schema);
+  document.head.appendChild(script);
+}
+
+/* ─── Ürün detay sayfası Product JSON-LD ─── */
+function injectProductSchema(p) {
+  if (typeof SITE === 'undefined') {
+    throw new Error('injectProductSchema: site-config.js yüklenmemiş.');
+  }
+  const schema = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: p.name,
+    description: p.desc,
+    image: p.images.map(img => `${SITE.brand.url}/${img}`),
+    sku: String(p.id),
+    aggregateRating: p.reviewCount > 0 ? {
+      '@type': 'AggregateRating',
+      ratingValue: p.rating,
+      reviewCount: p.reviewCount
+    } : undefined,
+    offers: {
+      '@type': 'Offer',
+      url: `${SITE.brand.url}/urun-detay.html?id=${p.id}`,
+      priceCurrency: SITE.commerce.currency,
+      price: p.price,
+      availability: p.stock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+      itemCondition: 'https://schema.org/NewCondition'
+    }
+  };
+
+  const script = document.createElement('script');
+  script.type = 'application/ld+json';
+  script.textContent = JSON.stringify(schema);
+  document.head.appendChild(script);
 }
 
 /* ─── URL Parametresi ─── */
@@ -141,10 +323,12 @@ function lazyLoadImages() {
 
 /* ─── Sayfa init ─── */
 document.addEventListener('DOMContentLoaded', () => {
+  initSiteLinks();
   initNavbar();
-  initAnnouncementBar();
   initScrollToTop();
   lazyLoadImages();
+  initMagneticButtons();
+  initStatCounters();
 
   // Sayfa animasyonu
   document.body.style.opacity = '0';
@@ -156,13 +340,3 @@ document.addEventListener('DOMContentLoaded', () => {
   // Scroll animasyonları (biraz bekle)
   setTimeout(initScrollAnimations, 300);
 });
-
-/* ─── Hepsiburada CDN görsel URL'si (test) ─── */
-// Hepsiburada bot koruması nedeniyle doğrudan erişim mümkün olmadı.
-// Resmi marka CDN linkleri kullanılmaktadır.
-const PRODUCT_IMAGES = {
-  // Akıllı Saatler
-  1: 'https://productimages.hepsiburada.net/s/37/1500/11001000000000099.jpg',  // placeholder pattern
-  2: 'https://productimages.hepsiburada.net/s/35/1500/11001000000000079.jpg',
-  // fallback → ürün sayfasında onerror ile placeholder gösterilir
-};

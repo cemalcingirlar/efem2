@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /hesap.html
+Disallow: /sepet.html
+Disallow: /odeme.html
+Disallow: /profil.html
+
+Sitemap: https://efemiletisim.com/sitemap.xml

@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Paneli – efemiletisim.com</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/logos/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="assets/logos/favicon-512.png">
+  <link rel="apple-touch-icon" href="assets/logos/favicon-180.png">
   <meta name="robots" content="noindex, nofollow">
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/components.css">
@@ -68,13 +71,21 @@
 
     .admin-brand-icon {
       width: 40px; height: 40px;
-      background: var(--primary);
+      background: white;
       border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 1.25rem;
       flex-shrink: 0;
+      overflow: hidden;
+      padding: 3px;
+    }
+
+    .admin-brand-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
     }
 
     .admin-brand-text .name { font-weight: 800; color: white; font-size: 1rem; }
@@ -97,18 +108,18 @@
       align-items: center;
       gap: 10px;
       padding: 10px 12px;
-      border-radius: 10px;
+      border-radius: var(--radius-full);
       font-size: 0.875rem;
       font-weight: 500;
       color: #94A3B8;
       cursor: pointer;
-      transition: all 0.15s ease;
+      transition: all 300ms var(--ease-spring);
       margin-bottom: 2px;
     }
 
-    .admin-nav-item:hover { background: #334155; color: white; }
+    .admin-nav-item:hover { background: #334155; color: white; transform: translateX(2px); }
     .admin-nav-item.active { background: var(--primary); color: white; }
-    .admin-nav-item .icon { font-size: 1.125rem; width: 20px; text-align: center; }
+    .admin-nav-item .icon { width: 20px; height: 20px; text-align: center; }
     .admin-nav-item .badge-count {
       margin-left: auto;
       background: var(--accent);
@@ -116,7 +127,7 @@
       font-size: 0.6875rem;
       font-weight: 700;
       padding: 2px 8px;
-      border-radius: 999px;
+      border-radius: var(--radius-full);
     }
 
     .admin-sidebar-footer {
@@ -159,12 +170,14 @@
     .stat-card {
       background: white;
       border: 1px solid var(--border);
-      border-radius: 16px;
+      border-radius: var(--radius-xl);
       padding: 24px;
       display: flex;
       align-items: center;
       gap: 16px;
+      transition: transform 400ms var(--ease-spring), box-shadow 400ms var(--ease-spring);
     }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-ambient); }
 
     .stat-icon {
       width: 52px; height: 52px;
@@ -188,7 +201,7 @@
     .admin-card {
       background: white;
       border: 1px solid var(--border);
-      border-radius: 16px;
+      border-radius: var(--radius-xl);
       overflow: hidden;
       margin-bottom: 24px;
     }
@@ -225,11 +238,12 @@
     }
 
     .admin-table tr:last-child td { border-bottom: none; }
+    .admin-table tr { transition: background 250ms var(--ease-spring); }
     .admin-table tr:hover td { background: #F8FAFC; }
 
     .product-thumb {
       width: 48px; height: 48px;
-      border-radius: 10px;
+      border-radius: var(--radius-lg);
       object-fit: cover;
       background: #F1F5F9;
       border: 1px solid var(--border);
@@ -238,31 +252,44 @@
     .product-name-cell .name  { font-weight: 600; color: #0F172A; }
     .product-name-cell .brand { font-size: 0.75rem; color: var(--text-muted); }
 
-    .action-btns { display: flex; gap: 6px; }
+    .action-btns { display: flex; gap: 6px; align-items: center; }
 
     .action-btn {
-      padding: 6px 12px;
-      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
       font-size: 0.75rem;
       font-weight: 600;
       cursor: pointer;
       border: none;
-      transition: all 0.15s;
+      transition: all 250ms var(--ease-spring);
     }
+    .action-btn .icon { width: 0.9em; height: 0.9em; }
 
     .action-btn.edit   { background: var(--primary-light); color: var(--primary-dark); }
-    .action-btn.edit:hover { background: var(--primary); color: white; }
+    .action-btn.edit:hover { background: var(--primary); color: white; transform: translateY(-1px); }
     .action-btn.delete { background: #FEE2E2; color: #991B1B; }
-    .action-btn.delete:hover { background: var(--error); color: white; }
+    .action-btn.delete:hover { background: var(--error); color: white; transform: translateY(-1px); }
 
     .source-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
       font-size: 0.6875rem;
       font-weight: 700;
       padding: 2px 8px;
-      border-radius: 999px;
+      border-radius: var(--radius-full);
     }
     .source-base  { background: #EDE9FE; color: #5B21B6; }
     .source-admin { background: #D1FAE5; color: #065F46; }
+
+    .status-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; vertical-align: 1px; }
+    .status-dot.red    { background: var(--error); }
+    .status-dot.yellow { background: var(--warning); }
+    .status-dot.green  { background: var(--success); }
+    .status-dot.blue   { background: var(--primary); }
 
     /* ─── Modal ─── */
     .admin-modal-overlay {
@@ -281,13 +308,13 @@
 
     .admin-modal {
       background: white;
-      border-radius: 20px;
+      border-radius: var(--radius-xl);
       box-shadow: 0 25px 50px rgba(0,0,0,0.2);
       width: 100%;
       max-width: 680px;
       max-height: 90vh;
       overflow-y: auto;
-      animation: slideDown 0.25s ease;
+      animation: slideDown 0.3s var(--ease-spring);
     }
 
     .admin-modal-header {
@@ -328,7 +355,7 @@
 
     .spec-remove {
       width: 32px; height: 32px;
-      border-radius: 8px;
+      border-radius: var(--radius-full);
       background: #FEE2E2;
       border: none;
       color: var(--error);
@@ -336,9 +363,10 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1rem;
+      transition: all 250ms var(--ease-spring);
       flex-shrink: 0;
     }
+    .spec-remove .icon { width: 1rem; height: 1rem; }
 
     .spec-remove:hover { background: var(--error); color: white; }
 
@@ -346,10 +374,11 @@
     .admin-search {
       padding: 10px 14px 10px 40px;
       border: 1.5px solid var(--border);
-      border-radius: 10px;
+      border-radius: var(--radius-full);
       font-size: 0.875rem;
       width: 260px;
       background: #F8FAFC url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'%3E%3C/circle%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'%3E%3C/line%3E%3C/svg%3E") 12px center no-repeat;
+      transition: all 250ms ease;
     }
 
     .admin-search:focus { border-color: var(--primary); outline: none; background-color: white; }
@@ -371,6 +400,41 @@
       .admin-sidebar { display: none; }
       .stats-grid { grid-template-columns: 1fr; }
     }
+
+    /* ─── Faz 3 (devam): yardımcı sınıflar — inline style'ların yerine ─── */
+    .admin-section-label {
+      font-size: 0.8125rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--primary);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .admin-section-label .icon { width: 1em; height: 1em; }
+    .admin-flex-gap-12 { display: flex; gap: 12px; }
+    .admin-flex-gap-12-center { display: flex; gap: 12px; align-items: center; }
+    .admin-modal-close {
+      background: none; border: none; cursor: pointer; color: var(--text-muted);
+      width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+      border-radius: var(--radius-full); transition: all 250ms var(--ease-spring);
+    }
+    .admin-modal-close:hover { background: #F1F5F9; color: var(--text-primary); }
+    .admin-modal-close .icon { width: 1.25rem; height: 1.25rem; }
+    .admin-empty-state { padding: 48px; text-align: center; color: var(--text-muted); }
+    .admin-empty-state .icon { width: 2.5rem; height: 2.5rem; margin-bottom: 12px; color: var(--text-muted); }
+    .admin-empty-loading { padding: 24px; text-align: center; color: var(--text-muted); font-size: 0.875rem; }
+    .admin-form-label-row { display: flex; align-items: center; justify-content: space-between; }
+    .admin-demo-info {
+      margin-top: 24px; padding: 12px 16px; background: rgba(37,99,235,0.1);
+      border-radius: var(--radius-lg); font-size: 0.8125rem; color: #93C5FD; text-align: left;
+    }
+    .admin-demo-info code { background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 4px; }
+    .admin-login-label { color: #94A3B8; }
+    .admin-hint-text { font-size: 0.75rem; color: var(--text-muted); }
+    .admin-confirm-icon { width: 3.5rem; height: 3.5rem; margin-bottom: 16px; color: var(--error); }
   </style>
 </head>
 <body>
@@ -380,31 +444,31 @@
 ════════════════════════════ -->
 <div class="admin-login" id="admin-login">
   <div class="admin-login-card">
-    <div class="logo">🛡️</div>
+    <div class="logo"><svg class="icon" viewBox="0 0 24 24" style="width:3rem;height:3rem"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z"/></svg></div>
     <h2>Admin Paneli</h2>
     <p>efemiletisim.com yönetim ekranı</p>
 
     <div class="auth-form" style="text-align:left">
       <div class="form-group">
-        <label class="form-label" style="color:#94A3B8">Kullanıcı Adı</label>
+        <label class="form-label admin-login-label">Kullanıcı Adı</label>
         <input type="text" class="form-input" id="admin-username" placeholder="admin"
                onkeydown="if(event.key==='Enter') adminLogin()">
       </div>
       <div class="form-group">
-        <label class="form-label" style="color:#94A3B8">Şifre</label>
+        <label class="form-label admin-login-label">Şifre</label>
         <input type="password" class="form-input" id="admin-password" placeholder="••••••••"
                onkeydown="if(event.key==='Enter') adminLogin()">
         <span class="form-error" id="admin-login-error"></span>
       </div>
       <button class="btn btn-primary btn-block btn-lg" onclick="adminLogin()">
-        🔐 Giriş Yap
+        <svg class="icon" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Giriş Yap
       </button>
     </div>
 
-    <div style="margin-top:24px;padding:12px 16px;background:rgba(37,99,235,0.1);border-radius:10px;font-size:0.8125rem;color:#93C5FD;text-align:left">
+    <div class="admin-demo-info">
       <strong>Demo Giriş Bilgileri:</strong><br>
-      Kullanıcı: <code style="background:rgba(0,0,0,0.2);padding:2px 6px;border-radius:4px">admin</code> &nbsp;
-      Şifre: <code style="background:rgba(0,0,0,0.2);padding:2px 6px;border-radius:4px">efemi2024</code>
+      Kullanıcı: <code>admin</code> &nbsp;
+      Şifre: <code>efemi2024</code>
     </div>
   </div>
 </div>
@@ -417,7 +481,7 @@
   <!-- Sol Sidebar -->
   <aside class="admin-sidebar">
     <div class="admin-brand">
-      <div class="admin-brand-icon">📱</div>
+      <div class="admin-brand-icon"><img src="assets/logos/icon-square.png" alt="Efem İletişim"></div>
       <div class="admin-brand-text">
         <div class="name">efemi</div>
         <div class="sub">Admin Paneli</div>
@@ -427,27 +491,27 @@
     <nav class="admin-nav">
       <div class="admin-nav-label">Ana Menü</div>
       <div class="admin-nav-item active" id="nav-dashboard" onclick="showSection('dashboard')">
-        <span class="icon">📊</span> Dashboard
+        <span class="icon"><svg class="icon" viewBox="0 0 24 24"><rect x="4" y="12" width="4" height="8" rx="1"/><rect x="10" y="7" width="4" height="13" rx="1"/><rect x="16" y="3" width="4" height="17" rx="1"/></svg></span> Dashboard
       </div>
       <div class="admin-nav-item" id="nav-products" onclick="showSection('products')">
-        <span class="icon">📦</span> Ürünler
+        <span class="icon"><svg class="icon" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4-9-4Z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg></span> Ürünler
         <span class="badge-count" id="nav-product-count">0</span>
       </div>
 
       <div class="admin-nav-label">Hızlı İşlemler</div>
       <div class="admin-nav-item" onclick="openAddModal()">
-        <span class="icon">➕</span> Ürün Ekle
+        <span class="icon"><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span> Ürün Ekle
       </div>
 
       <div class="admin-nav-label">Site</div>
       <div class="admin-nav-item" onclick="window.open('index.html','_blank')">
-        <span class="icon">🌐</span> Siteye Git ↗
+        <span class="icon"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18Z"/></svg></span> Siteye Git ↗
       </div>
     </nav>
 
     <div class="admin-sidebar-footer">
       <div class="admin-nav-item" onclick="adminLogout()" style="color:#F87171">
-        <span class="icon">🚪</span> Çıkış Yap
+        <span class="icon"><svg class="icon" viewBox="0 0 24 24"><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3"/><path d="M15 16l4-4-4-4"/><path d="M19 12H9"/></svg></span> Çıkış Yap
       </div>
     </div>
   </aside>
@@ -459,40 +523,40 @@
     <section id="section-dashboard">
       <div class="admin-topbar">
         <div>
-          <h1>📊 Dashboard</h1>
+          <h1><svg class="icon" viewBox="0 0 24 24"><rect x="4" y="12" width="4" height="8" rx="1"/><rect x="10" y="7" width="4" height="13" rx="1"/><rect x="16" y="3" width="4" height="17" rx="1"/></svg> Dashboard</h1>
           <p id="admin-greeting">Hoş geldiniz!</p>
         </div>
-        <div style="display:flex;gap:12px">
-          <a href="index.html" target="_blank" class="btn btn-ghost btn-sm">🌐 Siteyi Aç</a>
-          <button class="btn btn-primary btn-sm" onclick="openAddModal()">➕ Ürün Ekle</button>
+        <div class="admin-flex-gap-12">
+          <a href="index.html" target="_blank" class="btn btn-ghost btn-sm"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3a14 14 0 0 1 0 18a14 14 0 0 1 0-18Z"/></svg> Siteyi Aç</a>
+          <button class="btn btn-primary btn-sm" onclick="openAddModal()"><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Ürün Ekle</button>
         </div>
       </div>
       <div class="admin-content">
         <!-- İstatistikler -->
         <div class="stats-grid">
           <div class="stat-card">
-            <div class="stat-icon blue">📦</div>
+            <div class="stat-icon blue"><svg class="icon" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4-9-4Z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg></div>
             <div>
               <div class="stat-num" id="stat-total-products">0</div>
               <div class="stat-label">Toplam Ürün</div>
             </div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon amber">⌚</div>
+            <div class="stat-icon amber"><svg class="icon" viewBox="0 0 24 24"><rect x="7" y="6.5" width="10" height="11" rx="3"/><path d="M9.5 6.5V4a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v2.5"/><path d="M9.5 17.5V20a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-2.5"/><path d="M17 10h1.2a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H17"/><path d="M12 9.8v2.4l1.5 .9"/></svg></div>
             <div>
               <div class="stat-num" id="stat-saat">0</div>
               <div class="stat-label">Akıllı Saat</div>
             </div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon green">🎧</div>
+            <div class="stat-icon green"><svg class="icon" viewBox="0 0 24 24"><path d="M4 14.5a8 8 0 0 1 16 0"/><path d="M6 13.6a6 6 0 0 1 12 0"/><rect x="3.2" y="14.5" width="4.3" height="6.5" rx="2"/><rect x="16.5" y="14.5" width="4.3" height="6.5" rx="2"/></svg></div>
             <div>
               <div class="stat-num" id="stat-kulaklik">0</div>
               <div class="stat-label">Kulaklık</div>
             </div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon purple">📱</div>
+            <div class="stat-icon purple"><svg class="icon" viewBox="0 0 24 24"><rect x="5" y="2.5" width="14" height="19" rx="2.8"/><path d="M11.5 3.6h1"/><path d="M10.3 19.6h3.4"/></svg></div>
             <div>
               <div class="stat-num" id="stat-tablet">0</div>
               <div class="stat-label">Tablet</div>
@@ -503,14 +567,14 @@
         <!-- Son Eklenen Ürünler -->
         <div class="admin-card">
           <div class="admin-card-header">
-            <span class="admin-card-title">🆕 Son Eklenen Ürünler (Admin)</span>
-            <button class="btn btn-primary btn-sm" onclick="openAddModal()">➕ Yeni Ürün</button>
+            <span class="admin-card-title">Son Eklenen Ürünler (Admin)</span>
+            <button class="btn btn-primary btn-sm" onclick="openAddModal()"><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Yeni Ürün</button>
           </div>
           <div id="recent-admin-products">
-            <div style="padding:48px;text-align:center;color:var(--text-muted)">
-              <div style="font-size:3rem;margin-bottom:12px">📭</div>
+            <div class="admin-empty-state">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M3 12h5l2 3h4l2-3h5"/><path d="M5 5h14l2 7v8a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-8l2-7Z"/></svg>
               <div>Henüz admin tarafından ürün eklenmedi.</div>
-              <button class="btn btn-primary btn-sm" onclick="openAddModal()" style="margin-top:16px">➕ İlk Ürünü Ekle</button>
+              <button class="btn btn-primary btn-sm" onclick="openAddModal()" style="margin-top:16px"><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> İlk Ürünü Ekle</button>
             </div>
           </div>
         </div>
@@ -518,10 +582,10 @@
         <!-- Stok Durumu -->
         <div class="admin-card">
           <div class="admin-card-header">
-            <span class="admin-card-title">⚠️ Düşük Stok Uyarısı</span>
+            <span class="admin-card-title"><svg class="icon icon-sm" viewBox="0 0 24 24" style="color:var(--warning)"><path d="M12 3l10 18H2L12 3Z"/><path d="M12 9v5"/><circle cx="12" cy="17.3" r="0.3" fill="currentColor" stroke="none"/></svg> Düşük Stok Uyarısı</span>
           </div>
           <div id="low-stock-list">
-            <div style="padding:24px;text-align:center;color:var(--text-muted);font-size:0.875rem">
+            <div class="admin-empty-loading">
               Yükleniyor...
             </div>
           </div>
@@ -533,19 +597,19 @@
     <section id="section-products" style="display:none">
       <div class="admin-topbar">
         <div>
-          <h1>📦 Ürün Yönetimi</h1>
+          <h1><svg class="icon" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4-9-4Z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg> Ürün Yönetimi</h1>
           <p id="products-subtitle">Tüm ürünler listeleniyor</p>
         </div>
-        <div style="display:flex;gap:12px;align-items:center">
+        <div class="admin-flex-gap-12-center">
           <input type="text" class="admin-search" id="product-search"
                  placeholder="Ürün ara..." oninput="filterTable(this.value)">
           <select id="cat-filter" class="sort-select" onchange="filterTable()" style="padding:10px 14px">
             <option value="all">Tümü</option>
-            <option value="saat">⌚ Saatler</option>
-            <option value="kulaklik">🎧 Kulaklıklar</option>
-            <option value="tablet">📱 Tabletler</option>
+            <option value="saat">Saatler</option>
+            <option value="kulaklik">Kulaklıklar</option>
+            <option value="tablet">Tabletler</option>
           </select>
-          <button class="btn btn-primary" onclick="openAddModal()">➕ Ürün Ekle</button>
+          <button class="btn btn-primary" onclick="openAddModal()"><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Ürün Ekle</button>
         </div>
       </div>
       <div class="admin-content" style="padding-top:24px">
@@ -580,15 +644,15 @@
 <div class="admin-modal-overlay" id="product-modal">
   <div class="admin-modal">
     <div class="admin-modal-header">
-      <h3 class="admin-modal-title" id="modal-title">➕ Yeni Ürün Ekle</h3>
-      <button onclick="closeModal()" style="background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--text-muted)">✕</button>
+      <h3 class="admin-modal-title" id="modal-title">Yeni Ürün Ekle</h3>
+      <button onclick="closeModal()" class="admin-modal-close"><svg class="icon" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
     <div class="admin-modal-body">
       <input type="hidden" id="edit-product-id">
 
       <!-- Temel Bilgiler -->
-      <div style="font-size:0.8125rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--primary);margin-bottom:16px">
-        📋 Temel Bilgiler
+      <div class="admin-section-label">
+        <svg class="icon" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V5a2 2 0 0 1 2-2h9"/></svg> Temel Bilgiler
       </div>
       <div class="form-grid-2" style="margin-bottom:16px">
         <div class="form-group col-span-2">
@@ -598,9 +662,9 @@
         <div class="form-group">
           <label class="form-label">Kategori <span class="required">*</span></label>
           <select class="form-select" id="p-category" onchange="updateCategoryLabel()">
-            <option value="saat">⌚ Akıllı Saatler</option>
-            <option value="kulaklik">🎧 Kulaklıklar</option>
-            <option value="tablet">📱 Tabletler</option>
+            <option value="saat">Akıllı Saatler</option>
+            <option value="kulaklik">Kulaklıklar</option>
+            <option value="tablet">Tabletler</option>
           </select>
         </div>
         <div class="form-group">
@@ -610,8 +674,8 @@
       </div>
 
       <!-- Fiyat & Stok -->
-      <div style="font-size:0.8125rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--primary);margin-bottom:16px">
-        💰 Fiyat & Stok
+      <div class="admin-section-label">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M5 8l1.5 1.5M17.5 14.5 19 16M5 16l1.5-1.5M17.5 9.5 19 8"/><circle cx="12" cy="12" r="4"/></svg> Fiyat & Stok
       </div>
       <div class="form-grid-3" style="margin-bottom:16px">
         <div class="form-group">
@@ -629,18 +693,18 @@
       </div>
 
       <!-- Görünüm -->
-      <div style="font-size:0.8125rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--primary);margin-bottom:16px">
-        🏷️ Görünüm & Rozet
+      <div class="admin-section-label">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M20.6 12.5L12 21l-9-9V4h8l9.6 8.5Z"/><circle cx="7.5" cy="7.5" r="1.3" fill="currentColor" stroke="none"/></svg> Görünüm & Rozet
       </div>
       <div class="form-grid-2" style="margin-bottom:16px">
         <div class="form-group">
           <label class="form-label">Rozet Türü</label>
           <select class="form-select" id="p-badge" onchange="updateBadgeLabel()">
             <option value="">Rozet Yok</option>
-            <option value="new">🔵 Yeni</option>
-            <option value="bestseller">🟡 Çok Satan</option>
-            <option value="sale">🔴 İndirim</option>
-            <option value="limited">⚫ Sınırlı Stok</option>
+            <option value="new">Yeni</option>
+            <option value="bestseller">Çok Satan</option>
+            <option value="sale">İndirim</option>
+            <option value="limited">Sınırlı Stok</option>
           </select>
         </div>
         <div class="form-group">
@@ -658,18 +722,18 @@
         <div class="form-group col-span-2">
           <label class="form-check">
             <input type="checkbox" id="p-featured">
-            <span class="form-check-label">⭐ Ana sayfada öne çıkan ürünler arasında göster</span>
+            <span class="form-check-label">Ana sayfada öne çıkan ürünler arasında göster</span>
           </label>
         </div>
       </div>
 
       <!-- Görsel -->
-      <div style="font-size:0.8125rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--primary);margin-bottom:16px">
-        🖼️ Ürün Görseli
+      <div class="admin-section-label">
+        <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M21 16l-5-5-9 9"/></svg> Ürün Görseli
       </div>
       <div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:16px">
         <img id="img-preview" class="img-preview" src="" alt="Önizleme"
-             onerror="this.src='assets/images/placeholder.jpg'"
+             onerror="this.src='assets/images/products/placeholder-product.svg'"
              style="display:none">
         <div style="flex:1">
           <div class="form-group">
@@ -685,8 +749,8 @@
       </div>
 
       <!-- Açıklama -->
-      <div style="font-size:0.8125rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--primary);margin-bottom:16px">
-        📝 Açıklama & Özellikler
+      <div class="admin-section-label">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3Z"/><path d="M13 6l3 3"/></svg> Açıklama & Özellikler
       </div>
       <div class="form-group" style="margin-bottom:16px">
         <label class="form-label">Ürün Açıklaması</label>
@@ -696,7 +760,7 @@
 
       <!-- Teknik Özellikler -->
       <div class="form-group">
-        <label class="form-label" style="display:flex;align-items:center;justify-content:space-between">
+        <label class="form-label admin-form-label-row">
           Teknik Özellikler
           <button type="button" class="btn btn-ghost btn-sm" onclick="addSpecRow()" style="font-size:0.75rem">
             + Özellik Ekle
@@ -705,7 +769,7 @@
         <div class="specs-list" id="specs-list">
           <!-- Dinamik olarak doldurulur -->
         </div>
-        <div style="font-size:0.75rem;color:var(--text-muted)">
+        <div class="admin-hint-text">
           Örn: Ekran → 1.47 inç AMOLED
         </div>
       </div>
@@ -714,7 +778,7 @@
     <div class="admin-modal-footer">
       <button class="btn btn-ghost" onclick="closeModal()">İptal</button>
       <button class="btn btn-primary btn-lg" onclick="saveProduct()" id="save-product-btn">
-        💾 Ürünü Kaydet
+        <svg class="icon" viewBox="0 0 24 24"><path d="M5 3h11l3 3v15H5V3Z"/><path d="M8 3v5h8V3"/><path d="M8 14h8v6H8Z"/></svg> Ürünü Kaydet
       </button>
     </div>
   </div>
@@ -724,7 +788,7 @@
 <div class="admin-modal-overlay" id="confirm-modal">
   <div class="admin-modal" style="max-width:420px">
     <div class="admin-modal-body" style="text-align:center;padding:40px">
-      <div style="font-size:4rem;margin-bottom:16px">🗑️</div>
+      <svg class="icon admin-confirm-icon" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><path d="M10 11v6M14 11v6"/></svg>
       <h3 style="margin-bottom:8px;color:#0F172A">Ürünü Sil</h3>
       <p style="color:var(--text-muted);margin-bottom:24px" id="confirm-msg">
         Bu ürünü silmek istediğinizden emin misiniz?
@@ -742,9 +806,10 @@
 
 <div id="toast-container"></div>
 
+<script src="js/site-config.js"></script>
 <script src="js/data.js"></script>
 <script src="js/cart.js"></script>
-<script src="js/auth.js"></script>
+<script type="module" src="js/auth.js"></script>
 <script src="js/main.js"></script>
 <script>
 /* ════════════════════════════
@@ -764,7 +829,7 @@ function adminLogin() {
     document.body.style.background = '#F8FAFC';
     initAdmin();
   } else {
-    document.getElementById('admin-login-error').textContent = '❌ Kullanıcı adı veya şifre hatalı.';
+    document.getElementById('admin-login-error').textContent = 'Kullanıcı adı veya şifre hatalı.';
   }
 }
 
@@ -820,10 +885,10 @@ function renderDashboard() {
 
   if (adminProds.length === 0) {
     recentEl.innerHTML = `
-      <div style="padding:48px;text-align:center;color:var(--text-muted)">
-        <div style="font-size:3rem;margin-bottom:12px">📭</div>
+      <div class="admin-empty-state">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M3 12h5l2 3h4l2-3h5"/><path d="M5 5h14l2 7v8a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-8l2-7Z"/></svg>
         <div>Henüz admin tarafından ürün eklenmedi.</div>
-        <button class="btn btn-primary btn-sm" onclick="openAddModal()" style="margin-top:16px">➕ İlk Ürünü Ekle</button>
+        <button class="btn btn-primary btn-sm" onclick="openAddModal()" style="margin-top:16px"><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> İlk Ürünü Ekle</button>
       </div>`;
   } else {
     recentEl.innerHTML = `
@@ -838,12 +903,12 @@ function renderDashboard() {
                 <div class="name">${p.name}</div>
                 <div class="brand">${p.brand}</div>
               </div></td>
-              <td>${getCatEmoji(p.category)} ${p.categoryLabel}</td>
+              <td>${p.categoryLabel}</td>
               <td><strong>${formatPrice(p.price)}</strong></td>
               <td>${stockBadge(p.stock)}</td>
               <td><div class="action-btns">
-                <button class="action-btn edit" onclick="openEditModal(${p.id})">✏️ Düzenle</button>
-                <button class="action-btn delete" onclick="askDelete(${p.id}, '${p.name.replace(/'/g,"\\'")}')">🗑 Sil</button>
+                <button class="action-btn edit" onclick="openEditModal(${p.id})"><svg class="icon" viewBox="0 0 24 24"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3Z"/><path d="M13 6l3 3"/></svg> Düzenle</button>
+                <button class="action-btn delete" onclick="askDelete(${p.id}, '${p.name.replace(/'/g,"\\'")}')"><svg class="icon" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><path d="M10 11v6M14 11v6"/></svg> Sil</button>
               </div></td>
             </tr>`).join('')}
         </tbody>
@@ -854,7 +919,7 @@ function renderDashboard() {
   const lowStock = PRODUCTS.filter(p => p.stock <= 5).slice(0, 5);
   const lowEl    = document.getElementById('low-stock-list');
   if (lowStock.length === 0) {
-    lowEl.innerHTML = '<div style="padding:24px;text-align:center;color:var(--success);font-size:0.875rem">✅ Tüm ürünlerin stoğu yeterli.</div>';
+    lowEl.innerHTML = '<div class="admin-empty-loading" style="color:var(--success)">Tüm ürünlerin stoğu yeterli.</div>';
   } else {
     lowEl.innerHTML = `
       <table class="admin-table">
@@ -865,7 +930,7 @@ function renderDashboard() {
               <td><strong>${p.name}</strong></td>
               <td>${p.stock}</td>
               <td><span style="color:${p.stock === 0 ? 'var(--error)' : 'var(--warning)'}">
-                ${p.stock === 0 ? '🔴 Tükendi' : '🟡 Az Kaldı'}
+                <span class="status-dot ${p.stock === 0 ? 'red' : 'yellow'}"></span>${p.stock === 0 ? 'Tükendi' : 'Az Kaldı'}
               </span></td>
             </tr>`).join('')}
         </tbody>
@@ -884,7 +949,7 @@ function renderProductsTable(products) {
     <tr>
       <td>
         <img class="product-thumb" src="${p.images[0]}"
-             onerror="this.src='assets/images/placeholder.jpg'" alt="${p.name}">
+             onerror="this.src='assets/images/products/placeholder-product.svg'" alt="${p.name}">
       </td>
       <td>
         <div class="product-name-cell">
@@ -892,7 +957,7 @@ function renderProductsTable(products) {
           <div class="brand">${p.brand}</div>
         </div>
       </td>
-      <td>${getCatEmoji(p.category)} ${p.categoryLabel}</td>
+      <td>${p.categoryLabel}</td>
       <td>
         <strong>${formatPrice(p.price)}</strong>
         ${p.originalPrice ? `<br><span style="font-size:0.75rem;color:var(--text-muted);text-decoration:line-through">${formatPrice(p.originalPrice)}</span>` : ''}
@@ -904,14 +969,14 @@ function renderProductsTable(products) {
       </td>
       <td>
         <span class="source-badge ${adminIds.has(p.id) ? 'source-admin' : 'source-base'}">
-          ${adminIds.has(p.id) ? '🟢 Admin' : '🔵 Sabit'}
+          <span class="status-dot ${adminIds.has(p.id) ? 'green' : 'blue'}"></span>${adminIds.has(p.id) ? 'Admin' : 'Sabit'}
         </span>
       </td>
       <td>
         <div class="action-btns">
           ${adminIds.has(p.id) ? `
-            <button class="action-btn edit" onclick="openEditModal(${p.id})">✏️ Düzenle</button>
-            <button class="action-btn delete" onclick="askDelete(${p.id}, '${p.name.replace(/'/g,"\\'")}')">🗑 Sil</button>
+            <button class="action-btn edit" onclick="openEditModal(${p.id})"><svg class="icon" viewBox="0 0 24 24"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3Z"/><path d="M13 6l3 3"/></svg> Düzenle</button>
+            <button class="action-btn delete" onclick="askDelete(${p.id}, '${p.name.replace(/'/g,"\\'")}')"><svg class="icon" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><path d="M10 11v6M14 11v6"/></svg> Sil</button>
           ` : `<span style="font-size:0.75rem;color:var(--text-muted)">Sabit ürün</span>`}
         </div>
       </td>
@@ -939,8 +1004,8 @@ let editProductId = null;
 function openAddModal() {
   editMode = false;
   editProductId = null;
-  document.getElementById('modal-title').textContent = '➕ Yeni Ürün Ekle';
-  document.getElementById('save-product-btn').textContent = '💾 Ürünü Kaydet';
+  document.getElementById('modal-title').textContent = 'Yeni Ürün Ekle';
+  document.getElementById('save-product-btn').textContent = 'Ürünü Kaydet';
   clearModal();
   addSpecRow('', '');
   addSpecRow('', '');
@@ -960,8 +1025,8 @@ function openEditModal(id) {
 
   editMode = true;
   editProductId = id;
-  document.getElementById('modal-title').textContent = '✏️ Ürünü Düzenle';
-  document.getElementById('save-product-btn').textContent = '💾 Değişiklikleri Kaydet';
+  document.getElementById('modal-title').textContent = 'Ürünü Düzenle';
+  document.getElementById('save-product-btn').textContent = 'Değişiklikleri Kaydet';
 
   // Formu doldur
   document.getElementById('p-name').value             = product.name;
@@ -1062,7 +1127,7 @@ function saveProduct() {
         desc, specs
       };
       saveAdminProducts(adminProds);
-      showToast(`"${name}" güncellendi! ✅`, 'success');
+      showToast(`"${name}" güncellendi!`, 'success');
     }
   } else {
     // Yeni ürün
@@ -1073,12 +1138,12 @@ function saveProduct() {
       brand, price, originalPrice: origP, stock,
       badge, badgeLabel: badgeLbl,
       rating, reviewCount: reviews, featured,
-      images: image ? [image] : ['assets/images/placeholder.jpg'],
+      images: image ? [image] : ['assets/images/products/placeholder-product.svg'],
       desc, specs
     };
     adminProds.push(newProduct);
     saveAdminProducts(adminProds);
-    showToast(`"${name}" başarıyla eklendi! 🎉`, 'success');
+    showToast(`"${name}" başarıyla eklendi!`, 'success');
   }
 
   refreshProducts();
@@ -1133,7 +1198,7 @@ function addSpecRow(key = '', value = '') {
   div.innerHTML = `
     <input type="text" class="spec-key" placeholder="Özellik adı (ör: Ekran)" value="${key}">
     <input type="text" class="spec-val" placeholder="Değer (ör: 1.47 inç AMOLED)" value="${value}">
-    <button type="button" class="spec-remove" onclick="this.parentElement.remove()" title="Kaldır">✕</button>
+    <button type="button" class="spec-remove" onclick="this.parentElement.remove()" title="Kaldır"><svg class="icon" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   `;
   document.getElementById('specs-list').appendChild(div);
 }
@@ -1158,13 +1223,9 @@ function updateBadgeLabel() {
 
 function updateCategoryLabel() { /* otomatik */ }
 
-function getCatEmoji(cat) {
-  return { saat: '⌚', kulaklik: '🎧', tablet: '📱' }[cat] || '📦';
-}
-
 function stockBadge(stock) {
-  if (stock === 0) return `<span style="color:var(--error);font-weight:600">🔴 Tükendi</span>`;
-  if (stock <= 5)  return `<span style="color:var(--warning);font-weight:600">🟡 ${stock} adet</span>`;
+  if (stock === 0) return `<span style="color:var(--error);font-weight:600"><span class="status-dot red"></span>Tükendi</span>`;
+  if (stock <= 5)  return `<span style="color:var(--warning);font-weight:600"><span class="status-dot yellow"></span>${stock} adet</span>`;
   return `<span style="color:var(--success);font-weight:600">${stock} adet</span>`;
 }
 

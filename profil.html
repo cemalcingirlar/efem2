@@ -143,10 +143,41 @@
                 <input type="email" class="form-input" id="edit-email" readonly style="background:var(--surface-2)">
                 <span class="form-hint">E-posta değiştirilemez</span>
               </div>
+              <div class="form-group">
+                <label class="form-label">Cep Telefonu</label>
+                <input type="tel" class="form-input" id="edit-telefon" placeholder="05XX XXX XX XX">
+                <span class="form-error" id="edit-telefon-error"></span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Doğum Tarihi</label>
+                <input type="date" class="form-input" id="edit-dogum-tarihi">
+              </div>
+              <div class="form-group form-group-full">
+                <label class="form-label">T.C. Kimlik No</label>
+                <input type="text" class="form-input" id="edit-tck" placeholder="11 haneli T.C. kimlik numaranız" maxlength="11" inputmode="numeric">
+                <span class="form-hint">Fatura ve yasal kayıt için istenir, sadece sizin hesabınızdan görülebilir.</span>
+                <span class="form-error" id="edit-tck-error"></span>
+              </div>
               <div class="form-group form-group-full">
                 <button class="btn btn-primary" onclick="saveProfile()"><svg class="icon" viewBox="0 0 24 24"><path d="M5 3h11l3 3v15H5V3Z"/><path d="M8 3v5h8V3"/><path d="M8 14h8v6H8Z"/></svg> Bilgileri Güncelle</button>
               </div>
             </div>
+          </div>
+
+          <!-- Adreslerim -->
+          <div class="profile-info-card" style="margin-top:var(--space-5)">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-5)">
+              <h3>Adreslerim</h3>
+              <button class="btn btn-secondary btn-sm" onclick="openAddressModal()"><svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Yeni Adres Ekle</button>
+            </div>
+            <div id="address-list"></div>
+          </div>
+
+          <!-- Tehlikeli Bölge -->
+          <div class="profile-info-card" style="margin-top:var(--space-5);border:1px solid var(--error)">
+            <h3 style="margin-bottom:var(--space-3);color:var(--error)">Tehlikeli Bölge</h3>
+            <p style="color:var(--text-muted);font-size:0.875rem;margin-bottom:var(--space-4)">Hesabınızı sildiğinizde tüm profil bilgileriniz, adresleriniz ve sipariş geçmişiniz kalıcı olarak silinir. Bu işlem geri alınamaz.</p>
+            <button class="btn btn-ghost" style="color:var(--error);border-color:var(--error)" onclick="openDeleteAccountModal()"><svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><path d="M10 11v6M14 11v6"/></svg> Hesabımı Sil</button>
           </div>
 
           <!-- İstatistikler -->
@@ -195,6 +226,75 @@
   </div>
 </main>
 
+<!-- Adres Ekle/Düzenle Modal -->
+<div class="modal-overlay" id="address-modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="address-modal-title">Yeni Adres Ekle</h3>
+      <button class="btn btn-ghost btn-sm" onclick="closeAddressModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="addr-modal-id">
+      <div class="form-group" style="margin-bottom:var(--space-4)">
+        <label class="form-label">Adres Etiketi</label>
+        <select class="form-input" id="addr-modal-etiket">
+          <option value="Ev">Ev</option>
+          <option value="İş">İş</option>
+          <option value="Diğer">Diğer</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:var(--space-4)">
+        <label class="form-label">Ad Soyad</label>
+        <input type="text" class="form-input" id="addr-modal-alici">
+      </div>
+      <div class="form-group" style="margin-bottom:var(--space-4)">
+        <label class="form-label">Telefon</label>
+        <input type="tel" class="form-input" id="addr-modal-telefon" placeholder="05XX XXX XX XX">
+      </div>
+      <div class="address-form-grid" style="margin-bottom:var(--space-4)">
+        <div class="form-group">
+          <label class="form-label">İl</label>
+          <input type="text" class="form-input" id="addr-modal-il">
+        </div>
+        <div class="form-group">
+          <label class="form-label">İlçe</label>
+          <input type="text" class="form-input" id="addr-modal-ilce">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Açık Adres</label>
+        <textarea class="form-textarea" id="addr-modal-adres" rows="3" placeholder="Mahalle, sokak, bina no, daire..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer" style="display:flex;gap:var(--space-3);justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeAddressModal()">Vazgeç</button>
+      <button class="btn btn-primary" onclick="saveAddressFromModal()">Kaydet</button>
+    </div>
+  </div>
+</div>
+
+<!-- Hesap Silme Onay Modal -->
+<div class="modal-overlay" id="delete-account-modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 style="color:var(--error)">Hesabımı Sil</h3>
+      <button class="btn btn-ghost btn-sm" onclick="closeDeleteAccountModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="margin-bottom:var(--space-4)">Bu işlem geri alınamaz. Onaylamak için şifrenizi girin.</p>
+      <div class="form-group">
+        <label class="form-label">Şifre</label>
+        <input type="password" class="form-input" id="delete-account-password">
+        <span class="form-error" id="delete-account-error"></span>
+      </div>
+    </div>
+    <div class="modal-footer" style="display:flex;gap:var(--space-3);justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeDeleteAccountModal()">Vazgeç</button>
+      <button class="btn btn-primary" style="background:var(--error);border-color:var(--error)" onclick="confirmDeleteAccount()">Hesabımı Kalıcı Olarak Sil</button>
+    </div>
+  </div>
+</div>
+
 <footer>
   <div class="container">
     <div class="footer-bottom">
@@ -242,6 +342,9 @@ function renderProfileInfo() {
   document.getElementById('edit-ad').value    = currentUser.ad    || '';
   document.getElementById('edit-soyad').value = currentUser.soyad || '';
   document.getElementById('edit-email').value = currentUser.email || '';
+  document.getElementById('edit-telefon').value      = currentUser.telefon     || '';
+  document.getElementById('edit-dogum-tarihi').value = currentUser.dogumTarihi || '';
+  document.getElementById('edit-tck').value          = currentUser.tck         || '';
 
   const totalSpent = firestoreOrders.reduce((s, o) => s + (o.total || 0), 0);
   const favCount   = getFavorites().length;
@@ -249,6 +352,19 @@ function renderProfileInfo() {
   document.getElementById('stat-orders').textContent = firestoreOrders.length;
   document.getElementById('stat-total').textContent  = formatPrice(totalSpent);
   document.getElementById('stat-favs').textContent   = favCount;
+
+  renderAddressList();
+}
+
+/* ─── T.C. Kimlik No algoritma doğrulaması ─── */
+function isValidTCKN(tck) {
+  if (!/^\d{11}$/.test(tck) || tck[0] === '0') return false;
+  const d = tck.split('').map(Number);
+  const oddSum  = d[0] + d[2] + d[4] + d[6] + d[8];
+  const evenSum = d[1] + d[3] + d[5] + d[7];
+  const d10 = ((oddSum * 7) - evenSum) % 10;
+  const d11 = (d.slice(0, 10).reduce((a, b) => a + b, 0)) % 10;
+  return d10 === d[9] && d11 === d[10];
 }
 
 function showTab(tab) {
@@ -260,8 +376,161 @@ function showTab(tab) {
   if (tab === 'favorites') renderFavorites();
 }
 
-function saveProfile() {
-  showToast('Profil güncelleme yakında eklenecek.', 'info');
+async function saveProfile() {
+  document.getElementById('edit-tck-error').textContent = '';
+  document.getElementById('edit-telefon-error').textContent = '';
+
+  const tck = document.getElementById('edit-tck').value.trim();
+  if (tck && !isValidTCKN(tck)) {
+    document.getElementById('edit-tck-error').textContent = 'Geçersiz T.C. kimlik numarası.';
+    return;
+  }
+
+  const telefon = document.getElementById('edit-telefon').value.trim();
+  if (telefon && !/^0?5\d{9}$/.test(telefon.replace(/\s/g, ''))) {
+    document.getElementById('edit-telefon-error').textContent = 'Geçersiz telefon numarası.';
+    return;
+  }
+
+  const data = {
+    ad:          document.getElementById('edit-ad').value.trim(),
+    soyad:       document.getElementById('edit-soyad').value.trim(),
+    telefon:     telefon,
+    dogumTarihi: document.getElementById('edit-dogum-tarihi').value,
+    tck:         tck
+  };
+
+  const result = await saveProfileFields(data);
+  if (!result.success) {
+    showToast(result.msg, 'error');
+    return;
+  }
+  currentUser = { ...currentUser, ...data };
+  showToast('Profil bilgileri güncellendi.', 'success');
+}
+
+/* ─── Adresler ─── */
+function renderAddressList() {
+  const list = document.getElementById('address-list');
+  const addresses = currentUser.addresses || [];
+
+  if (addresses.length === 0) {
+    list.innerHTML = `<p style="color:var(--text-muted);font-size:0.875rem">Henüz kayıtlı adresiniz yok.</p>`;
+    return;
+  }
+
+  list.innerHTML = addresses.map(a => `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-4);padding:var(--space-4);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:var(--space-3)">
+      <div>
+        <div style="font-weight:700;margin-bottom:4px">${a.etiket} <span style="font-weight:400;color:var(--text-muted)">· ${a.alici || ''}</span></div>
+        <div style="font-size:0.875rem;color:var(--text-secondary)">${a.adres}, ${a.ilce} / ${a.il}</div>
+        <div style="font-size:0.875rem;color:var(--text-muted)">${a.telefon || ''}</div>
+      </div>
+      <div style="display:flex;gap:var(--space-2);flex-shrink:0">
+        <button class="btn btn-ghost btn-sm" onclick="openAddressModal('${a.id}')">Düzenle</button>
+        <button class="btn btn-ghost btn-sm" style="color:var(--error);border-color:var(--error)" onclick="deleteAddress('${a.id}')">Sil</button>
+      </div>
+    </div>`).join('');
+}
+
+function openAddressModal(id) {
+  const addresses = currentUser.addresses || [];
+  const addr = id ? addresses.find(a => a.id === id) : null;
+
+  document.getElementById('address-modal-title').textContent = addr ? 'Adresi Düzenle' : 'Yeni Adres Ekle';
+  document.getElementById('addr-modal-id').value      = addr?.id      || '';
+  document.getElementById('addr-modal-etiket').value  = addr?.etiket  || 'Ev';
+  document.getElementById('addr-modal-alici').value   = addr?.alici   || '';
+  document.getElementById('addr-modal-telefon').value = addr?.telefon || '';
+  document.getElementById('addr-modal-il').value      = addr?.il      || '';
+  document.getElementById('addr-modal-ilce').value    = addr?.ilce    || '';
+  document.getElementById('addr-modal-adres').value   = addr?.adres   || '';
+
+  document.getElementById('address-modal-overlay').classList.add('active');
+}
+
+function closeAddressModal() {
+  document.getElementById('address-modal-overlay').classList.remove('active');
+}
+
+async function saveAddressFromModal() {
+  const id      = document.getElementById('addr-modal-id').value;
+  const alici   = document.getElementById('addr-modal-alici').value.trim();
+  const adres   = document.getElementById('addr-modal-adres').value.trim();
+  const il      = document.getElementById('addr-modal-il').value.trim();
+  const ilce    = document.getElementById('addr-modal-ilce').value.trim();
+
+  if (!alici || !adres || !il || !ilce) {
+    showToast('Lütfen tüm zorunlu adres alanlarını doldurun.', 'error');
+    return;
+  }
+
+  const entry = {
+    id:      id || ('addr' + Date.now()),
+    etiket:  document.getElementById('addr-modal-etiket').value,
+    alici,
+    telefon: document.getElementById('addr-modal-telefon').value.trim(),
+    il,
+    ilce,
+    adres
+  };
+
+  let addresses = [...(currentUser.addresses || [])];
+  if (id) {
+    addresses = addresses.map(a => a.id === id ? entry : a);
+  } else {
+    addresses.push(entry);
+  }
+
+  const result = await saveAddresses(addresses);
+  if (!result.success) {
+    showToast(result.msg, 'error');
+    return;
+  }
+  currentUser.addresses = addresses;
+  renderAddressList();
+  closeAddressModal();
+  showToast('Adres kaydedildi.', 'success');
+}
+
+async function deleteAddress(id) {
+  const addresses = (currentUser.addresses || []).filter(a => a.id !== id);
+  const result = await saveAddresses(addresses);
+  if (!result.success) {
+    showToast(result.msg, 'error');
+    return;
+  }
+  currentUser.addresses = addresses;
+  renderAddressList();
+  showToast('Adres silindi.', 'success');
+}
+
+/* ─── Hesap silme ─── */
+function openDeleteAccountModal() {
+  document.getElementById('delete-account-password').value = '';
+  document.getElementById('delete-account-error').textContent = '';
+  document.getElementById('delete-account-modal-overlay').classList.add('active');
+}
+
+function closeDeleteAccountModal() {
+  document.getElementById('delete-account-modal-overlay').classList.remove('active');
+}
+
+async function confirmDeleteAccount() {
+  const password = document.getElementById('delete-account-password').value;
+  if (!password) {
+    document.getElementById('delete-account-error').textContent = 'Şifrenizi girin.';
+    return;
+  }
+
+  const result = await deleteAccount(password);
+  if (!result.success) {
+    document.getElementById('delete-account-error').textContent = result.msg;
+    return;
+  }
+
+  showToast('Hesabınız silindi.', 'success');
+  setTimeout(() => { window.location.href = 'index.html'; }, 1000);
 }
 
 function renderOrders() {

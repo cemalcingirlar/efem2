@@ -234,6 +234,8 @@ function initSiteLinks() {
     taxOffice: () => SITE.legal.taxOffice || '[Vergi dairesi bilgisi eklenecek]',
     mersisNo:  () => SITE.legal.mersisNo,
     registryNo:() => SITE.legal.registryNo,
+    kepAddress:() => SITE.legal.kepAddress || '[KEP adresi eklenecek]',
+    iban:      () => SITE.legal.iban || '[IBAN eklenecek]',
     returnDays:() => SITE.commerce.returnDays,
     year:      () => new Date().getFullYear()
   };

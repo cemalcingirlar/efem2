@@ -3,6 +3,31 @@
 Bu dosya projede yapılan her ekleme, değişiklik ve kaldırmayı kayıt altına alır.
 En yeni kayıtlar en üstte.
 
+## 2026-08-14 (devam 9)
+
+### Üyelik, sipariş ve kurumsal bilgi eksikleri
+- Add: `site-config.js` — ünvan, vergi dairesi (Seyhan VD), KEP adresi, IBAN, çalışma saati
+  (10:00–22:00), Instagram (`efemelektronik`) güncellendi; `odeme.html`/`mesafeli-satis-sozlesmesi.html`
+  bu tek kaynaktan besleniyor, sahte banka/IBAN verileri kaldırıldı.
+- Add: `hakkimizda.html` distribütör şeridindeki İndeks Bilgisayar ve Ouno Servis artık metin
+  etiketi değil gerçek logo (`assets/logos/indeks.png`, `assets/logos/ouno.png`, kullanıcı
+  tarafından sağlandı), `site-config.js` distributors listesi güncellendi.
+- Fix: Sepetteki ürüne (görsel/isim) tıklayınca artık ürün detay sayfasına gidiyor.
+- Add: Profil sayfasına cep telefonu, doğum tarihi, T.C. kimlik no (algoritma doğrulamalı)
+  alanları, çoklu adres yönetimi (ekle/düzenle/sil, Ev/İş/Diğer etiketli) ve "Hesabımı Sil"
+  (şifre ile yeniden kimlik doğrulama + Firestore + Auth hesabı kalıcı silme) eklendi.
+- Add: Ödeme sayfası — kayıtlı adreslerden tek tıkla seçim, EFT dekont no alanı, ayrı fatura
+  bilgileri formu (bireysel/kurumsal, TCK veya vergi no, vergi dairesi). Admin panelinde sipariş
+  detayında fatura bilgileri ve EFT dekont no görüntüleniyor, kargo takip no girilebiliyor.
+- Add: Şifre sıfırlama artık Firebase'in genel İngilizce sayfası yerine kendi Türkçe
+  `sifre-sifirla.html` sayfasına yönleniyor; yeni şifre iki kere sorulup eşleştiriliyor.
+- Add: Firestore `mail` koleksiyonu + güvenlik kuralı — üye sipariş onayı ve ürün soru-cevap
+  bildirimleri (`destek@efemiletisim.com`) otomatik kuyruğa yazılıyor. Gerçek gönderim için
+  Firebase Console'da kurulacak extension adımları `docs/EMAIL-KURULUMU.md`'de. Admin panelinde
+  iptal edilen siparişler için tek tıkla müşteriye mail taslağı açan buton eklendi (otomatik
+  iptal maili, admin panelinin gerçek Firestore bağlantısı olmadığından şimdilik desteklenmiyor
+  — bkz. `docs/EMAIL-KURULUMU.md` "Bilinen sınırlama").
+
 ## 2026-08-14 (devam 8)
 
 ### Karanlık mod, footer, admin panel, sipariş yönetimi

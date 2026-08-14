@@ -3,3 +3,9 @@
 docs/
 *.md
 .firebase/
+assets/images/*-sketch.png
+assets/images/*-sketch.jpg
+assets/images/category-*.png
+assets/images/category-*.jpg
+assets/images/empty-*.png
+assets/images/empty-*.jpg

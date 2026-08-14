@@ -9,8 +9,9 @@ En yeni kayıtlar en üstte.
 - Add: `site-config.js` — ünvan, vergi dairesi (Seyhan VD), KEP adresi, IBAN, çalışma saati
   (10:00–22:00), Instagram (`efemelektronik`) güncellendi; `odeme.html`/`mesafeli-satis-sozlesmesi.html`
   bu tek kaynaktan besleniyor, sahte banka/IBAN verileri kaldırıldı.
-- Add: `hakkimizda.html` distribütör şeridine "İndeks Bilgisayar" tam adı düzeltildi (Ouno
-  Servis zaten vardı); logo dosyaları elde olmadığından ikisi de metin etiketi olarak kalıyor.
+- Add: `hakkimizda.html` distribütör şeridindeki İndeks Bilgisayar ve Ouno Servis artık metin
+  etiketi değil gerçek logo (`assets/logos/indeks.png`, `assets/logos/ouno.png`, kullanıcı
+  tarafından sağlandı), `site-config.js` distributors listesi güncellendi.
 - Fix: Sepetteki ürüne (görsel/isim) tıklayınca artık ürün detay sayfasına gidiyor.
 - Add: Profil sayfasına cep telefonu, doğum tarihi, T.C. kimlik no (algoritma doğrulamalı)
   alanları, çoklu adres yönetimi (ekle/düzenle/sil, Ev/İş/Diğer etiketli) ve "Hesabımı Sil"

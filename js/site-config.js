@@ -88,11 +88,11 @@ const SITE = {
     },
     distributors: [
       { name: 'Datagate',    logo: 'assets/logos/datagate.svg' },
-      { name: 'İndeks',      logo: 'assets/logos/indeks.svg' },
+      { name: 'İndeks',      logo: 'assets/logos/indeks.png' },
       { name: 'Genpa',       logo: 'assets/logos/genpa.svg' },
       { name: 'KVK',         logo: 'assets/logos/kvk.svg' },
       { name: 'Başarı',      logo: 'assets/logos/basari.svg' },
-      { name: 'Ouno Servis', logo: 'assets/logos/ouno.svg' }
+      { name: 'Ouno Servis', logo: 'assets/logos/ouno.png' }
     ]
   }
 };

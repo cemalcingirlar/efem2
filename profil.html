@@ -4,7 +4,25 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Profilim – efemiletisim.com</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/logos/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="assets/logos/favicon-512.png">
+  <link rel="apple-touch-icon" href="assets/logos/favicon-180.png">
   <meta name="description" content="Kullanıcı profili, sipariş geçmişi ve hesap ayarları.">
+  <meta name="robots" content="noindex, follow">
+  <link rel="canonical" href="https://efemiletisim.com/profil.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="efemiletisim.com">
+  <meta property="og:locale" content="tr_TR">
+  <meta property="og:title" content="Profilim – efemiletisim.com">
+  <meta property="og:description" content="Kullanıcı profili, sipariş geçmişi ve hesap ayarları.">
+  <meta property="og:url" content="https://efemiletisim.com/profil.html">
+  <meta property="og:image" content="https://efemiletisim.com/assets/logos/og-image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Profilim – efemiletisim.com">
+  <meta name="twitter:description" content="Kullanıcı profili, sipariş geçmişi ve hesap ayarları.">
+  <meta name="twitter:image" content="https://efemiletisim.com/assets/logos/og-image.jpg">
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/pages.css">
@@ -15,15 +33,15 @@
   <div class="container">
     <div class="navbar-inner">
       <a href="index.html" class="navbar-logo">
-        <div class="logo-icon">📱</div>
+        <div class="logo-icon"><img src="assets/logos/icon-square.png" alt="Efem İletişim" loading="eager"></div>
         <div class="logo-text">
-          <span class="logo-name" style="display:block;line-height:1">efem</span>
-          <span class="logo-sub" style="display:block;line-height:1">iletişim</span>
+          <span class="logo-name">efem</span>
+          <span class="logo-sub">iletişim</span>
         </div>
       </a>
       <div class="navbar-search">
         <div class="search-input-wrap">
-          <span class="search-icon">🔍</span>
+          <span class="search-icon"><svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg></span>
           <input type="text" id="search-input" placeholder="Ürün ara..." autocomplete="off">
         </div>
         <div class="search-dropdown" id="search-dropdown"></div>
@@ -31,20 +49,21 @@
       <nav class="navbar-nav">
         <a href="index.html" class="nav-link">Ana Sayfa</a>
         <a href="urunler.html" class="nav-link">Ürünler</a>
+        <a href="hakkimizda.html" class="nav-link">Hakkımızda</a>
       </nav>
       <div class="navbar-actions">
         <div class="nav-dropdown" id="nav-user-menu">
-          <button class="btn btn-ghost btn-sm">👤 <span id="nav-user-name">Kullanıcı</span> ▾</button>
+          <button class="btn btn-ghost btn-sm"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c1.5-4 5-6 7.5-6s6 2 7.5 6"/></svg> <span class="nav-label"><span id="nav-user-name">Kullanıcı</span> ▾</span></button>
           <div class="nav-dropdown-menu">
-            <a href="profil.html" class="nav-dropdown-item">📋 Profilim</a>
-            <a href="profil.html?tab=orders" class="nav-dropdown-item">📦 Siparişlerim</a>
-            <span class="nav-dropdown-item" onclick="logout()" style="color:var(--error)">🚪 Çıkış Yap</span>
+            <a href="profil.html" class="nav-dropdown-item"><svg class="icon" viewBox="0 0 24 24"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><path d="M9 11h6M9 15h6"/></svg> Profilim</a>
+            <a href="profil.html?tab=orders" class="nav-dropdown-item"><svg class="icon" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4-9-4Z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg> Siparişlerim</a>
+            <span class="nav-dropdown-item" onclick="logout()" style="color:var(--error)"><svg class="icon" viewBox="0 0 24 24"><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3"/><path d="M15 16l4-4-4-4"/><path d="M19 12H9"/></svg> Çıkış Yap</span>
           </div>
         </div>
         <!-- Fallback giriş butonu (normalde gizli) -->
-        <a href="hesap.html" class="btn btn-ghost btn-sm hidden" id="nav-login-link">👤 Giriş Yap</a>
+        <a href="hesap.html" class="btn btn-ghost btn-sm hidden" id="nav-login-link"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c1.5-4 5-6 7.5-6s6 2 7.5 6"/></svg><span class="nav-label"> Giriş Yap</span></a>
         <a href="sepet.html" class="cart-btn">
-          🛒 Sepet
+          <svg class="icon" viewBox="0 0 24 24"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg><span class="nav-label"> Sepet</span>
           <span class="cart-badge" id="cart-badge-1" style="display:none">0</span>
         </a>
         <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
@@ -54,17 +73,18 @@
 </nav>
 
 <div class="mobile-menu" id="mobile-menu">
-  <a href="index.html" class="mobile-nav-link">🏠 Ana Sayfa</a>
-  <a href="urunler.html" class="mobile-nav-link">🛍 Ürünler</a>
-  <a href="profil.html?tab=orders" class="mobile-nav-link">📦 Siparişlerim</a>
-  <a href="sepet.html" class="mobile-nav-link">🛒 Sepetim</a>
-  <span class="mobile-nav-link" onclick="logout()" style="color:var(--error)">🚪 Çıkış Yap</span>
+  <a href="index.html" class="mobile-nav-link"><svg class="icon" viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9h12v-9"/></svg> Ana Sayfa</a>
+  <a href="urunler.html" class="mobile-nav-link"><svg class="icon" viewBox="0 0 24 24"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg> Ürünler</a>
+  <a href="hakkimizda.html" class="mobile-nav-link"><svg class="icon" viewBox="0 0 24 24"><path d="M5 21V5a1 1 0 0 1 1-1h6v17"/><path d="M12 8h6a1 1 0 0 1 1 1v12"/><path d="M9 9v.01M9 13v.01M9 17v.01M16 12v.01M16 16v.01"/></svg> Hakkımızda</a>
+  <a href="profil.html?tab=orders" class="mobile-nav-link"><svg class="icon" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4-9-4Z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg> Siparişlerim</a>
+  <a href="sepet.html" class="mobile-nav-link"><svg class="icon" viewBox="0 0 24 24"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg> Sepetim</a>
+  <span class="mobile-nav-link" onclick="logout()" style="color:var(--error)"><svg class="icon" viewBox="0 0 24 24"><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3"/><path d="M15 16l4-4-4-4"/><path d="M19 12H9"/></svg> Çıkış Yap</span>
 </div>
 
 <main>
   <div class="page-header">
     <div class="container">
-      <h1>👤 Hesabım</h1>
+      <h1><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c1.5-4 5-6 7.5-6s6 2 7.5 6"/></svg> Hesabım</h1>
     </div>
   </div>
 
@@ -80,17 +100,17 @@
           </div>
           <nav class="profile-nav">
             <div class="profile-nav-item active" id="nav-profile" onclick="showTab('profile')">
-              <span class="icon">👤</span> Profilim
+              <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c1.5-4 5-6 7.5-6s6 2 7.5 6"/></svg> Profilim
             </div>
             <div class="profile-nav-item" id="nav-orders" onclick="showTab('orders')">
-              <span class="icon">📦</span> Siparişlerim
+              <svg class="icon" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4-9-4Z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg> Siparişlerim
             </div>
             <div class="profile-nav-item" id="nav-favorites" onclick="showTab('favorites')">
-              <span class="icon">❤️</span> Favorilerim
+              <svg class="icon" viewBox="0 0 24 24"><path d="M12 21s7-6.5 7-11a7 7 0 1 0-14 0c0 4.5 7 11 7 11Z"/></svg> Favorilerim
             </div>
-            <div style="border-top:1px solid var(--border);margin:var(--space-2) 0;padding-top:var(--space-2)">
+            <div class="profile-nav-divider">
               <div class="profile-nav-item" onclick="logout()" style="color:var(--error)">
-                <span class="icon">🚪</span> Çıkış Yap
+                <svg class="icon" viewBox="0 0 24 24"><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3"/><path d="M15 16l4-4-4-4"/><path d="M19 12H9"/></svg> Çıkış Yap
               </div>
             </div>
           </nav>
@@ -102,9 +122,9 @@
 
         <!-- Profil Tab -->
         <div id="tab-profile" class="profile-tab">
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-6);margin-bottom:var(--space-5)">
+          <div class="profile-info-card">
             <h3 style="margin-bottom:var(--space-5)">Kişisel Bilgiler</h3>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4)" id="profile-form">
+            <div class="profile-form-grid" id="profile-form">
               <div class="form-group">
                 <label class="form-label">Ad</label>
                 <input type="text" class="form-input" id="edit-ad">
@@ -113,46 +133,46 @@
                 <label class="form-label">Soyad</label>
                 <input type="text" class="form-input" id="edit-soyad">
               </div>
-              <div class="form-group" style="grid-column:1/-1">
+              <div class="form-group form-group-full">
                 <label class="form-label">E-posta</label>
                 <input type="email" class="form-input" id="edit-email" readonly style="background:var(--surface-2)">
                 <span class="form-hint">E-posta değiştirilemez</span>
               </div>
-              <div class="form-group" style="grid-column:1/-1">
-                <button class="btn btn-primary" onclick="saveProfile()">💾 Bilgileri Güncelle</button>
+              <div class="form-group form-group-full">
+                <button class="btn btn-primary" onclick="saveProfile()"><svg class="icon" viewBox="0 0 24 24"><path d="M5 3h11l3 3v15H5V3Z"/><path d="M8 3v5h8V3"/><path d="M8 14h8v6H8Z"/></svg> Bilgileri Güncelle</button>
               </div>
             </div>
           </div>
 
           <!-- İstatistikler -->
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-4)">
-            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-5);text-align:center">
-              <div style="font-size:2rem;font-weight:800;color:var(--primary)" id="stat-orders">0</div>
-              <div style="font-size:0.875rem;color:var(--text-muted);margin-top:4px">Toplam Sipariş</div>
+          <div class="profile-stats-grid">
+            <div class="profile-stat-card">
+              <div class="num" style="color:var(--primary)" id="stat-orders">0</div>
+              <div class="label">Toplam Sipariş</div>
             </div>
-            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-5);text-align:center">
-              <div style="font-size:2rem;font-weight:800;color:var(--accent)" id="stat-total">₺0</div>
-              <div style="font-size:0.875rem;color:var(--text-muted);margin-top:4px">Toplam Harcama</div>
+            <div class="profile-stat-card">
+              <div class="num" style="color:var(--accent)" id="stat-total">₺0</div>
+              <div class="label">Toplam Harcama</div>
             </div>
-            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:var(--space-5);text-align:center">
-              <div style="font-size:2rem;font-weight:800;color:var(--error)" id="stat-favs">0</div>
-              <div style="font-size:0.875rem;color:var(--text-muted);margin-top:4px">Favori Ürün</div>
+            <div class="profile-stat-card">
+              <div class="num" style="color:var(--error)" id="stat-favs">0</div>
+              <div class="label">Favori Ürün</div>
             </div>
           </div>
         </div>
 
         <!-- Siparişler Tab -->
         <div id="tab-orders" class="profile-tab hidden">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-5)">
+          <div class="profile-tab-header">
             <h3>Siparişlerim</h3>
-            <a href="urunler.html" class="btn btn-primary btn-sm">🛍 Yeni Sipariş</a>
+            <a href="urunler.html" class="btn btn-primary btn-sm"><svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M4 9l1-5h14l1 5"/><path d="M4 9a2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0"/><path d="M5 9v10h14V9"/></svg> Yeni Sipariş</a>
           </div>
           <div id="orders-list">
             <div class="empty-state">
-              <div class="icon">📦</div>
+              <div class="icon"><svg class="icon" viewBox="0 0 24 24" style="width:3rem;height:3rem"><path d="M3 7l9-4 9 4-9 4-9-4Z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg></div>
               <h3>Henüz Siparişiniz Yok</h3>
               <p>İlk siparişinizi oluşturun!</p>
-              <a href="urunler.html" class="btn btn-primary">🛍 Alışverişe Başla</a>
+              <a href="urunler.html" class="btn btn-primary"><svg class="icon" viewBox="0 0 24 24"><path d="M4 9l1-5h14l1 5"/><path d="M4 9a2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0"/><path d="M5 9v10h14V9"/></svg> Alışverişe Başla</a>
             </div>
           </div>
         </div>
@@ -174,56 +194,38 @@
   <div class="container">
     <div class="footer-bottom">
       <span>© 2024 efemiletisim.com</span>
+      <div class="footer-legal-links">
+        <a href="gizlilik-kvkk.html">Gizlilik &amp; KVKK</a>
+        <a href="mesafeli-satis-sozlesmesi.html">Mesafeli Satış Sözleşmesi</a>
+        <a href="iptal-iade.html">İptal ve İade</a>
+      </div>
     </div>
   </div>
 </footer>
 
 <div id="toast-container"></div>
 
+<script src="js/site-config.js"></script>
 <script src="js/data.js"></script>
 <script src="js/cart.js"></script>
 <script src="js/products.js"></script>
 <script src="js/main.js"></script>
-<script type="module">
-import { onAuthChange, firebaseLogout, getUserProfile, saveOrderToFirestore } from './js/firebase-auth.js';
-
-// Logout butonunu global yap
-window.logout = async function() {
-  await firebaseLogout();
-  window.location.href = 'hesap.html';
-};
-
-// Sipariş kaydetme fonksiyonunu override et (odeme.html ile uyumlu)
-window.saveOrder = async function(orderData) {
-  if (!window._fbUser) return null;
-  return await saveOrderToFirestore(window._fbUser.uid, orderData);
-};
-</script>
+<script type="module" src="js/auth.js"></script>
 <script>
 let currentUser  = null;
 let firestoreOrders = [];
 
-// Firebase auth state — kullanıcı yoksa login'e yönlendir
+// Oturum yönetimi js/auth.js modülüne aittir; profil sayfası giriş zorunludur.
 (async () => {
-  const { onAuthChange, getUserProfile } = await import('./js/firebase-auth.js');
-  onAuthChange(async (user) => {
-    if (!user || !user.emailVerified) {
-      window.location.href = 'hesap.html';
-      return;
-    }
-    window._fbUser = user;
-    const profile  = await getUserProfile(user.uid);
-    currentUser = {
-      uid:   user.uid,
-      ad:    profile?.ad    || user.displayName?.split(' ')[0] || '',
-      soyad: profile?.soyad || user.displayName?.split(' ').slice(1).join(' ') || '',
-      email: user.email
-    };
-    firestoreOrders = [...(profile?.orders || [])].reverse(); // Yeniden eskiye
-    renderProfileInfo();
-    const tab = getUrlParam('tab');
-    if (tab === 'orders' || tab === 'favorites') showTab(tab);
-  });
+  const authenticated = await window.requireAuth({ redirectTo: 'hesap.html' });
+  if (!authenticated) return;
+
+  currentUser     = window.getCurrentUser();
+  firestoreOrders = [...currentUser.orders].reverse(); // Yeniden eskiye
+
+  renderProfileInfo();
+  const tab = getUrlParam('tab');
+  if (tab === 'orders' || tab === 'favorites') showTab(tab);
 })();
 
 function renderProfileInfo() {
@@ -264,19 +266,19 @@ function renderOrders() {
   if (orders.length === 0) {
     container.innerHTML = `
       <div class="empty-state">
-        <div class="icon">📦</div>
+        <div class="icon"><svg class="icon" viewBox="0 0 24 24" style="width:3rem;height:3rem"><path d="M3 7l9-4 9 4-9 4-9-4Z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg></div>
         <h3>Henüz Siparişiniz Yok</h3>
         <p>İlk siparişinizi oluşturun!</p>
-        <a href="urunler.html" class="btn btn-primary">🛍 Alışverişe Başla</a>
+        <a href="urunler.html" class="btn btn-primary"><svg class="icon" viewBox="0 0 24 24"><path d="M4 9l1-5h14l1 5"/><path d="M4 9a2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0"/><path d="M5 9v10h14V9"/></svg> Alışverişe Başla</a>
       </div>`;
     return;
   }
 
   const statusMap = {
-    processing: { cls: 'processing', label: '⏳ Hazırlanıyor' },
-    shipping:   { cls: 'shipping',   label: '🚚 Kargoda' },
-    delivered:  { cls: 'delivered',  label: '✅ Teslim Edildi' },
-    cancelled:  { cls: 'cancelled',  label: '❌ İptal Edildi' }
+    processing: { cls: 'processing', label: 'Hazırlanıyor', icon: '<svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>' },
+    shipping:   { cls: 'shipping',   label: 'Kargoda',       icon: '<svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="2" y="8" width="12" height="8" rx="1"/><path d="M14 11h4l3 3v2h-2"/><circle cx="6" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>' },
+    delivered:  { cls: 'delivered',  label: 'Teslim Edildi', icon: '<svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9"/></svg>' },
+    cancelled:  { cls: 'cancelled',  label: 'İptal Edildi',  icon: '<svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>' }
   };
 
   container.innerHTML = orders.map(o => {
@@ -289,7 +291,7 @@ function renderOrders() {
             <div class="order-id">${o.id}</div>
             <div class="order-date">${date}</div>
           </div>
-          <span class="order-status ${s.cls}">${s.label}</span>
+          <span class="order-status ${s.cls}">${s.icon} ${s.label}</span>
         </div>
         <div class="order-card-body">
           <div style="display:flex;flex-direction:column;gap:var(--space-2);margin-bottom:var(--space-4)">
@@ -303,7 +305,7 @@ function renderOrders() {
             <div style="font-weight:700;font-size:1rem">
               Toplam: <span style="color:var(--primary)">${formatPrice(o.total)}</span>
             </div>
-            <div style="font-size:0.8125rem;color:var(--text-muted)">🚚 Ücretsiz Kargo</div>
+            <div class="order-shipping-note"><svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="2" y="8" width="12" height="8" rx="1"/><path d="M14 11h4l3 3v2h-2"/><circle cx="6" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg> Ücretsiz Kargo</div>
           </div>
         </div>
       </div>`;
@@ -318,10 +320,10 @@ function renderFavorites() {
   if (favProducts.length === 0) {
     grid.innerHTML = `
       <div class="empty-state" style="grid-column:1/-1">
-        <div class="icon">❤️</div>
+        <div class="icon"><svg class="icon" viewBox="0 0 24 24" style="width:3rem;height:3rem"><path d="M12 21s7-6.5 7-11a7 7 0 1 0-14 0c0 4.5 7 11 7 11Z"/></svg></div>
         <h3>Favori Ürününüz Yok</h3>
         <p>Beğendiğiniz ürünleri favorilere ekleyin.</p>
-        <a href="urunler.html" class="btn btn-primary">🛍 Ürünlere Bak</a>
+        <a href="urunler.html" class="btn btn-primary"><svg class="icon" viewBox="0 0 24 24"><path d="M4 9l1-5h14l1 5"/><path d="M4 9a2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0"/><path d="M5 9v10h14V9"/></svg> Ürünlere Bak</a>
       </div>`;
     return;
   }

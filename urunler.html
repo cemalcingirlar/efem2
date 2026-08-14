@@ -4,7 +4,25 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ürünler – efemiletisim.com</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/logos/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="assets/logos/favicon-512.png">
+  <link rel="apple-touch-icon" href="assets/logos/favicon-180.png">
   <meta name="description" content="Akıllı saatler, kulaklıklar ve tabletler. Apple, Samsung, Sony ve daha fazlası. Ücretsiz kargo, güvenli alışveriş.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://efemiletisim.com/urunler.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="efemiletisim.com">
+  <meta property="og:locale" content="tr_TR">
+  <meta property="og:title" content="Ürünler – efemiletisim.com">
+  <meta property="og:description" content="Akıllı saatler, kulaklıklar ve tabletler. Apple, Samsung, Sony ve daha fazlası. Ücretsiz kargo, güvenli alışveriş.">
+  <meta property="og:url" content="https://efemiletisim.com/urunler.html">
+  <meta property="og:image" content="https://efemiletisim.com/assets/logos/og-image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Ürünler – efemiletisim.com">
+  <meta name="twitter:description" content="Akıllı saatler, kulaklıklar ve tabletler. Apple, Samsung, Sony ve daha fazlası. Ücretsiz kargo, güvenli alışveriş.">
+  <meta name="twitter:image" content="https://efemiletisim.com/assets/logos/og-image.jpg">
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/pages.css">
@@ -12,25 +30,21 @@
 <body>
 
 <!-- Duyuru Şeridi -->
-<div id="announcement-bar" class="announcement-bar">
-  🎉 Tüm ürünlerde <strong>ÜCRETSİZ KARGO</strong>! &nbsp;|&nbsp; Kod: <strong>EFEMI10</strong> ile %10 indirim!
-  <button class="announcement-close" id="announcement-close">✕</button>
-</div>
 
 <!-- Navbar -->
 <nav id="navbar">
   <div class="container">
     <div class="navbar-inner">
       <a href="index.html" class="navbar-logo">
-        <div class="logo-icon">📱</div>
+        <div class="logo-icon"><img src="assets/logos/icon-square.png" alt="Efem İletişim" loading="eager"></div>
         <div class="logo-text">
-          <span class="logo-name" style="display:block;line-height:1">efem</span>
-          <span class="logo-sub" style="display:block;line-height:1">iletişim</span>
+          <span class="logo-name">efem</span>
+          <span class="logo-sub">iletişim</span>
         </div>
       </a>
       <div class="navbar-search">
         <div class="search-input-wrap">
-          <span class="search-icon">🔍</span>
+          <span class="search-icon"><svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg></span>
           <input type="text" id="search-input" placeholder="Ürün, marka ara..." autocomplete="off">
         </div>
         <div class="search-dropdown" id="search-dropdown"></div>
@@ -40,24 +54,25 @@
         <div class="nav-dropdown">
           <a href="urunler.html" class="nav-link active">Ürünler ▾</a>
           <div class="nav-dropdown-menu">
-            <a href="urunler.html?kat=saat" class="nav-dropdown-item"><span class="icon">⌚</span> Akıllı Saatler</a>
-            <a href="urunler.html?kat=kulaklik" class="nav-dropdown-item"><span class="icon">🎧</span> Kulaklıklar</a>
-            <a href="urunler.html?kat=tablet" class="nav-dropdown-item"><span class="icon">📱</span> Tabletler</a>
+            <a href="urunler.html?kat=saat" class="nav-dropdown-item"><span class="icon"><svg class="icon" viewBox="0 0 24 24"><rect x="7" y="6.5" width="10" height="11" rx="3"/><path d="M9.5 6.5V4a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v2.5"/><path d="M9.5 17.5V20a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-2.5"/><path d="M17 10h1.2a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H17"/><path d="M12 9.8v2.4l1.5 .9"/></svg></span> Akıllı Saatler</a>
+            <a href="urunler.html?kat=kulaklik" class="nav-dropdown-item"><span class="icon"><svg class="icon" viewBox="0 0 24 24"><path d="M4 14.5a8 8 0 0 1 16 0"/><path d="M6 13.6a6 6 0 0 1 12 0"/><rect x="3.2" y="14.5" width="4.3" height="6.5" rx="2"/><rect x="16.5" y="14.5" width="4.3" height="6.5" rx="2"/></svg></span> Kulaklıklar</a>
+            <a href="urunler.html?kat=tablet" class="nav-dropdown-item"><span class="icon"><svg class="icon" viewBox="0 0 24 24"><rect x="5" y="2.5" width="14" height="19" rx="2.8"/><path d="M11.5 3.6h1"/><path d="M10.3 19.6h3.4"/></svg></span> Tabletler</a>
           </div>
         </div>
+        <a href="hakkimizda.html" class="nav-link">Hakkımızda</a>
       </nav>
       <div class="navbar-actions">
-        <a href="hesap.html" class="btn btn-ghost btn-sm" id="nav-login-link">👤 Giriş Yap</a>
+        <a href="hesap.html" class="btn btn-ghost btn-sm" id="nav-login-link"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c1.5-4 5-6 7.5-6s6 2 7.5 6"/></svg><span class="nav-label"> Giriş Yap</span></a>
         <div class="nav-dropdown hidden" id="nav-user-menu">
-          <button class="btn btn-ghost btn-sm">👤 <span id="nav-user-name">Kullanıcı</span> ▾</button>
+          <button class="btn btn-ghost btn-sm"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c1.5-4 5-6 7.5-6s6 2 7.5 6"/></svg> <span class="nav-label"><span id="nav-user-name">Kullanıcı</span> ▾</span></button>
           <div class="nav-dropdown-menu">
-            <a href="profil.html" class="nav-dropdown-item">📋 Profilim</a>
-            <a href="profil.html?tab=orders" class="nav-dropdown-item">📦 Siparişlerim</a>
-            <span class="nav-dropdown-item" onclick="logout()" style="color:var(--error)">🚪 Çıkış Yap</span>
+            <a href="profil.html" class="nav-dropdown-item"><svg class="icon" viewBox="0 0 24 24"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><path d="M9 11h6M9 15h6"/></svg> Profilim</a>
+            <a href="profil.html?tab=orders" class="nav-dropdown-item"><svg class="icon" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4-9-4Z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg> Siparişlerim</a>
+            <span class="nav-dropdown-item" onclick="logout()" style="color:var(--error)"><svg class="icon" viewBox="0 0 24 24"><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3"/><path d="M15 16l4-4-4-4"/><path d="M19 12H9"/></svg> Çıkış Yap</span>
           </div>
         </div>
         <a href="sepet.html" class="cart-btn">
-          🛒 Sepet
+          <svg class="icon" viewBox="0 0 24 24"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg><span class="nav-label"> Sepet</span>
           <span class="cart-badge" id="cart-badge-1" style="display:none">0</span>
         </a>
         <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
@@ -67,20 +82,21 @@
 </nav>
 
 <div class="mobile-menu" id="mobile-menu">
-  <a href="index.html" class="mobile-nav-link">🏠 Ana Sayfa</a>
-  <a href="urunler.html?kat=saat" class="mobile-nav-link">⌚ Akıllı Saatler</a>
-  <a href="urunler.html?kat=kulaklik" class="mobile-nav-link">🎧 Kulaklıklar</a>
-  <a href="urunler.html?kat=tablet" class="mobile-nav-link">📱 Tabletler</a>
-  <a href="hesap.html" class="mobile-nav-link">👤 Hesabım</a>
-  <a href="sepet.html" class="mobile-nav-link">🛒 Sepetim</a>
+  <a href="index.html" class="mobile-nav-link"><svg class="icon" viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9h12v-9"/></svg> Ana Sayfa</a>
+  <a href="urunler.html?kat=saat" class="mobile-nav-link"><svg class="icon" viewBox="0 0 24 24"><rect x="7" y="6.5" width="10" height="11" rx="3"/><path d="M9.5 6.5V4a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v2.5"/><path d="M9.5 17.5V20a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-2.5"/><path d="M17 10h1.2a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H17"/><path d="M12 9.8v2.4l1.5 .9"/></svg> Akıllı Saatler</a>
+  <a href="urunler.html?kat=kulaklik" class="mobile-nav-link"><svg class="icon" viewBox="0 0 24 24"><path d="M4 14.5a8 8 0 0 1 16 0"/><path d="M6 13.6a6 6 0 0 1 12 0"/><rect x="3.2" y="14.5" width="4.3" height="6.5" rx="2"/><rect x="16.5" y="14.5" width="4.3" height="6.5" rx="2"/></svg> Kulaklıklar</a>
+  <a href="urunler.html?kat=tablet" class="mobile-nav-link"><svg class="icon" viewBox="0 0 24 24"><rect x="5" y="2.5" width="14" height="19" rx="2.8"/><path d="M11.5 3.6h1"/><path d="M10.3 19.6h3.4"/></svg> Tabletler</a>
+  <a href="hakkimizda.html" class="mobile-nav-link"><svg class="icon" viewBox="0 0 24 24"><path d="M5 21V5a1 1 0 0 1 1-1h6v17"/><path d="M12 8h6a1 1 0 0 1 1 1v12"/><path d="M9 9v.01M9 13v.01M9 17v.01M16 12v.01M16 16v.01"/></svg> Hakkımızda</a>
+  <a href="hesap.html" class="mobile-nav-link"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c1.5-4 5-6 7.5-6s6 2 7.5 6"/></svg> Hesabım</a>
+  <a href="sepet.html" class="mobile-nav-link"><svg class="icon" viewBox="0 0 24 24"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg> Sepetim</a>
 </div>
 
 <main>
   <!-- Sayfa Başlığı + Breadcrumb -->
-  <div style="background:var(--surface);border-bottom:1px solid var(--border);padding:var(--space-4) 0">
+  <div class="products-page-header-bar">
     <div class="container">
       <div class="breadcrumb">
-        <a href="index.html">🏠 Ana Sayfa</a>
+        <a href="index.html"><svg class="icon" viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9h12v-9"/></svg> Ana Sayfa</a>
         <span class="sep">›</span>
         <span class="current" id="breadcrumb-current">Tüm Ürünler</span>
       </div>
@@ -93,30 +109,30 @@
       <!-- Sol: Filtre Sidebar -->
       <aside>
         <div class="filter-sidebar">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-5)">
-            <h3 style="font-size:1rem;font-weight:700">Filtreler</h3>
+          <div class="filter-sidebar-head">
+            <h3>Filtreler</h3>
             <button class="btn btn-ghost btn-sm" onclick="resetFilters()">Sıfırla</button>
           </div>
 
           <!-- Kategori -->
           <div class="filter-group">
             <div class="filter-group-title">Kategori</div>
-            <div style="display:flex;flex-direction:column;gap:var(--space-2)">
+            <div class="filter-check-list">
               <label class="form-check">
                 <input type="radio" name="cat" value="all" checked onchange="filterByCategory(this.value)">
                 <span class="form-check-label">Tümü (20)</span>
               </label>
               <label class="form-check">
                 <input type="radio" name="cat" value="saat" onchange="filterByCategory(this.value)">
-                <span class="form-check-label">⌚ Akıllı Saatler (6)</span>
+                <span class="form-check-label"><svg class="icon" viewBox="0 0 24 24"><rect x="7" y="6.5" width="10" height="11" rx="3"/><path d="M9.5 6.5V4a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v2.5"/><path d="M9.5 17.5V20a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-2.5"/><path d="M17 10h1.2a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H17"/><path d="M12 9.8v2.4l1.5 .9"/></svg> Akıllı Saatler (6)</span>
               </label>
               <label class="form-check">
                 <input type="radio" name="cat" value="kulaklik" onchange="filterByCategory(this.value)">
-                <span class="form-check-label">🎧 Kulaklıklar (8)</span>
+                <span class="form-check-label"><svg class="icon" viewBox="0 0 24 24"><path d="M4 14.5a8 8 0 0 1 16 0"/><path d="M6 13.6a6 6 0 0 1 12 0"/><rect x="3.2" y="14.5" width="4.3" height="6.5" rx="2"/><rect x="16.5" y="14.5" width="4.3" height="6.5" rx="2"/></svg> Kulaklıklar (8)</span>
               </label>
               <label class="form-check">
                 <input type="radio" name="cat" value="tablet" onchange="filterByCategory(this.value)">
-                <span class="form-check-label">📱 Tabletler (6)</span>
+                <span class="form-check-label"><svg class="icon" viewBox="0 0 24 24"><rect x="5" y="2.5" width="14" height="19" rx="2.8"/><path d="M11.5 3.6h1"/><path d="M10.3 19.6h3.4"/></svg> Tabletler (6)</span>
               </label>
             </div>
           </div>
@@ -124,7 +140,7 @@
           <!-- Marka -->
           <div class="filter-group">
             <div class="filter-group-title">Marka</div>
-            <div id="brand-filters" style="display:flex;flex-direction:column;gap:var(--space-2)">
+            <div id="brand-filters" class="filter-check-list">
               <!-- JS ile doldurulur -->
             </div>
           </div>
@@ -133,27 +149,27 @@
           <div class="filter-group">
             <div class="filter-group-title">Fiyat Aralığı (₺)</div>
             <div class="price-range-inputs">
-              <input type="number" id="price-min" placeholder="Min" class="form-input" style="text-align:center" onchange="filterByPrice()">
+              <input type="number" id="price-min" placeholder="Min" class="form-input" class="filter-price-input" onchange="filterByPrice()">
               <span class="price-range-sep">–</span>
-              <input type="number" id="price-max" placeholder="Max" class="form-input" style="text-align:center" onchange="filterByPrice()">
+              <input type="number" id="price-max" placeholder="Max" class="form-input" class="filter-price-input" onchange="filterByPrice()">
             </div>
           </div>
 
           <!-- Minimum Puan -->
           <div class="filter-group">
             <div class="filter-group-title">Minimum Puan</div>
-            <div style="display:flex;flex-direction:column;gap:var(--space-2)">
+            <div class="filter-check-list">
               <label class="form-check">
                 <input type="radio" name="rating" value="0" checked onchange="filterByRating(this.value)">
                 <span class="form-check-label">Tümü</span>
               </label>
               <label class="form-check">
                 <input type="radio" name="rating" value="4" onchange="filterByRating(this.value)">
-                <span class="form-check-label">⭐ 4+ ve üzeri</span>
+                <span class="form-check-label"><span class="stars" style="font-size:0.75rem">★</span> 4+ ve üzeri</span>
               </label>
               <label class="form-check">
                 <input type="radio" name="rating" value="4.5" onchange="filterByRating(this.value)">
-                <span class="form-check-label">⭐ 4.5+ ve üzeri</span>
+                <span class="form-check-label"><span class="stars" style="font-size:0.75rem">★</span> 4.5+ ve üzeri</span>
               </label>
             </div>
           </div>
@@ -164,10 +180,10 @@
       <div>
         <!-- Kategori Butonları (Üst) -->
         <div class="category-filter-btns" id="cat-btns">
-          <button class="cat-btn active" onclick="quickFilter('all', this)" id="cat-all">🛍 Tümü</button>
-          <button class="cat-btn" onclick="quickFilter('saat', this)" id="cat-saat">⌚ Akıllı Saatler</button>
-          <button class="cat-btn" onclick="quickFilter('kulaklik', this)" id="cat-kulaklik">🎧 Kulaklıklar</button>
-          <button class="cat-btn" onclick="quickFilter('tablet', this)" id="cat-tablet">📱 Tabletler</button>
+          <button class="cat-btn active" onclick="quickFilter('all', this)" id="cat-all"><svg class="icon" viewBox="0 0 24 24"><path d="M4 9l1-5h14l1 5"/><path d="M4 9a2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0"/><path d="M5 9v10h14V9"/></svg> Tümü</button>
+          <button class="cat-btn" onclick="quickFilter('saat', this)" id="cat-saat"><svg class="icon" viewBox="0 0 24 24"><rect x="7" y="6.5" width="10" height="11" rx="3"/><path d="M9.5 6.5V4a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v2.5"/><path d="M9.5 17.5V20a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-2.5"/><path d="M17 10h1.2a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H17"/><path d="M12 9.8v2.4l1.5 .9"/></svg> Akıllı Saatler</button>
+          <button class="cat-btn" onclick="quickFilter('kulaklik', this)" id="cat-kulaklik"><svg class="icon" viewBox="0 0 24 24"><path d="M4 14.5a8 8 0 0 1 16 0"/><path d="M6 13.6a6 6 0 0 1 12 0"/><rect x="3.2" y="14.5" width="4.3" height="6.5" rx="2"/><rect x="16.5" y="14.5" width="4.3" height="6.5" rx="2"/></svg> Kulaklıklar</button>
+          <button class="cat-btn" onclick="quickFilter('tablet', this)" id="cat-tablet"><svg class="icon" viewBox="0 0 24 24"><rect x="5" y="2.5" width="14" height="19" rx="2.8"/><path d="M11.5 3.6h1"/><path d="M10.3 19.6h3.4"/></svg> Tabletler</button>
         </div>
 
         <!-- Üst Bar -->
@@ -175,10 +191,10 @@
           <div class="products-count">
             <strong id="product-count">18</strong> ürün bulundu
           </div>
-          <div style="display:flex;align-items:center;gap:var(--space-3)">
+          <div class="products-topbar-right">
             <div class="view-toggle">
-              <button class="view-btn active" id="grid-view-btn" onclick="setView('grid')" title="Grid Görünüm">⊞</button>
-              <button class="view-btn" id="list-view-btn" onclick="setView('list')" title="Liste Görünüm">☰</button>
+              <button class="view-btn active" id="grid-view-btn" onclick="setView('grid')" title="Grid Görünüm"><svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg></button>
+              <button class="view-btn" id="list-view-btn" onclick="setView('list')" title="Liste Görünüm"><svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
             </div>
             <select class="sort-select" onchange="sortProducts(this.value)">
               <option value="featured">Önerilen</option>
@@ -203,23 +219,27 @@
   <div class="container">
     <div class="footer-bottom">
       <span>© 2024 efemiletisim.com</span>
+      <div class="footer-legal-links">
+        <a href="gizlilik-kvkk.html">Gizlilik &amp; KVKK</a>
+        <a href="mesafeli-satis-sozlesmesi.html">Mesafeli Satış Sözleşmesi</a>
+        <a href="iptal-iade.html">İptal ve İade</a>
+      </div>
       <div class="footer-payment-icons">
         <span class="payment-icon">VISA</span>
         <span class="payment-icon">MC</span>
-        <span class="payment-icon">🔒 SSL</span>
+        <span class="payment-icon"><svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z"/><path d="M9 12l2 2 4-4"/></svg> SSL</span>
       </div>
     </div>
   </div>
 </footer>
 
 <div id="toast-container"></div>
-<button id="scroll-top-btn" class="btn-icon btn-icon-lg"
-  style="position:fixed;bottom:24px;right:24px;z-index:99;display:none;background:var(--primary);color:white;border-color:var(--primary);box-shadow:var(--shadow-lg)">↑</button>
-<style>#scroll-top-btn.visible { display: flex !important; }</style>
+<button id="scroll-top-btn" class="btn-icon btn-icon-lg scroll-top-btn"><svg class="icon" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
 
+<script src="js/site-config.js"></script>
 <script src="js/data.js"></script>
 <script src="js/cart.js"></script>
-<script src="js/auth.js"></script>
+<script type="module" src="js/auth.js"></script>
 <script src="js/products.js"></script>
 <script src="js/main.js"></script>
 <script>

@@ -91,20 +91,41 @@ function getShippingCost() {
   return FREE_SHIP; // Tüm ürünlerde ücretsiz
 }
 
-/* ─── Kupon ─── */
+/* ─── Kupon ───
+   Tek geçerli kod: EFEM500.
+   ⚠️ TODO: İndirim tutarı ve minimum sepet şartı işletme tarafından
+   netleştirilene kadar kupon pasif tutulmaktadır (enabled: false).
+   Karar verildiğinde value / minSubtotal alanlarını doldurup
+   enabled: true yapmak yeterlidir. */
 const COUPONS = {
-  'EFEMI10':   { type: 'percent', value: 10,   label: '%10 İndirim' },
-  'EFEMI50':   { type: 'fixed',   value: 50,   label: '50₺ İndirim' },
-  'HOSGELDIN': { type: 'percent', value: 15,   label: '%15 Hoş Geldin İndirimi' }
+  'EFEM500': {
+    type:        'fixed',
+    value:       500,
+    minSubtotal: 5000,
+    label:       '500₺ İndirim',
+    enabled:     false
+  }
 };
 
 function applyCoupon(code) {
-  const coupon = COUPONS[code.trim().toUpperCase()];
-  if (!coupon) return { valid: false, msg: 'Geçersiz kupon kodu.' };
+  const key    = code.trim().toUpperCase();
+  const coupon = COUPONS[key];
+
+  if (!coupon)         return { valid: false, msg: 'Geçersiz kupon kodu.' };
+  if (!coupon.enabled) return { valid: false, msg: 'Bu kupon şu anda kullanıma kapalı.' };
+
   const subtotal = getCartSubtotal();
+  if (subtotal < coupon.minSubtotal) {
+    return {
+      valid: false,
+      msg: `Bu kupon en az ${formatPrice(coupon.minSubtotal)} tutarındaki sepetlerde geçerlidir.`
+    };
+  }
+
   const discount = coupon.type === 'percent'
     ? Math.round(subtotal * coupon.value / 100)
     : coupon.value;
+
   return { valid: true, coupon, discount, msg: coupon.label + ' uygulandı!' };
 }
 
@@ -140,7 +161,7 @@ function renderCartItem(item) {
   return `
     <div class="cart-item" data-id="${item.id}">
       <img class="cart-item-img" src="${item.image}" alt="${item.name}"
-           onerror="this.src='assets/images/placeholder.jpg'">
+           onerror="this.src='assets/images/products/placeholder-product.svg'">
       <div class="cart-item-info">
         <div class="name">${item.name}</div>
         <div class="cat">${item.category}</div>
@@ -159,7 +180,7 @@ function renderCartItem(item) {
         </div>
         <button class="btn btn-ghost btn-sm" onclick="removeItem(${item.id})"
                 style="color:var(--error);border-color:var(--error)">
-          🗑 Kaldır
+          <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><path d="M10 11v6M14 11v6"/></svg> Kaldır
         </button>
       </div>
     </div>

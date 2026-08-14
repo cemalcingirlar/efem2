@@ -23,19 +23,43 @@ import {
 import { auth, db } from "./firebase-config.js";
 
 /* ─── Türkçe hata mesajları ─── */
+const FIREBASE_ERROR_MESSAGES = {
+  "auth/email-already-in-use":   "Bu e-posta adresi zaten kayıtlı.",
+  "auth/invalid-email":          "Geçersiz e-posta adresi.",
+  "auth/missing-email":          "E-posta adresi girilmedi.",
+  "auth/weak-password":          "Şifre en az 6 karakter olmalıdır.",
+  "auth/user-not-found":         "Bu e-posta ile kayıtlı hesap bulunamadı.",
+  "auth/wrong-password":         "Şifre hatalı. Lütfen tekrar deneyin.",
+  "auth/invalid-credential":     "E-posta veya şifre hatalı.",
+  "auth/too-many-requests":      "Çok fazla deneme yapıldı. Lütfen birkaç dakika bekleyip tekrar deneyin.",
+  "auth/network-request-failed": "İnternet bağlantınızı kontrol edin.",
+  "auth/user-disabled":          "Bu hesap devre dışı bırakılmış.",
+
+  /* Firebase Console yapılandırma hataları – kullanıcı hatası değildir,
+     mesaj işletmeyi yönlendirecek şekilde açık tutulur. */
+  "auth/operation-not-allowed":
+    "E-posta/şifre girişi Firebase projesinde etkin değil. " +
+    "Firebase Console → Authentication → Sign-in method → Email/Password açılmalıdır.",
+  "auth/unauthorized-continue-uri":
+    "Bu alan adı Firebase'de yetkili değil. " +
+    "Firebase Console → Authentication → Settings → Authorized domains listesine eklenmelidir.",
+  "auth/invalid-continue-uri":  "Doğrulama linki adresi geçersiz.",
+  "auth/missing-continue-uri":  "Doğrulama linki adresi eksik.",
+  "auth/invalid-api-key":       "Firebase API anahtarı geçersiz. js/firebase-config.js kontrol edilmelidir.",
+  "auth/quota-exceeded":        "Günlük e-posta gönderim kotası aşıldı. Yarın tekrar deneyin.",
+  "auth/internal-error":        "Firebase tarafında beklenmeyen bir hata oluştu."
+};
+
 function getFirebaseErrorMsg(code) {
-  const map = {
-    "auth/email-already-in-use":    "Bu e-posta adresi zaten kayıtlı.",
-    "auth/invalid-email":           "Geçersiz e-posta adresi.",
-    "auth/weak-password":           "Şifre en az 6 karakter olmalıdır.",
-    "auth/user-not-found":          "Bu e-posta ile kayıtlı hesap bulunamadı.",
-    "auth/wrong-password":          "Şifre hatalı. Lütfen tekrar deneyin.",
-    "auth/invalid-credential":      "E-posta veya şifre hatalı.",
-    "auth/too-many-requests":       "Çok fazla başarısız giriş. Lütfen bir süre bekleyin.",
-    "auth/network-request-failed":  "İnternet bağlantınızı kontrol edin.",
-    "auth/user-disabled":           "Bu hesap devre dışı bırakılmış."
-  };
-  return map[code] || "Bir hata oluştu. Lütfen tekrar deneyin.";
+  return FIREBASE_ERROR_MESSAGES[code] || `Bir hata oluştu (${code}).`;
+}
+
+/* ─── Firebase hatasını konsola da yaz ───
+   Kullanıcıya Türkçe mesaj gösterilir, hata kodu ve orijinal mesaj
+   teşhis edilebilmesi için konsolda saklanır. */
+function reportAuthError(context, err) {
+  console.error(`[auth] ${context} başarısız: ${err.code} – ${err.message}`);
+  return { success: false, code: err.code, msg: getFirebaseErrorMsg(err.code) };
 }
 
 /* ─── Kayıt ol ─── */
@@ -59,15 +83,16 @@ async function firebaseRegister(ad, soyad, email, password) {
       addresses: []
     });
 
-    // Doğrulama e-postası gönder
-    await sendEmailVerification(user, {
-      url: window.location.origin + "/hesap.html",
-      handleCodeInApp: false
-    });
+    // Doğrulama e-postası gönder.
+    // continueUrl BİLEREK verilmiyor: özel bir devam adresi verildiğinde
+    // alan adının Firebase "Authorized domains" listesinde olması zorunludur;
+    // aksi halde auth/unauthorized-continue-uri ile mail hiç gönderilmez.
+    // Varsayılan action handler (<proje>.firebaseapp.com) her zaman yetkilidir.
+    await sendEmailVerification(user);
 
     return { success: true, user, needsVerification: true };
   } catch (err) {
-    return { success: false, msg: getFirebaseErrorMsg(err.code) };
+    return reportAuthError('kayıt', err);
   }
 }
 
@@ -92,7 +117,7 @@ async function firebaseLogin(email, password) {
     const profile = await getUserProfile(user.uid);
     return { success: true, user, profile };
   } catch (err) {
-    return { success: false, msg: getFirebaseErrorMsg(err.code) };
+    return reportAuthError('giriş', err);
   }
 }
 
@@ -102,19 +127,18 @@ async function firebaseLogout() {
     await signOut(auth);
     return { success: true };
   } catch (err) {
-    return { success: false, msg: getFirebaseErrorMsg(err.code) };
+    return reportAuthError('çıkış', err);
   }
 }
 
-/* ─── Şifre sıfırlama e-postası ─── */
+/* ─── Şifre sıfırlama e-postası ───
+   continueUrl verilmez; gerekçe firebaseRegister içindeki not ile aynıdır. */
 async function firebaseForgotPassword(email) {
   try {
-    await sendPasswordResetEmail(auth, email, {
-      url: window.location.origin + "/hesap.html"
-    });
+    await sendPasswordResetEmail(auth, email);
     return { success: true };
   } catch (err) {
-    return { success: false, msg: getFirebaseErrorMsg(err.code) };
+    return reportAuthError('şifre sıfırlama maili', err);
   }
 }
 
@@ -122,13 +146,11 @@ async function firebaseForgotPassword(email) {
 async function resendVerificationEmail(email, password) {
   try {
     const cred = await signInWithEmailAndPassword(auth, email, password);
-    await sendEmailVerification(cred.user, {
-      url: window.location.origin + "/hesap.html"
-    });
+    await sendEmailVerification(cred.user);
     await signOut(auth);
     return { success: true };
   } catch (err) {
-    return { success: false, msg: getFirebaseErrorMsg(err.code) };
+    return reportAuthError('doğrulama maili tekrar gönderme', err);
   }
 }
 
@@ -137,7 +159,8 @@ async function getUserProfile(uid) {
   try {
     const snap = await getDoc(doc(db, "users", uid));
     return snap.exists() ? snap.data() : null;
-  } catch {
+  } catch (err) {
+    console.error(`[auth] Kullanıcı profili okunamadı (uid: ${uid}): ${err.code} – ${err.message}`);
     return null;
   }
 }
@@ -164,8 +187,10 @@ async function saveOrderToFirestore(uid, orderData) {
 
     return order;
   } catch (err) {
-    console.error("Sipariş kaydedilemedi:", err);
-    return null;
+    throw new Error(
+      `Sipariş Firestore'a yazılamadı (uid: ${uid}, tutar: ${orderData.total}): ` +
+      `${err.code} – ${err.message}`
+    );
   }
 }
 

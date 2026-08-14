@@ -4,7 +4,25 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Giriş / Kayıt – efemiletisim.com</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/logos/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="assets/logos/favicon-512.png">
+  <link rel="apple-touch-icon" href="assets/logos/favicon-180.png">
   <meta name="description" content="efemiletisim.com hesabınıza giriş yapın veya yeni hesap oluşturun.">
+  <meta name="robots" content="noindex, follow">
+  <link rel="canonical" href="https://efemiletisim.com/hesap.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="efemiletisim.com">
+  <meta property="og:locale" content="tr_TR">
+  <meta property="og:title" content="Giriş / Kayıt – efemiletisim.com">
+  <meta property="og:description" content="efemiletisim.com hesabınıza giriş yapın veya yeni hesap oluşturun.">
+  <meta property="og:url" content="https://efemiletisim.com/hesap.html">
+  <meta property="og:image" content="https://efemiletisim.com/assets/logos/og-image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Giriş / Kayıt – efemiletisim.com">
+  <meta name="twitter:description" content="efemiletisim.com hesabınıza giriş yapın veya yeni hesap oluşturun.">
+  <meta name="twitter:image" content="https://efemiletisim.com/assets/logos/og-image.jpg">
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/pages.css">
@@ -100,14 +118,14 @@
   <div class="container">
     <div class="navbar-inner">
       <a href="index.html" class="navbar-logo">
-        <div class="logo-icon">📱</div>
+        <div class="logo-icon"><img src="assets/logos/icon-square.png" alt="Efem İletişim" loading="eager"></div>
         <div class="logo-text">
-          <span class="logo-name" style="display:block;line-height:1">efem</span>
-          <span class="logo-sub" style="display:block;line-height:1">iletişim</span>
+          <span class="logo-name">efem</span>
+          <span class="logo-sub">iletişim</span>
         </div>
       </a>
       <div style="margin-left:auto">
-        <a href="urunler.html" class="btn btn-ghost btn-sm">🛍 Alışverişe Devam Et</a>
+        <a href="urunler.html" class="btn btn-ghost btn-sm"><svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M4 9l1-5h14l1 5"/><path d="M4 9a2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0"/><path d="M5 9v10h14V9"/></svg> Alışverişe Devam Et</a>
       </div>
     </div>
   </div>
@@ -118,9 +136,9 @@
     <div class="auth-card">
       <!-- Logo -->
       <a href="index.html" class="auth-logo">
-        <div class="logo-icon" style="width:48px;height:48px;font-size:1.5rem">📱</div>
+        <div class="logo-icon logo-icon-lg"><img src="assets/logos/icon-square.png" alt="Efem İletişim" loading="eager"></div>
         <div class="logo-text">
-          <span class="logo-name" style="font-size:1.25rem">efemi</span>
+          <span class="logo-name">efem</span>
           <span class="logo-sub">iletişim</span>
         </div>
       </a>
@@ -138,7 +156,7 @@
         <!-- ─── GİRİŞ FORMU ─── -->
         <div class="tab-panel active" id="panel-login">
           <div class="auth-title">
-            <h2>Tekrar Hoş Geldiniz 👋</h2>
+            <h2>Tekrar Hoş Geldiniz</h2>
             <p>Hesabınıza giriş yapın</p>
           </div>
           <div class="auth-form">
@@ -169,6 +187,15 @@
             </button>
           </div>
           <div class="auth-divider">veya</div>
+
+          <button class="btn btn-ghost btn-block btn-lg" id="guest-btn" onclick="handleGuestContinue()">
+            Üye Olmadan Devam Et
+          </button>
+          <p class="auth-guest-note">
+            Üyelik olmadan da sipariş verebilirsiniz. Sipariş takibi ve
+            kargo bilgileri ödeme adımında girdiğiniz e-posta adresine gönderilir.
+          </p>
+
           <div class="auth-footer">
             Hesabınız yok mu? <a href="#" onclick="switchTab('register')">Kayıt olun</a>
           </div>
@@ -177,7 +204,7 @@
         <!-- ─── KAYIT FORMU ─── -->
         <div class="tab-panel" id="panel-register">
           <div class="auth-title">
-            <h2>Hesap Oluştur 🎉</h2>
+            <h2>Hesap Oluştur</h2>
             <p>Birkaç adımda kayıt olun</p>
           </div>
           <div class="auth-form">
@@ -216,7 +243,7 @@
             <label class="form-check">
               <input type="checkbox" id="reg-terms" required>
               <span class="form-check-label">
-                <a href="#" style="color:var(--primary)">Kullanım Koşulları</a>'nı kabul ediyorum
+                <a href="gizlilik-kvkk.html" target="_blank" rel="noopener" style="color:var(--primary)">Gizlilik Politikası ve KVKK Aydınlatma Metni</a>'ni okudum, kabul ediyorum
               </span>
             </label>
             <span id="reg-error" style="color:var(--error);font-size:0.875rem;display:none"></span>
@@ -235,13 +262,13 @@
            ═══════════════════════════════════ -->
       <div id="verify-panel" style="display:none">
         <div class="verify-screen">
-          <div class="verify-icon">📬</div>
+          <div class="verify-icon"><svg class="icon" viewBox="0 0 24 24" style="width:2.5rem;height:2.5rem"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></div>
           <h2>E-postanızı Doğrulayın</h2>
           <p>
             Hesabınızı aktifleştirmek için aşağıdaki adrese bir doğrulama linki gönderdik:
           </p>
           <div class="verify-email-badge">
-            ✉️ <span id="verify-email-display"></span>
+            <svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg> <span id="verify-email-display"></span>
           </div>
           <p style="font-size:0.875rem">
             Gelen kutunuzu (ve spam/gereksiz klasörünü) kontrol edin.<br>
@@ -251,11 +278,11 @@
 
           <button class="btn btn-primary btn-block btn-lg" style="margin-bottom:var(--space-3)"
                   onclick="checkVerifiedAndLogin()">
-            ✅ Doğruladım, Giriş Yap
+            <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9"/></svg> Doğruladım, Giriş Yap
           </button>
 
           <button class="btn btn-ghost btn-block" id="resend-btn" onclick="handleResend()">
-            📨 Doğrulama Mailini Tekrar Gönder
+            <svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg> Doğrulama Mailini Tekrar Gönder
           </button>
           <div class="resend-timer" id="resend-timer"></div>
 
@@ -272,7 +299,7 @@
            ═══════════════════════════════════ -->
       <div id="forgot-panel" style="display:none">
         <div class="auth-title" style="text-align:center;padding:var(--space-4) 0 0">
-          <div style="font-size:2.5rem;margin-bottom:var(--space-3)">🔑</div>
+          <div style="margin-bottom:var(--space-3);display:flex;justify-content:center"><svg class="icon" viewBox="0 0 24 24" style="width:2.5rem;height:2.5rem"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
           <h2>Şifre Sıfırlama</h2>
           <p>Kayıtlı e-posta adresinizi girin, sıfırlama linki göndereceğiz.</p>
         </div>
@@ -285,7 +312,7 @@
           <span id="forgot-success" style="color:var(--success);font-size:0.875rem;display:none"></span>
           <span id="forgot-error"   style="color:var(--error);font-size:0.875rem;display:none"></span>
           <button class="btn btn-primary btn-block btn-lg" onclick="handleForgotPassword()">
-            📧 Sıfırlama Linki Gönder
+            <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg> Sıfırlama Linki Gönder
           </button>
           <button class="btn btn-ghost btn-block" onclick="backToLogin()" style="margin-top:var(--space-2)">
             ← Girişe Dön
@@ -351,6 +378,17 @@
   window.handleResend           = handleResend;
   window.checkVerifiedAndLogin  = checkVerifiedAndLogin;
   window.checkPasswordStrength  = checkPasswordStrength;
+  window.handleGuestContinue    = handleGuestContinue;
+
+  /* ─── Üye olmadan devam et ─── */
+  function handleGuestContinue() {
+    const redirect = getUrlParam("redirect");
+    localStorage.setItem("efemi_guest", JSON.stringify({
+      startedAt: new Date().toISOString()
+    }));
+    showToast("Misafir olarak devam ediyorsunuz.", "info");
+    window.location.href = redirect || "urunler.html";
+  }
 
   /* ─── onAuthStateChanged: Giriş yapılmışsa profil'e yönlendir ─── */
   onAuthChange(async (user) => {
@@ -391,14 +429,14 @@
     setLoading(false);
 
     if (result.success) {
-      showToast("Başarıyla giriş yapıldı! 🎉", "success");
+      showToast("Başarıyla giriş yapıldı!", "success");
     } else if (result.needsVerification) {
       pendingEmail    = email;
       pendingPassword = password;
       showVerifyPanel(email);
     } else {
       const el = document.getElementById("login-error");
-      el.textContent = "❌ " + result.msg;
+      el.textContent = result.msg;
       el.style.display = "block";
       showToast(result.msg, "error");
     }
@@ -433,7 +471,7 @@
     if (password !== password2) regErr("reg-password2", "Şifreler eşleşmiyor.");
     if (!terms) {
       const el = document.getElementById("reg-error");
-      el.textContent = "❌ Kullanım koşullarını kabul etmeniz gerekiyor.";
+      el.textContent = "Kullanım koşullarını kabul etmeniz gerekiyor.";
       el.style.display = "block";
       hasError = true;
     }
@@ -447,10 +485,10 @@
       pendingEmail    = email;
       pendingPassword = password;
       showVerifyPanel(email);
-      showToast("Hesabınız oluşturuldu! Doğrulama maili gönderildi. 📬", "success");
+      showToast("Hesabınız oluşturuldu! Doğrulama maili gönderildi.", "success");
     } else {
       const el = document.getElementById("reg-error");
-      el.textContent = "❌ " + result.msg;
+      el.textContent = result.msg;
       el.style.display = "block";
       showToast(result.msg, "error");
     }
@@ -473,7 +511,7 @@
       const cred = await signInWithEmailAndPassword(auth, pendingEmail, pendingPassword);
       await cred.user.reload();
       if (cred.user.emailVerified) {
-        showToast("E-posta doğrulandı! Giriş yapılıyor... 🎉", "success");
+        showToast("E-posta doğrulandı! Giriş yapılıyor...", "success");
         setLoading(false);
         // onAuthStateChanged otomatik yönlendirir
       } else {
@@ -494,7 +532,7 @@
     const result = await resendVerificationEmail(pendingEmail, pendingPassword);
     setLoading(false);
     if (result.success) {
-      showToast("Doğrulama maili tekrar gönderildi! 📨", "success");
+      showToast("Doğrulama maili tekrar gönderildi!", "success");
       startResendCooldown();
     } else {
       showToast(result.msg, "error");
@@ -545,12 +583,12 @@
 
     if (result.success) {
       const el = document.getElementById("forgot-success");
-      el.textContent = `✅ ${email} adresine sıfırlama linki gönderildi.`;
+      el.textContent = `${email} adresine sıfırlama linki gönderildi.`;
       el.style.display = "block";
-      showToast("Sıfırlama maili gönderildi! 📧", "success");
+      showToast("Sıfırlama maili gönderildi!", "success");
     } else {
       const el = document.getElementById("forgot-error");
-      el.textContent = "❌ " + result.msg;
+      el.textContent = result.msg;
       el.style.display = "block";
       showToast(result.msg, "error");
     }
@@ -592,7 +630,7 @@
       hint.style.color = "#f59e0b";
     } else {
       bar.className = "password-strength strong";
-      hint.textContent = "Güçlü şifre ✓";
+      hint.textContent = "Güçlü şifre";
       hint.style.color = "#22c55e";
     }
   }
@@ -603,6 +641,7 @@
 </script>
 
 <!-- Ana JS (auth.js'ye bağımlı olmayan yardımcılar için) -->
+<script src="js/site-config.js"></script>
 <script src="js/data.js"></script>
 <script src="js/cart.js"></script>
 <script src="js/main.js"></script>

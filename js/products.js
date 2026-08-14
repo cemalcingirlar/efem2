@@ -20,16 +20,16 @@ function createProductCard(product) {
         <img src="${product.images[0]}"
              alt="${product.name}"
              loading="lazy"
-             onerror="this.src='assets/images/placeholder.jpg'">
+             onerror="this.src='assets/images/products/placeholder-product.svg'">
         ${badgeHTML}
         <button class="product-fav ${isFavorite(product.id) ? 'active' : ''}"
                 onclick="event.stopPropagation(); toggleFavorite(${product.id}, this)"
                 title="Favorilere ekle">
-          ${isFavorite(product.id) ? '❤️' : '🤍'}
+          <svg class="icon" viewBox="0 0 24 24" ${isFavorite(product.id) ? 'fill="currentColor"' : ''}><path d="M12 21s7-6.5 7-11a7 7 0 1 0-14 0c0 4.5 7 11 7 11Z"/></svg>
         </button>
         <span class="product-quick-view"
               onclick="event.stopPropagation(); window.location='urun-detay.html?id=${product.id}'">
-          👁 Hızlı İncele
+          <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> Hızlı İncele
         </span>
       </div>
       <div class="product-body">
@@ -46,7 +46,7 @@ function createProductCard(product) {
         </div>
         <button class="product-add-btn"
                 onclick="event.stopPropagation(); handleAddToCart(${product.id}, this)">
-          🛒 Sepete Ekle
+          <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg> Sepete Ekle
         </button>
       </div>
     </div>
@@ -58,10 +58,10 @@ function handleAddToCart(productId, btn) {
   const success = addToCart(productId);
   if (success && btn) {
     btn.classList.add('added');
-    btn.textContent = '✓ Eklendi';
+    btn.innerHTML = '<svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6"/></svg> Eklendi';
     setTimeout(() => {
       btn.classList.remove('added');
-      btn.innerHTML = '🛒 Sepete Ekle';
+      btn.innerHTML = '<svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg> Sepete Ekle';
     }, 1500);
   }
 }
@@ -81,14 +81,15 @@ function isFavorite(productId) {
 function toggleFavorite(productId, btn) {
   const favs = getFavorites();
   const idx  = favs.indexOf(productId);
+  const heartSvg = fill => `<svg class="icon" viewBox="0 0 24 24" ${fill ? 'fill="currentColor"' : ''}><path d="M12 21s7-6.5 7-11a7 7 0 1 0-14 0c0 4.5 7 11 7 11Z"/></svg>`;
   if (idx >= 0) {
     favs.splice(idx, 1);
-    if (btn) { btn.textContent = '🤍'; btn.classList.remove('active'); }
+    if (btn) { btn.innerHTML = heartSvg(false); btn.classList.remove('active'); }
     showToast('Favorilerden kaldırıldı.', 'warning');
   } else {
     favs.push(productId);
-    if (btn) { btn.textContent = '❤️'; btn.classList.add('active'); }
-    showToast('Favorilere eklendi! ❤️', 'success');
+    if (btn) { btn.innerHTML = heartSvg(true); btn.classList.add('active'); }
+    showToast('Favorilere eklendi!', 'success');
   }
   localStorage.setItem(FAV_KEY, JSON.stringify(favs));
 }
@@ -101,7 +102,7 @@ function renderProductGrid(products, containerId) {
   if (products.length === 0) {
     container.innerHTML = `
       <div class="empty-state" style="grid-column:1/-1">
-        <div class="icon">🔍</div>
+        <div class="icon"><svg class="icon" viewBox="0 0 24 24" style="width:3rem;height:3rem"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg></div>
         <h3>Ürün bulunamadı</h3>
         <p>Farklı filtreler deneyebilirsiniz.</p>
       </div>`;
@@ -195,14 +196,14 @@ function renderSearchDropdown(results, dropdown, query) {
   dropdown.classList.add('active');
 
   if (results.length === 0) {
-    dropdown.innerHTML = `<div class="search-no-result">🔍 "${query}" için sonuç bulunamadı</div>`;
+    dropdown.innerHTML = `<div class="search-no-result">"${query}" için sonuç bulunamadı</div>`;
     return;
   }
 
   dropdown.innerHTML = results.map(p => `
     <a class="search-result-item" href="urun-detay.html?id=${p.id}">
       <img class="search-result-img" src="${p.images[0]}" alt="${p.name}"
-           onerror="this.src='assets/images/placeholder.jpg'">
+           onerror="this.src='assets/images/products/placeholder-product.svg'">
       <div class="search-result-info">
         <div class="name">${p.name}</div>
         <div class="price">${formatPrice(p.price)}</div>

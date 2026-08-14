@@ -34,7 +34,7 @@ const BASE_PRODUCTS = [
     badge: "bestseller",
     badgeLabel: "Çok Satan",
     stock: 15,
-    images: ["assets/images/saat1.jpg"],
+    images: ["assets/images/products/apple-watch-se.jpg"],
     desc: "Apple Watch SE, sağlık ve güvenlik özelliklerini uygun fiyata sunar. Düşme algılama, acil SOS ve kalp ritmi bildirimleri ile her an güvende hissedin.",
     specs: [
       { key: "Ekran",      value: "1.78 inç LTPO OLED" },
@@ -59,7 +59,7 @@ const BASE_PRODUCTS = [
     badge: "new",
     badgeLabel: "Yeni",
     stock: 12,
-    images: ["assets/images/saat2.jpg"],
+    images: ["assets/images/products/apple-watch-series9.jpg"],
     desc: "Apple Watch Series 9, Double Tap özelliği ve parlaklığı iki katına çıkan Always-On Retina ekranıyla şimdiye kadarki en gelişmiş Apple Watch deneyimini sunar.",
     specs: [
       { key: "Ekran",      value: "1.69 inç Always-On Retina" },
@@ -86,7 +86,7 @@ const BASE_PRODUCTS = [
     badge: null,
     badgeLabel: null,
     stock: 22,
-    images: ["assets/images/saat3.jpg"],
+    images: ["assets/images/products/huawei-watch-gt4.jpg"],
     desc: "Huawei Watch GT4, 2 haftalık batarya ömrü, 100+ spor modu ve şık tasarımıyla günlük kullanım için mükemmel bir akıllı saat. Kadran değiştirme özelliği ile kişiselleştirin.",
     specs: [
       { key: "Ekran",      value: "1.43 inç AMOLED 466×466" },
@@ -111,7 +111,7 @@ const BASE_PRODUCTS = [
     badge: "sale",
     badgeLabel: "%20 İndirim",
     stock: 35,
-    images: ["assets/images/saat4.jpg"],
+    images: ["assets/images/products/huawei-watch-fit3.jpg"],
     desc: "Huawei Watch Fit 3, ince tasarımı, AMOLED ekranı ve 10 günlük batarya ömrüyle sağlık takibini şık bir çerçevede sunan ideal bir günlük saat.",
     specs: [
       { key: "Ekran",      value: "1.82 inç AMOLED" },
@@ -138,7 +138,7 @@ const BASE_PRODUCTS = [
     badge: "bestseller",
     badgeLabel: "Çok Satan",
     stock: 18,
-    images: ["assets/images/saat5.jpg"],
+    images: ["assets/images/products/galaxy-watch6-classic.jpg"],
     desc: "Galaxy Watch6 Classic, döner çerçevesi ve gelişmiş vücut bileşimi analizi ile premium akıllı saat deneyimi sunar. Galaxy AI özellikleriyle sağlığınızı akıllıca takip edin.",
     specs: [
       { key: "Ekran",      value: "1.47 inç Super AMOLED 480×480" },
@@ -163,7 +163,7 @@ const BASE_PRODUCTS = [
     badge: "new",
     badgeLabel: "Yeni",
     stock: 28,
-    images: ["assets/images/saat6.jpg"],
+    images: ["assets/images/products/galaxy-watch-fe.jpg"],
     desc: "Galaxy Watch FE, Samsung'un sağlık teknolojisini erişilebilir fiyatla sunan akıllı saat. Kalp atış izleme, uyku analizi ve Samsung Pay desteği ile donanımlı.",
     specs: [
       { key: "Ekran",      value: "1.2 inç Super AMOLED" },
@@ -194,7 +194,7 @@ const BASE_PRODUCTS = [
     badge: "bestseller",
     badgeLabel: "Çok Satan",
     stock: 27,
-    images: ["assets/images/kulaklik1.jpg"],
+    images: ["assets/images/products/airpods-pro.png"],
     desc: "AirPods Pro 2. Nesil; Apple H2 çipi, aktif gürültü engelleme ve Uyarlanabilir Ses Geçirgenliği ile yeni nesil ses deneyimi sunar. MagSafe ile kablosuz şarj.",
     specs: [
       { key: "Gürültü Engelleme", value: "Aktif ANC – H2 çipi" },
@@ -219,7 +219,7 @@ const BASE_PRODUCTS = [
     badge: "sale",
     badgeLabel: "%18 İndirim",
     stock: 41,
-    images: ["assets/images/kulaklik2.jpg"],
+    images: ["assets/images/products/airpods-3.jpg"],
     desc: "AirPods 3. Nesil, Spatial Audio ve Adaptive EQ ile sesi tam kulağınıza göre optimize eder. Su ve ter direnci ile sporda da yanınızda.",
     specs: [
       { key: "Ses",          value: "Spatial Audio, Adaptive EQ" },
@@ -246,7 +246,7 @@ const BASE_PRODUCTS = [
     badge: "new",
     badgeLabel: "Yeni",
     stock: 33,
-    images: ["assets/images/kulaklik3.jpg"],
+    images: ["assets/images/products/galaxy-buds3-pro.jpg"],
     desc: "Galaxy Buds3 Pro, Intelligent ANC ve 360 Audio ile sürükleyici ses sunar. Galaxy AI destekli Real-Time tercüme özelliğiyle iletişimi kolaylaştırır.",
     specs: [
       { key: "Gürültü Engelleme", value: "Intelligent ANC" },
@@ -271,7 +271,7 @@ const BASE_PRODUCTS = [
     badge: "sale",
     badgeLabel: "%21 İndirim",
     stock: 44,
-    images: ["assets/images/kulaklik4.jpg"],
+    images: ["assets/images/products/galaxy-buds2-pro.jpg"],
     desc: "Galaxy Buds2 Pro, 360° Audio ve Hi-Fi kaliteli ses çıkışıyla premium kulaklık deneyimini uygun fiyata sunar. Küçük ve hafif tasarımı ile uzun süreli konfor.",
     specs: [
       { key: "Ses",               value: "360° Audio, 24bit Hi-Fi" },
@@ -298,7 +298,7 @@ const BASE_PRODUCTS = [
     badge: null,
     badgeLabel: null,
     stock: 52,
-    images: ["assets/images/kulaklik5.jpg"],
+    images: ["assets/images/products/jbl-tune770nc.jpg"],
     desc: "JBL Tune 770NC, Adaptif ANC ve JBL Pure Bass Sound ile 70 saate kadar pil ömrü sunan over-ear kulaklık. Katlanabilir tasarımı ile taşıması kolay.",
     specs: [
       { key: "Gürültü Engelleme", value: "Adaptif ANC" },
@@ -323,7 +323,7 @@ const BASE_PRODUCTS = [
     badge: "sale",
     badgeLabel: "%24 İndirim",
     stock: 38,
-    images: ["assets/images/kulaklik6.jpg"],
+    images: ["assets/images/products/jbl-live660nc.jpg"],
     desc: "JBL Live 660NC, gerçek Adaptif ANC ve 50 saatlik pil ömrüyle müzik keyfini en üst düzeye taşır. Hızlı şarj özelliği ile 5 dakikada 1 saat kullanım.",
     specs: [
       { key: "Gürültü Engelleme", value: "True Adaptive ANC" },
@@ -350,7 +350,7 @@ const BASE_PRODUCTS = [
     badge: "bestseller",
     badgeLabel: "Çok Satan",
     stock: 65,
-    images: ["assets/images/kulaklik7.jpg"],
+    images: ["assets/images/products/soundcore-q45.png"],
     desc: "Soundcore Q45, LDAC hi-res ses ve Adaptif ANC ile premium ses kalitesini bütçe dostu fiyata sunar. 50 saatlik batarya ile uzun süreli kullanım.",
     specs: [
       { key: "Ses",               value: "LDAC Hi-Res Audio" },
@@ -375,7 +375,7 @@ const BASE_PRODUCTS = [
     badge: "sale",
     badgeLabel: "%20 İndirim",
     stock: 47,
-    images: ["assets/images/kulaklik8.jpg"],
+    images: ["assets/images/products/soundcore-liberty4nc.png"],
     desc: "Liberty 4 NC, 98.5 dB gürültü engelleme ve LDAC destekli hi-res ses ile gerçek kablosuz kulaklıklarda liderdir. 10 saatlik tek şarj pil ömrü.",
     specs: [
       { key: "ANC",              value: "98.5 dB gürültü engelleme" },
@@ -406,7 +406,7 @@ const BASE_PRODUCTS = [
     badge: "sale",
     badgeLabel: "%19 İndirim",
     stock: 30,
-    images: ["assets/images/tablet1.jpg"],
+    images: ["assets/images/products/casper-via-l30.webp"],
     desc: "Casper Via L30, geniş 10.1 inç ekranı ve Android 13 ile günlük kullanım, eğlence ve eğitim için ideal yerli tablettir. Dört hoparlör ile zengin ses deneyimi.",
     specs: [
       { key: "Ekran",     value: "10.1 inç IPS FHD" },
@@ -431,7 +431,7 @@ const BASE_PRODUCTS = [
     badge: null,
     badgeLabel: null,
     stock: 20,
-    images: ["assets/images/tablet2.jpg"],
+    images: ["assets/images/products/casper-via-s40.webp"],
     desc: "Casper Via S40, 4G LTE desteği, 6GB RAM ve 128GB depolama ile güçlü performansını her yerde sunar. Kalem desteği ile not alma ve çizim imkânı.",
     specs: [
       { key: "Ekran",     value: "10.4 inç 2K IPS" },
@@ -458,7 +458,7 @@ const BASE_PRODUCTS = [
     badge: "bestseller",
     badgeLabel: "Çok Satan",
     stock: 9,
-    images: ["assets/images/tablet3.jpg"],
+    images: ["assets/images/products/ipad-mini.png"],
     desc: "iPad Mini 6, A15 Bionic çipi ile konsol kalitesinde oyun ve ultra hızlı performans sunar. Apple Pencil 2 desteği ile not alma ve yaratıcılık için mükemmel.",
     specs: [
       { key: "Ekran",    value: "8.3 inç Liquid Retina" },
@@ -483,7 +483,7 @@ const BASE_PRODUCTS = [
     badge: "sale",
     badgeLabel: "%15 İndirim",
     stock: 14,
-    images: ["assets/images/tablet4.jpg"],
+    images: ["assets/images/products/ipad-10.png"],
     desc: "iPad 10. Nesil, A14 Bionic çipi ve tamamen yenilenen tasarımıyla daha büyük Liquid Retina ekran ve USB-C bağlantı noktası sunar. Her şeyi yapabileceğiniz bir tablet.",
     specs: [
       { key: "Ekran",    value: "10.9 inç Liquid Retina" },
@@ -510,7 +510,7 @@ const BASE_PRODUCTS = [
     badge: "sale",
     badgeLabel: "%20 İndirim",
     stock: 26,
-    images: ["assets/images/tablet5.jpg"],
+    images: ["assets/images/products/galaxy-tab-a8.jpg"],
     desc: "Galaxy Tab A8, geniş 10.5 inç ekranı ve 4G LTE desteğiyle eğlence ve verimlilik için ideal bütçe dostu Samsung tablettir. Dört hoparlör ile zengin ses.",
     specs: [
       { key: "Ekran",     value: "10.5 inç TFT LCD FHD" },
@@ -535,7 +535,7 @@ const BASE_PRODUCTS = [
     badge: "new",
     badgeLabel: "Yeni",
     stock: 11,
-    images: ["assets/images/tablet6.jpg"],
+    images: ["assets/images/products/galaxy-tab-s9-fe.jpg"],
     desc: "Galaxy Tab S9 FE, S Pen dahil ve IP68 su direnci ile Galaxy ailesinin en erişilebilir premium tableti. Galaxy AI özellikleri ile akıllı not alma ve içerik üretimi.",
     specs: [
       { key: "Ekran",     value: "10.9 inç 90Hz TFT LCD" },

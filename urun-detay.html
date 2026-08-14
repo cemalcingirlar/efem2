@@ -4,31 +4,45 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title id="page-title">Ürün Detayı – efemiletisim.com</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/logos/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="assets/logos/favicon-512.png">
+  <link rel="apple-touch-icon" href="assets/logos/favicon-180.png">
   <meta name="description" id="page-desc" content="efemiletisim.com ürün detay sayfası">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://efemiletisim.com/urun-detay.html">
+  <meta property="og:type" content="product">
+  <meta property="og:site_name" content="efemiletisim.com">
+  <meta property="og:locale" content="tr_TR">
+  <meta property="og:title" content="Ürün Detayı – efemiletisim.com">
+  <meta property="og:description" content="efemiletisim.com ürün detay sayfası">
+  <meta property="og:url" content="https://efemiletisim.com/urun-detay.html">
+  <meta property="og:image" content="https://efemiletisim.com/assets/logos/og-image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Ürün Detayı – efemiletisim.com">
+  <meta name="twitter:description" content="efemiletisim.com ürün detay sayfası">
+  <meta name="twitter:image" content="https://efemiletisim.com/assets/logos/og-image.jpg">
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/pages.css">
 </head>
 <body>
 
-<div id="announcement-bar" class="announcement-bar">
-  🎉 Tüm ürünlerde <strong>ÜCRETSİZ KARGO</strong>! Kod: <strong>EFEMI10</strong> ile %10 indirim!
-  <button class="announcement-close" id="announcement-close">✕</button>
-</div>
 
 <nav id="navbar">
   <div class="container">
     <div class="navbar-inner">
       <a href="index.html" class="navbar-logo">
-        <div class="logo-icon">📱</div>
+        <div class="logo-icon"><img src="assets/logos/icon-square.png" alt="Efem İletişim" loading="eager"></div>
         <div class="logo-text">
-          <span class="logo-name" style="display:block;line-height:1">efem</span>
-          <span class="logo-sub" style="display:block;line-height:1">iletişim</span>
+          <span class="logo-name">efem</span>
+          <span class="logo-sub">iletişim</span>
         </div>
       </a>
       <div class="navbar-search">
         <div class="search-input-wrap">
-          <span class="search-icon">🔍</span>
+          <span class="search-icon"><svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg></span>
           <input type="text" id="search-input" placeholder="Ürün, marka ara..." autocomplete="off">
         </div>
         <div class="search-dropdown" id="search-dropdown"></div>
@@ -38,24 +52,25 @@
         <div class="nav-dropdown">
           <a href="urunler.html" class="nav-link">Ürünler ▾</a>
           <div class="nav-dropdown-menu">
-            <a href="urunler.html?kat=saat" class="nav-dropdown-item"><span class="icon">⌚</span> Akıllı Saatler</a>
-            <a href="urunler.html?kat=kulaklik" class="nav-dropdown-item"><span class="icon">🎧</span> Kulaklıklar</a>
-            <a href="urunler.html?kat=tablet" class="nav-dropdown-item"><span class="icon">📱</span> Tabletler</a>
+            <a href="urunler.html?kat=saat" class="nav-dropdown-item"><span class="icon"><svg class="icon" viewBox="0 0 24 24"><rect x="7" y="6.5" width="10" height="11" rx="3"/><path d="M9.5 6.5V4a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v2.5"/><path d="M9.5 17.5V20a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-2.5"/><path d="M17 10h1.2a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H17"/><path d="M12 9.8v2.4l1.5 .9"/></svg></span> Akıllı Saatler</a>
+            <a href="urunler.html?kat=kulaklik" class="nav-dropdown-item"><span class="icon"><svg class="icon" viewBox="0 0 24 24"><path d="M4 14.5a8 8 0 0 1 16 0"/><path d="M6 13.6a6 6 0 0 1 12 0"/><rect x="3.2" y="14.5" width="4.3" height="6.5" rx="2"/><rect x="16.5" y="14.5" width="4.3" height="6.5" rx="2"/></svg></span> Kulaklıklar</a>
+            <a href="urunler.html?kat=tablet" class="nav-dropdown-item"><span class="icon"><svg class="icon" viewBox="0 0 24 24"><rect x="5" y="2.5" width="14" height="19" rx="2.8"/><path d="M11.5 3.6h1"/><path d="M10.3 19.6h3.4"/></svg></span> Tabletler</a>
           </div>
         </div>
+        <a href="hakkimizda.html" class="nav-link">Hakkımızda</a>
       </nav>
       <div class="navbar-actions">
-        <a href="hesap.html" class="btn btn-ghost btn-sm" id="nav-login-link">👤 Giriş Yap</a>
+        <a href="hesap.html" class="btn btn-ghost btn-sm" id="nav-login-link"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c1.5-4 5-6 7.5-6s6 2 7.5 6"/></svg><span class="nav-label"> Giriş Yap</span></a>
         <div class="nav-dropdown hidden" id="nav-user-menu">
-          <button class="btn btn-ghost btn-sm">👤 <span id="nav-user-name">Kullanıcı</span> ▾</button>
+          <button class="btn btn-ghost btn-sm"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c1.5-4 5-6 7.5-6s6 2 7.5 6"/></svg> <span class="nav-label"><span id="nav-user-name">Kullanıcı</span> ▾</span></button>
           <div class="nav-dropdown-menu">
-            <a href="profil.html" class="nav-dropdown-item">📋 Profilim</a>
-            <a href="profil.html?tab=orders" class="nav-dropdown-item">📦 Siparişlerim</a>
-            <span class="nav-dropdown-item" onclick="logout()" style="color:var(--error)">🚪 Çıkış Yap</span>
+            <a href="profil.html" class="nav-dropdown-item"><svg class="icon" viewBox="0 0 24 24"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1"/><path d="M9 11h6M9 15h6"/></svg> Profilim</a>
+            <a href="profil.html?tab=orders" class="nav-dropdown-item"><svg class="icon" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4-9-4Z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg> Siparişlerim</a>
+            <span class="nav-dropdown-item" onclick="logout()" style="color:var(--error)"><svg class="icon" viewBox="0 0 24 24"><path d="M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3"/><path d="M15 16l4-4-4-4"/><path d="M19 12H9"/></svg> Çıkış Yap</span>
           </div>
         </div>
         <a href="sepet.html" class="cart-btn">
-          🛒 Sepet
+          <svg class="icon" viewBox="0 0 24 24"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg><span class="nav-label"> Sepet</span>
           <span class="cart-badge" id="cart-badge-1" style="display:none">0</span>
         </a>
         <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
@@ -65,19 +80,20 @@
 </nav>
 
 <div class="mobile-menu" id="mobile-menu">
-  <a href="index.html" class="mobile-nav-link">🏠 Ana Sayfa</a>
-  <a href="urunler.html?kat=saat" class="mobile-nav-link">⌚ Akıllı Saatler</a>
-  <a href="urunler.html?kat=kulaklik" class="mobile-nav-link">🎧 Kulaklıklar</a>
-  <a href="urunler.html?kat=tablet" class="mobile-nav-link">📱 Tabletler</a>
-  <a href="hesap.html" class="mobile-nav-link">👤 Hesabım</a>
-  <a href="sepet.html" class="mobile-nav-link">🛒 Sepetim</a>
+  <a href="index.html" class="mobile-nav-link"><svg class="icon" viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9h12v-9"/></svg> Ana Sayfa</a>
+  <a href="urunler.html?kat=saat" class="mobile-nav-link"><svg class="icon" viewBox="0 0 24 24"><rect x="7" y="6.5" width="10" height="11" rx="3"/><path d="M9.5 6.5V4a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v2.5"/><path d="M9.5 17.5V20a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-2.5"/><path d="M17 10h1.2a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H17"/><path d="M12 9.8v2.4l1.5 .9"/></svg> Akıllı Saatler</a>
+  <a href="urunler.html?kat=kulaklik" class="mobile-nav-link"><svg class="icon" viewBox="0 0 24 24"><path d="M4 14.5a8 8 0 0 1 16 0"/><path d="M6 13.6a6 6 0 0 1 12 0"/><rect x="3.2" y="14.5" width="4.3" height="6.5" rx="2"/><rect x="16.5" y="14.5" width="4.3" height="6.5" rx="2"/></svg> Kulaklıklar</a>
+  <a href="urunler.html?kat=tablet" class="mobile-nav-link"><svg class="icon" viewBox="0 0 24 24"><rect x="5" y="2.5" width="14" height="19" rx="2.8"/><path d="M11.5 3.6h1"/><path d="M10.3 19.6h3.4"/></svg> Tabletler</a>
+  <a href="hakkimizda.html" class="mobile-nav-link"><svg class="icon" viewBox="0 0 24 24"><path d="M5 21V5a1 1 0 0 1 1-1h6v17"/><path d="M12 8h6a1 1 0 0 1 1 1v12"/><path d="M9 9v.01M9 13v.01M9 17v.01M16 12v.01M16 16v.01"/></svg> Hakkımızda</a>
+  <a href="hesap.html" class="mobile-nav-link"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M4.5 20c1.5-4 5-6 7.5-6s6 2 7.5 6"/></svg> Hesabım</a>
+  <a href="sepet.html" class="mobile-nav-link"><svg class="icon" viewBox="0 0 24 24"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg> Sepetim</a>
 </div>
 
 <main>
-  <div style="background:var(--surface);border-bottom:1px solid var(--border);padding:var(--space-4) 0">
+  <div class="products-page-header-bar">
     <div class="container">
       <div class="breadcrumb">
-        <a href="index.html">🏠 Ana Sayfa</a>
+        <a href="index.html"><svg class="icon" viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9h12v-9"/></svg> Ana Sayfa</a>
         <span class="sep">›</span>
         <a href="urunler.html" id="bc-cat-link">Ürünler</a>
         <span class="sep">›</span>
@@ -107,23 +123,27 @@
   <div class="container">
     <div class="footer-bottom">
       <span>© 2024 efemiletisim.com</span>
+      <div class="footer-legal-links">
+        <a href="gizlilik-kvkk.html">Gizlilik &amp; KVKK</a>
+        <a href="mesafeli-satis-sozlesmesi.html">Mesafeli Satış Sözleşmesi</a>
+        <a href="iptal-iade.html">İptal ve İade</a>
+      </div>
       <div class="footer-payment-icons">
         <span class="payment-icon">VISA</span>
         <span class="payment-icon">MC</span>
-        <span class="payment-icon">🔒 SSL</span>
+        <span class="payment-icon"><svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z"/><path d="M9 12l2 2 4-4"/></svg> SSL</span>
       </div>
     </div>
   </div>
 </footer>
 
 <div id="toast-container"></div>
-<button id="scroll-top-btn" class="btn-icon btn-icon-lg"
-  style="position:fixed;bottom:24px;right:24px;z-index:99;display:none;background:var(--primary);color:white;border-color:var(--primary);box-shadow:var(--shadow-lg)">↑</button>
-<style>#scroll-top-btn.visible { display: flex !important; }</style>
+<button id="scroll-top-btn" class="btn-icon btn-icon-lg scroll-top-btn"><svg class="icon" viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
 
+<script src="js/site-config.js"></script>
 <script src="js/data.js"></script>
 <script src="js/cart.js"></script>
-<script src="js/auth.js"></script>
+<script type="module" src="js/auth.js"></script>
 <script src="js/products.js"></script>
 <script src="js/main.js"></script>
 <script>
@@ -149,6 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   renderProductDetail(currentProduct);
   renderRelated(currentProduct);
+  injectProductSchema(currentProduct);
 });
 
 function renderProductDetail(p) {
@@ -160,7 +181,7 @@ function renderProductDetail(p) {
   const thumbsHTML = p.images.length > 1
     ? p.images.map((img, i) => `
         <div class="gallery-thumb ${i === 0 ? 'active' : ''}" onclick="changeImage('${img}', this)">
-          <img src="${img}" alt="${p.name}" onerror="this.src='assets/images/placeholder.jpg'">
+          <img src="${img}" alt="${p.name}" onerror="this.src='assets/images/products/placeholder-product.svg'">
         </div>`).join('')
     : '';
 
@@ -170,7 +191,7 @@ function renderProductDetail(p) {
       <div class="product-gallery">
         <div class="gallery-main">
           <img id="main-img" src="${p.images[0]}" alt="${p.name}"
-               onerror="this.src='assets/images/placeholder.jpg'">
+               onerror="this.src='assets/images/products/placeholder-product.svg'">
         </div>
         ${thumbsHTML ? `<div class="gallery-thumbs">${thumbsHTML}</div>` : ''}
       </div>
@@ -194,6 +215,7 @@ function renderProductDetail(p) {
           ${p.originalPrice ? `<span class="detail-price-original">${formatPrice(p.originalPrice)}</span>
           <span class="price-discount">%${discount} İndirim</span>` : ''}
         </div>
+        <div class="price-row-note" style="text-align:left">KDV dahildir.</div>
 
         ${stockHTML}
 
@@ -201,7 +223,7 @@ function renderProductDetail(p) {
 
         <!-- Özellikler -->
         <div>
-          <h3 style="font-size:1rem;margin-bottom:var(--space-3)">📋 Teknik Özellikler</h3>
+          <h3 class="specs-title"><svg class="icon" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V5a2 2 0 0 1 2-2h9"/></svg> Teknik Özellikler</h3>
           <table class="specs-table">
             ${p.specs.map(s => `
               <tr>
@@ -212,16 +234,16 @@ function renderProductDetail(p) {
         </div>
 
         <!-- Kargo bilgisi -->
-        <div style="background:var(--surface-2);border-radius:var(--radius-md);padding:var(--space-4);display:flex;gap:var(--space-4)">
-          <div style="display:flex;align-items:center;gap:var(--space-2);font-size:0.875rem">
-            <span style="font-size:1.25rem">🚚</span>
+        <div class="detail-perks">
+          <div class="detail-perk">
+            <svg class="icon" viewBox="0 0 24 24"><rect x="2" y="8" width="12" height="8" rx="1"/><path d="M14 11h4l3 3v2h-2"/><circle cx="6" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>
             <div>
               <div style="font-weight:700;color:var(--success)">Ücretsiz Kargo</div>
               <div style="color:var(--text-muted)">Tüm siparişlerde geçerli</div>
             </div>
           </div>
-          <div style="display:flex;align-items:center;gap:var(--space-2);font-size:0.875rem">
-            <span style="font-size:1.25rem">↩️</span>
+          <div class="detail-perk">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-1"/></svg>
             <div>
               <div style="font-weight:700">14 Gün İade</div>
               <div style="color:var(--text-muted)">Koşulsuz iade garantisi</div>
@@ -242,13 +264,13 @@ function renderProductDetail(p) {
           </div>
           <div class="product-action-btns">
             <button class="btn btn-primary btn-lg" onclick="handleAddToCart(${p.id}, this)" ${p.stock === 0 ? 'disabled' : ''}>
-              🛒 Sepete Ekle
+              <svg class="icon" viewBox="0 0 24 24"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg> Sepete Ekle
             </button>
             <a href="sepet.html" class="btn btn-accent btn-icon btn-icon-lg" title="Hemen satın al"
-               onclick="addToCart(${p.id}, 1)">⚡</a>
+               onclick="addToCart(${p.id}, 1)"><svg class="icon" viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg></a>
           </div>
           <button class="btn btn-ghost w-full" onclick="toggleFavorite(${p.id})" id="fav-btn">
-            ${isFavorite(p.id) ? '❤️ Favorilerde' : '🤍 Favorilere Ekle'}
+            <svg class="icon" viewBox="0 0 24 24" ${isFavorite(p.id) ? 'fill="currentColor"' : ''}><path d="M12 21s7-6.5 7-11a7 7 0 1 0-14 0c0 4.5 7 11 7 11Z"/></svg> ${isFavorite(p.id) ? 'Favorilerde' : 'Favorilere Ekle'}
           </button>
         </div>
       </div>

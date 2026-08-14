@@ -263,12 +263,14 @@
             <div class="address-form-grid">
               <div class="form-group">
                 <label class="form-label">Ad <span class="required">*</span></label>
-                <input type="text" class="form-input" id="addr-ad" placeholder="Adınız">
+                <input type="text" class="form-input" id="addr-ad" placeholder="Adınız"
+                       autocomplete="given-name">
                 <span class="form-error" id="addr-ad-error"></span>
               </div>
               <div class="form-group">
                 <label class="form-label">Soyad <span class="required">*</span></label>
-                <input type="text" class="form-input" id="addr-soyad" placeholder="Soyadınız">
+                <input type="text" class="form-input" id="addr-soyad" placeholder="Soyadınız"
+                       autocomplete="family-name">
                 <span class="form-error" id="addr-soyad-error"></span>
               </div>
               <div class="form-group">
@@ -286,12 +288,13 @@
               </div>
               <div class="form-group form-group-full">
                 <label class="form-label">Adres <span class="required">*</span></label>
-                <textarea class="form-textarea" id="addr-adres" placeholder="Mahalle, sokak, bina no, daire..." rows="3"></textarea>
+                <textarea class="form-textarea" id="addr-adres" placeholder="Mahalle, sokak, bina no, daire..." rows="3"
+                          autocomplete="street-address"></textarea>
                 <span class="form-error" id="addr-adres-error"></span>
               </div>
               <div class="form-group">
                 <label class="form-label">Şehir <span class="required">*</span></label>
-                <select class="form-select" id="addr-sehir">
+                <select class="form-select" id="addr-sehir" autocomplete="address-level1">
                   <option value="">Şehir seçin...</option>
                   <option>İstanbul</option>
                   <option>Ankara</option>
@@ -308,12 +311,14 @@
               </div>
               <div class="form-group">
                 <label class="form-label">İlçe <span class="required">*</span></label>
-                <input type="text" class="form-input" id="addr-ilce" placeholder="İlçe">
+                <input type="text" class="form-input" id="addr-ilce" placeholder="İlçe"
+                       autocomplete="address-level2">
                 <span class="form-error" id="addr-ilce-error"></span>
               </div>
               <div class="form-group">
                 <label class="form-label">Posta Kodu <span class="required">*</span></label>
-                <input type="text" class="form-input" id="addr-posta" placeholder="34XXX" maxlength="5">
+                <input type="text" class="form-input" id="addr-posta" placeholder="34XXX" maxlength="5"
+                       autocomplete="postal-code">
                 <span class="form-error" id="addr-posta-error"></span>
               </div>
             </div>

@@ -3,6 +3,16 @@
 Bu dosya projede yapılan her ekleme, değişiklik ve kaldırmayı kayıt altına alır.
 En yeni kayıtlar en üstte.
 
+## 2026-08-15
+
+### Adres autofill, admin ayarlar
+- Fix: `odeme.html` teslimat adresi formunda `autocomplete` attribute'leri eksikti
+  (ad/soyad/adres/şehir/ilçe/posta kodu) — tarayıcının kayıtlı adres önerisine tıklandığında
+  sadece telefon/e-posta doluyor, gerisi boş kalıyordu. Standart autocomplete token'ları eklendi.
+- Add: Admin panel — yeni "Ayarlar" sekmesi: şifre değiştirme (mevcut şifre doğrulamalı,
+  yeni şifre iki kez sorulup eşleştirilir), kurtarma e-postası ve telefon numarası.
+  `localStorage` tabanlı (mevcut admin auth zaten client-side demo seviyesinde).
+
 ## 2026-08-14 (devam 9)
 
 ### Üyelik, sipariş ve kurumsal bilgi eksikleri

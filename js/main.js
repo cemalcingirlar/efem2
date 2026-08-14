@@ -79,7 +79,19 @@ function initNavbar() {
   }
 }
 
-/* ─── Scroll animasyon (Intersection Observer) ─── */
+/* ─── Görünür alanda mı? (above-the-fold elemanları IntersectionObserver'ın
+   ilk kontrolünü beklemeden hemen göstermek için) ─── */
+function isInViewport(el, thresholdRatio = 0) {
+  const rect = el.getBoundingClientRect();
+  const vh = window.innerHeight || document.documentElement.clientHeight;
+  const visible = Math.min(rect.bottom, vh) - Math.max(rect.top, 0);
+  return visible > rect.height * thresholdRatio;
+}
+
+/* ─── Scroll animasyon (Intersection Observer) ───
+   Sayfa ilk yüklendiğinde zaten görünür alanda olan elemanlar (above-the-fold)
+   observer'ın ilk callback'ini beklemeden hemen animasyona başlar; aksi halde
+   yavaş bağlantılarda/yeniden çizimlerde kullanıcı scroll edene kadar soluk kalabiliyor. */
 function initScrollAnimations() {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
@@ -91,6 +103,8 @@ function initScrollAnimations() {
   }, { threshold: 0.1 });
 
   document.querySelectorAll('.product-card, .category-card, .feature-item').forEach(el => {
+    // Above-the-fold: zaten görünür, giriş animasyonuna gerek yok — dokunma.
+    if (isInViewport(el, 0.1)) return;
     el.style.opacity = '0';
     observer.observe(el);
   });
@@ -156,7 +170,32 @@ function initStatCounters() {
     });
   }, { threshold: 0.5 });
 
-  nums.forEach(el => observer.observe(el));
+  nums.forEach(el => {
+    if (isInViewport(el, 0.5)) { animate(el); return; }
+    observer.observe(el);
+  });
+}
+
+/* ─── Karanlık / Aydınlık Mod ───
+   Tema tercihi <head> içindeki inline script ile sayfa çizilmeden önce
+   uygulanır (flaş önleme); burada sadece toggle butonu bağlanır. */
+const THEME_KEY = 'efemi_theme';
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem(THEME_KEY, theme);
+  document.querySelectorAll('.theme-toggle').forEach(btn => {
+    btn.setAttribute('aria-label', theme === 'dark' ? 'Aydınlık moda geç' : 'Karanlık moda geç');
+  });
+}
+
+function initThemeToggle() {
+  document.querySelectorAll('.theme-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+      applyTheme(current === 'dark' ? 'light' : 'dark');
+    });
+  });
 }
 
 /* ─── site-config.js'ten link ve metin doldurma ─── */
@@ -325,6 +364,7 @@ function lazyLoadImages() {
 document.addEventListener('DOMContentLoaded', () => {
   initSiteLinks();
   initNavbar();
+  initThemeToggle();
   initScrollToTop();
   lazyLoadImages();
   initMagneticButtons();

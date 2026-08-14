@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
+  <script>(function(){try{var t=localStorage.getItem("efemi_theme");if(!t){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Giriş / Kayıt – efemiletisim.com</title>
@@ -124,7 +125,11 @@
           <span class="logo-sub">iletişim</span>
         </div>
       </a>
-      <div style="margin-left:auto">
+      <div style="margin-left:auto;display:flex;align-items:center;gap:var(--space-3)">
+        <button class="theme-toggle" id="theme-toggle" title="Karanlık / Aydınlık mod">
+          <svg class="icon theme-icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 3v2.2M12 18.8V21M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M3 12h2.2M18.8 12H21M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6"/></svg>
+          <svg class="icon theme-icon-moon" viewBox="0 0 24 24"><path d="M20.5 14.7A8.5 8.5 0 1 1 9.3 3.5a7 7 0 0 0 11.2 11.2Z"/></svg>
+        </button>
         <a href="urunler.html" class="btn btn-ghost btn-sm"><svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M4 9l1-5h14l1 5"/><path d="M4 9a2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0 2 2 0 0 0 4 0"/><path d="M5 9v10h14V9"/></svg> Alışverişe Devam Et</a>
       </div>
     </div>
@@ -151,6 +156,11 @@
         <div class="tabs" id="auth-tabs">
           <button class="tab-btn active" id="tab-login"    onclick="switchTab('login')">Giriş Yap</button>
           <button class="tab-btn"        id="tab-register" onclick="switchTab('register')">Kayıt Ol</button>
+        </div>
+        <div style="text-align:center;margin-top:10px">
+          <a href="admin.html" style="font-size:0.75rem;color:var(--text-muted);text-decoration:none;display:inline-flex;align-items:center;gap:4px">
+            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3Z"/><path d="M9 12l2 2 4-4"/></svg> Admin girişi
+          </a>
         </div>
 
         <!-- ─── GİRİŞ FORMU ─── -->

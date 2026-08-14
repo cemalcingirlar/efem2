@@ -14,13 +14,21 @@ function createProductCard(product) {
     <span class="price-original">${formatPrice(product.originalPrice)}</span>
     <span class="price-discount">%${discount}</span>` : '';
 
+  const hasGallery = product.images.length > 1;
+  const dotsHTML = hasGallery ? `
+    <div class="product-img-dots">
+      ${product.images.map((_, i) => `<span class="dot ${i === 0 ? 'active' : ''}"></span>`).join('')}
+    </div>` : '';
+
   return `
     <div class="product-card" onclick="window.location='urun-detay.html?id=${product.id}'">
-      <div class="product-img-wrap">
+      <div class="product-img-wrap"
+           ${hasGallery ? `onmouseenter="startCardImageCycle(this, ${product.id})" onmouseleave="stopCardImageCycle(this, ${product.id})"` : ''}>
         <img src="${product.images[0]}"
              alt="${product.name}"
              loading="lazy"
              onerror="this.src='assets/images/products/placeholder-product.svg'">
+        ${dotsHTML}
         ${badgeHTML}
         <button class="product-fav ${isFavorite(product.id) ? 'active' : ''}"
                 onclick="event.stopPropagation(); toggleFavorite(${product.id}, this)"
@@ -51,6 +59,39 @@ function createProductCard(product) {
       </div>
     </div>
   `;
+}
+
+/* ─── Ürün kartı: hover'da görsel galerisi geçişi ─── */
+const cardCycleTimers = new WeakMap();
+
+function startCardImageCycle(wrapEl, productId) {
+  const product = PRODUCTS.find(p => p.id === productId);
+  if (!product || product.images.length <= 1) return;
+
+  const img  = wrapEl.querySelector('img');
+  const dots = wrapEl.querySelectorAll('.product-img-dots .dot');
+  let idx = 0;
+
+  const timer = setInterval(() => {
+    idx = (idx + 1) % product.images.length;
+    img.src = product.images[idx];
+    dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+  }, 2000);
+
+  cardCycleTimers.set(wrapEl, timer);
+}
+
+function stopCardImageCycle(wrapEl, productId) {
+  const timer = cardCycleTimers.get(wrapEl);
+  if (timer) { clearInterval(timer); cardCycleTimers.delete(wrapEl); }
+
+  const product = PRODUCTS.find(p => p.id === productId);
+  if (!product) return;
+
+  const img  = wrapEl.querySelector('img');
+  const dots = wrapEl.querySelectorAll('.product-img-dots .dot');
+  img.src = product.images[0];
+  dots.forEach((d, i) => d.classList.toggle('active', i === 0));
 }
 
 /* ─── Sepete ekle + animasyon ─── */

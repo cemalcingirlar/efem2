@@ -14,6 +14,60 @@ function saveAdminProducts(products) {
   localStorage.setItem(ADMIN_PRODUCTS_KEY, JSON.stringify(products));
 }
 
+/* ─── Admin: sabit (BASE_PRODUCTS) ürünler üzerinde yapılan düzenlemeler ───
+   BASE_PRODUCTS kod içinde sabit olduğu için doğrudan değiştirilemez;
+   admin panelinden bir sabit ürün düzenlenince buraya id bazlı bir
+   "override" objesi yazılır, PRODUCTS oluşturulurken üstüne uygulanır. */
+const PRODUCT_OVERRIDES_KEY = 'efemi_product_overrides';
+
+function getProductOverrides() {
+  try { return JSON.parse(localStorage.getItem(PRODUCT_OVERRIDES_KEY)) || {}; }
+  catch { return {}; }
+}
+
+function saveProductOverrides(overrides) {
+  localStorage.setItem(PRODUCT_OVERRIDES_KEY, JSON.stringify(overrides));
+}
+
+function applyProductOverrides(products) {
+  const overrides = getProductOverrides();
+  return products.map(p => overrides[p.id] ? { ...p, ...overrides[p.id] } : p);
+}
+
+/* ─── Sipariş defteri (localStorage) ───
+   Gerçek çoklu-cihaz sipariş yönetimi Firestore backend gerektirir (bkz.
+   docs/ARKADAS-YAPILACAKLAR.md — Prompt 3). Bu, o backend'e geçene kadar
+   admin panelinin AYNI TARAYICIDA verilen (üye + misafir) siparişleri
+   görüp durumunu güncelleyebilmesi için yerel bir defter. */
+const ORDERS_KEY = 'efemi_all_orders';
+
+function getAllOrders() {
+  try { return JSON.parse(localStorage.getItem(ORDERS_KEY)) || []; }
+  catch { return []; }
+}
+
+function saveAllOrders(orders) {
+  localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
+}
+
+/* order: saveOrderToFirestore/guest dalından dönen {id,date,status,...} nesnesi
+   meta: { source: 'member'|'guest', userId, customerName, customerEmail } */
+function addOrderToLedger(order, meta) {
+  const orders = getAllOrders();
+  orders.unshift({ ...order, ...meta });
+  saveAllOrders(orders);
+}
+
+function updateOrderStatus(orderId, status, statusLabel) {
+  const orders = getAllOrders();
+  const idx = orders.findIndex(o => o.id === orderId);
+  if (idx >= 0) {
+    orders[idx].status = status;
+    orders[idx].statusLabel = statusLabel;
+    saveAllOrders(orders);
+  }
+}
+
 /* ─── BASE_PRODUCTS: Sabit ürün listesi ─── */
 const BASE_PRODUCTS = [
 
@@ -550,12 +604,12 @@ const BASE_PRODUCTS = [
   }
 ];
 
-/* ─── PRODUCTS: Statik + Admin ürünlerini birleştir ─── */
-let PRODUCTS = [...BASE_PRODUCTS, ...getAdminProducts()];
+/* ─── PRODUCTS: Statik + Admin ürünlerini birleştir, düzenlemeleri uygula ─── */
+let PRODUCTS = applyProductOverrides([...BASE_PRODUCTS, ...getAdminProducts()]);
 
 /* ─── PRODUCTS'ı yenile (admin değişikliklerinden sonra) ─── */
 function refreshProducts() {
-  PRODUCTS = [...BASE_PRODUCTS, ...getAdminProducts()];
+  PRODUCTS = applyProductOverrides([...BASE_PRODUCTS, ...getAdminProducts()]);
 }
 
 /* ─── Yardımcı: ID ile ürün bul ─── */

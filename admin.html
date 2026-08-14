@@ -162,10 +162,32 @@
     /* ─── Stat Kartları ─── */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(5, 1fr);
       gap: 20px;
       margin-bottom: 32px;
     }
+
+    .stats-grid-sm {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    /* ─── Kategori Dağılımı & Stok Sağlığı ─── */
+    .insight-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .dist-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .dist-row:last-child { margin-bottom: 0; }
+    .dist-label { width: 92px; flex-shrink: 0; font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); }
+    .dist-bar-track { flex: 1; height: 8px; background: #F1F5F9; border-radius: var(--radius-full); overflow: hidden; }
+    .dist-bar-fill { height: 100%; border-radius: var(--radius-full); }
+    .dist-value { width: 60px; flex-shrink: 0; text-align: right; font-size: 0.8125rem; font-weight: 700; color: var(--text-primary); }
 
     .stat-card {
       background: white;
@@ -240,6 +262,7 @@
     .admin-table tr:last-child td { border-bottom: none; }
     .admin-table tr { transition: background 250ms var(--ease-spring); }
     .admin-table tr:hover td { background: #F8FAFC; }
+    .admin-row-clickable { cursor: pointer; }
 
     .product-thumb {
       width: 48px; height: 48px;
@@ -315,6 +338,49 @@
       max-height: 90vh;
       overflow-y: auto;
       animation: slideDown 0.3s var(--ease-spring);
+    }
+
+    .admin-modal-wide { max-width: 980px; }
+
+    .modal-body-split {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+
+    .modal-col-media { position: sticky; top: 0; }
+
+    .img-upload-preview {
+      aspect-ratio: 1 / 1;
+      border-radius: var(--radius-lg);
+      border: 1.5px dashed var(--border-dark);
+      background: #F8FAFC;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+
+    .img-upload-preview-img { width: 100%; height: 100%; object-fit: cover; }
+
+    .img-upload-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-muted);
+      font-size: 0.8125rem;
+    }
+    .img-upload-empty .icon { width: 2rem; height: 2rem; opacity: 0.5; }
+
+    .img-upload-btn { width: 100%; justify-content: center; cursor: pointer; }
+
+    @media (max-width: 760px) {
+      .modal-body-split { grid-template-columns: 1fr; }
+      .modal-col-media { position: static; }
+      .img-upload-preview { aspect-ratio: 16/9; }
     }
 
     .admin-modal-header {
@@ -395,6 +461,7 @@
     /* ─── Responsive ─── */
     @media (max-width: 1024px) {
       .stats-grid { grid-template-columns: repeat(2,1fr); }
+      .insight-grid { grid-template-columns: 1fr; }
     }
     @media (max-width: 768px) {
       .admin-sidebar { display: none; }
@@ -497,6 +564,10 @@
         <span class="icon"><svg class="icon" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4-9-4Z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg></span> Ürünler
         <span class="badge-count" id="nav-product-count">0</span>
       </div>
+      <div class="admin-nav-item" id="nav-orders" onclick="showSection('orders')">
+        <span class="icon"><svg class="icon" viewBox="0 0 24 24"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></span> Siparişler
+        <span class="badge-count" id="nav-order-count">0</span>
+      </div>
 
       <div class="admin-nav-label">Hızlı İşlemler</div>
       <div class="admin-nav-item" onclick="openAddModal()">
@@ -562,18 +633,73 @@
               <div class="stat-label">Tablet</div>
             </div>
           </div>
+          <div class="stat-card">
+            <div class="stat-icon green"><svg class="icon" viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M5 8l1.5 1.5M17.5 14.5 19 16M5 16l1.5-1.5M17.5 9.5 19 8"/><circle cx="12" cy="12" r="4"/></svg></div>
+            <div>
+              <div class="stat-num" id="stat-inventory-value">₺0</div>
+              <div class="stat-label">Envanter Değeri</div>
+            </div>
+          </div>
         </div>
 
-        <!-- Son Eklenen Ürünler -->
+        <!-- Sipariş Özeti -->
+        <div class="stats-grid-sm">
+          <div class="stat-card">
+            <div class="stat-icon blue"><svg class="icon" viewBox="0 0 24 24"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></div>
+            <div>
+              <div class="stat-num" id="stat-order-count">0</div>
+              <div class="stat-label">Toplam Sipariş (bu cihaz)</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon amber"><svg class="icon" viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M5 8l1.5 1.5M17.5 14.5 19 16M5 16l1.5-1.5M17.5 9.5 19 8"/><circle cx="12" cy="12" r="4"/></svg></div>
+            <div>
+              <div class="stat-num" id="stat-order-revenue">₺0</div>
+              <div class="stat-label">Toplam Ciro (bu cihaz)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Son Siparişler -->
         <div class="admin-card">
           <div class="admin-card-header">
-            <span class="admin-card-title">Son Eklenen Ürünler (Admin)</span>
+            <span class="admin-card-title">Son Siparişler</span>
+            <button class="btn btn-ghost btn-sm" onclick="showSection('orders')">Tümünü Gör →</button>
+          </div>
+          <div id="recent-orders">
+            <div class="admin-empty-state">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+              <div>Henüz bu tarayıcıdan verilmiş bir sipariş yok.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kategori Dağılımı & Stok Sağlığı -->
+        <div class="insight-grid">
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <span class="admin-card-title"><svg class="icon icon-sm" viewBox="0 0 24 24" style="color:var(--primary)"><path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/></svg> Kategori Dağılımı</span>
+            </div>
+            <div class="admin-content" style="padding:20px 24px" id="category-dist"></div>
+          </div>
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <span class="admin-card-title"><svg class="icon icon-sm" viewBox="0 0 24 24" style="color:var(--success)"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 12l2.5 2.5L16 9"/></svg> Stok Sağlığı</span>
+            </div>
+            <div class="admin-content" style="padding:20px 24px" id="stock-health"></div>
+          </div>
+        </div>
+
+        <!-- Son Güncellenen Ürünler -->
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <span class="admin-card-title">Son Güncellenen Ürünler</span>
             <button class="btn btn-primary btn-sm" onclick="openAddModal()"><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Yeni Ürün</button>
           </div>
           <div id="recent-admin-products">
             <div class="admin-empty-state">
               <svg class="icon" viewBox="0 0 24 24"><path d="M3 12h5l2 3h4l2-3h5"/><path d="M5 5h14l2 7v8a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-8l2-7Z"/></svg>
-              <div>Henüz admin tarafından ürün eklenmedi.</div>
+              <div>Henüz admin tarafından ürün eklenmedi veya düzenlenmedi.</div>
               <button class="btn btn-primary btn-sm" onclick="openAddModal()" style="margin-top:16px"><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> İlk Ürünü Ekle</button>
             </div>
           </div>
@@ -635,6 +761,57 @@
       </div>
     </section>
 
+    <!-- ─── SİPARİŞLER ─── -->
+    <section id="section-orders" style="display:none">
+      <div class="admin-topbar">
+        <div>
+          <h1><svg class="icon" viewBox="0 0 24 24"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg> Sipariş Yönetimi</h1>
+          <p id="orders-subtitle">Tüm siparişler listeleniyor</p>
+        </div>
+        <div class="admin-flex-gap-12-center">
+          <input type="text" class="admin-search" id="order-search"
+                 placeholder="Sipariş no, müşteri ara..." oninput="filterOrdersTable()">
+          <select id="order-status-filter" class="sort-select" onchange="filterOrdersTable()" style="padding:10px 14px">
+            <option value="all">Tüm Durumlar</option>
+            <option value="processing">Hazırlanıyor</option>
+            <option value="shipped">Kargoda</option>
+            <option value="delivered">Teslim Edildi</option>
+            <option value="cancelled">İptal</option>
+          </select>
+          <select id="order-source-filter" class="sort-select" onchange="filterOrdersTable()" style="padding:10px 14px">
+            <option value="all">Üye + Misafir</option>
+            <option value="member">Yalnızca Üye</option>
+            <option value="guest">Yalnızca Misafir</option>
+          </select>
+        </div>
+      </div>
+      <div class="admin-content" style="padding-top:24px">
+        <div class="admin-demo-info" style="background:rgba(37,99,235,0.08);color:var(--primary-dark);margin-bottom:20px">
+          <svg class="icon icon-sm" viewBox="0 0 24 24" style="vertical-align:-2px"><circle cx="12" cy="12" r="9"/><path d="M12 8v.01M12 11v5"/></svg>
+          Bu liste yalnızca <strong>bu tarayıcıda</strong> verilen siparişleri gösterir (gerçek zamanlı, çok cihazlı sipariş yönetimi için backend bağlantısı gerekir — bkz. <code>docs/ARKADAS-YAPILACAKLAR.md</code>, Prompt 3).
+        </div>
+        <div class="admin-card">
+          <table class="admin-table" id="orders-table">
+            <thead>
+              <tr>
+                <th>Sipariş No</th>
+                <th>Tarih</th>
+                <th>Müşteri</th>
+                <th>Ürünler</th>
+                <th>Tutar</th>
+                <th>Kaynak</th>
+                <th>Durum</th>
+                <th>İşlemler</th>
+              </tr>
+            </thead>
+            <tbody id="orders-table-body">
+              <!-- JS ile doldurulur -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
   </div><!-- /admin-main -->
 </div><!-- /admin-wrapper -->
 
@@ -642,7 +819,7 @@
      ÜRÜN EKLE/DÜZENLE MODAL
 ════════════════════════════ -->
 <div class="admin-modal-overlay" id="product-modal">
-  <div class="admin-modal">
+  <div class="admin-modal admin-modal-wide">
     <div class="admin-modal-header">
       <h3 class="admin-modal-title" id="modal-title">Yeni Ürün Ekle</h3>
       <button onclick="closeModal()" class="admin-modal-close"><svg class="icon" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
@@ -650,127 +827,138 @@
     <div class="admin-modal-body">
       <input type="hidden" id="edit-product-id">
 
-      <!-- Temel Bilgiler -->
-      <div class="admin-section-label">
-        <svg class="icon" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V5a2 2 0 0 1 2-2h9"/></svg> Temel Bilgiler
-      </div>
-      <div class="form-grid-2" style="margin-bottom:16px">
-        <div class="form-group col-span-2">
-          <label class="form-label">Ürün Adı <span class="required">*</span></label>
-          <input type="text" class="form-input" id="p-name" placeholder="Örn: Apple Watch Series 9 41mm">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Kategori <span class="required">*</span></label>
-          <select class="form-select" id="p-category" onchange="updateCategoryLabel()">
-            <option value="saat">Akıllı Saatler</option>
-            <option value="kulaklik">Kulaklıklar</option>
-            <option value="tablet">Tabletler</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Marka <span class="required">*</span></label>
-          <input type="text" class="form-input" id="p-brand" placeholder="Apple, Samsung, Sony...">
-        </div>
+      <div class="admin-demo-info" id="modal-source-note" style="display:none;background:rgba(37,99,235,0.08);color:var(--primary-dark);margin-bottom:20px">
+        <svg class="icon icon-sm" viewBox="0 0 24 24" style="vertical-align:-2px"><circle cx="12" cy="12" r="9"/><path d="M12 8v.01M12 11v5"/></svg>
+        Bu, katalogda sabit tanımlı bir ürün. Kaydettiğinde değişiklikler bu tarayıcıda bir "düzenleme" olarak saklanır, orijinal kayıt bozulmaz — "Sıfırla" ile geri alınabilir.
       </div>
 
-      <!-- Fiyat & Stok -->
-      <div class="admin-section-label">
-        <svg class="icon" viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M5 8l1.5 1.5M17.5 14.5 19 16M5 16l1.5-1.5M17.5 9.5 19 8"/><circle cx="12" cy="12" r="4"/></svg> Fiyat & Stok
-      </div>
-      <div class="form-grid-3" style="margin-bottom:16px">
-        <div class="form-group">
-          <label class="form-label">Satış Fiyatı (₺) <span class="required">*</span></label>
-          <input type="number" class="form-input" id="p-price" placeholder="2999">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Orijinal Fiyat (₺)</label>
-          <input type="number" class="form-input" id="p-original-price" placeholder="İndirim yoksa boş bırakın">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Stok Adedi <span class="required">*</span></label>
-          <input type="number" class="form-input" id="p-stock" placeholder="25">
-        </div>
-      </div>
-
-      <!-- Görünüm -->
-      <div class="admin-section-label">
-        <svg class="icon" viewBox="0 0 24 24"><path d="M20.6 12.5L12 21l-9-9V4h8l9.6 8.5Z"/><circle cx="7.5" cy="7.5" r="1.3" fill="currentColor" stroke="none"/></svg> Görünüm & Rozet
-      </div>
-      <div class="form-grid-2" style="margin-bottom:16px">
-        <div class="form-group">
-          <label class="form-label">Rozet Türü</label>
-          <select class="form-select" id="p-badge" onchange="updateBadgeLabel()">
-            <option value="">Rozet Yok</option>
-            <option value="new">Yeni</option>
-            <option value="bestseller">Çok Satan</option>
-            <option value="sale">İndirim</option>
-            <option value="limited">Sınırlı Stok</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Rozet Yazısı</label>
-          <input type="text" class="form-input" id="p-badge-label" placeholder="Örn: %20 İndirim">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Puan (1-5)</label>
-          <input type="number" class="form-input" id="p-rating" placeholder="4.5" min="1" max="5" step="0.1" value="4.5">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Değerlendirme Sayısı</label>
-          <input type="number" class="form-input" id="p-reviews" placeholder="128" value="0">
-        </div>
-        <div class="form-group col-span-2">
-          <label class="form-check">
-            <input type="checkbox" id="p-featured">
-            <span class="form-check-label">Ana sayfada öne çıkan ürünler arasında göster</span>
-          </label>
-        </div>
-      </div>
-
-      <!-- Görsel -->
-      <div class="admin-section-label">
-        <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M21 16l-5-5-9 9"/></svg> Ürün Görseli
-      </div>
-      <div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:16px">
-        <img id="img-preview" class="img-preview" src="" alt="Önizleme"
-             onerror="this.src='assets/images/products/placeholder-product.svg'"
-             style="display:none">
-        <div style="flex:1">
-          <div class="form-group">
-            <label class="form-label">Görsel URL veya Dosya Yolu</label>
-            <input type="text" class="form-input" id="p-image"
-                   placeholder="https://... veya assets/images/urun.jpg"
-                   oninput="previewImage(this.value)">
-            <span class="form-hint">
-              URL veya assets/images/ klasörüne koyduğunuz dosya adını girin
-            </span>
+      <div class="modal-body-split">
+        <!-- Sol: Görsel -->
+        <div class="modal-col-media">
+          <div class="admin-section-label">
+            <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M21 16l-5-5-9 9"/></svg> Ürün Görseli
           </div>
+          <div class="img-upload-preview">
+            <img id="img-preview" class="img-upload-preview-img" src="" alt="Önizleme" style="display:none">
+            <div class="img-upload-empty" id="img-upload-empty">
+              <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M21 16l-5-5-9 9"/></svg>
+              <span>Görsel yok</span>
+            </div>
+          </div>
+          <label class="btn btn-primary btn-sm img-upload-btn">
+            <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg> Bilgisayardan Yükle
+            <input type="file" id="p-image-file" accept="image/*" style="display:none" onchange="handleImageUpload(event)">
+          </label>
+          <button type="button" class="btn btn-ghost btn-sm" id="img-clear-btn" style="display:none;width:100%;margin-top:6px" onclick="clearImage()">Görseli Kaldır</button>
+          <div class="admin-hint-text" style="margin-top:10px">veya görsel URL'si yapıştırın:</div>
+          <input type="text" class="form-input" id="p-image-url" placeholder="https://..." oninput="handleImageUrlInput(this.value)" style="margin-top:4px">
+          <input type="hidden" id="p-image">
         </div>
-      </div>
 
-      <!-- Açıklama -->
-      <div class="admin-section-label">
-        <svg class="icon" viewBox="0 0 24 24"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3Z"/><path d="M13 6l3 3"/></svg> Açıklama & Özellikler
-      </div>
-      <div class="form-group" style="margin-bottom:16px">
-        <label class="form-label">Ürün Açıklaması</label>
-        <textarea class="form-textarea" id="p-desc" rows="3"
-                  placeholder="Ürünü kısaca tanıtın..."></textarea>
-      </div>
+        <!-- Sağ: Form alanları -->
+        <div class="modal-col-fields">
+          <!-- Temel Bilgiler -->
+          <div class="admin-section-label">
+            <svg class="icon" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V5a2 2 0 0 1 2-2h9"/></svg> Temel Bilgiler
+          </div>
+          <div class="form-grid-2" style="margin-bottom:16px">
+            <div class="form-group col-span-2">
+              <label class="form-label">Ürün Adı <span class="required">*</span></label>
+              <input type="text" class="form-input" id="p-name" placeholder="Örn: Apple Watch Series 9 41mm">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Kategori <span class="required">*</span></label>
+              <select class="form-select" id="p-category" onchange="updateCategoryLabel()">
+                <option value="saat">Akıllı Saatler</option>
+                <option value="kulaklik">Kulaklıklar</option>
+                <option value="tablet">Tabletler</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Marka <span class="required">*</span></label>
+              <input type="text" class="form-input" id="p-brand" placeholder="Apple, Samsung, Sony...">
+            </div>
+          </div>
 
-      <!-- Teknik Özellikler -->
-      <div class="form-group">
-        <label class="form-label admin-form-label-row">
-          Teknik Özellikler
-          <button type="button" class="btn btn-ghost btn-sm" onclick="addSpecRow()" style="font-size:0.75rem">
-            + Özellik Ekle
-          </button>
-        </label>
-        <div class="specs-list" id="specs-list">
-          <!-- Dinamik olarak doldurulur -->
-        </div>
-        <div class="admin-hint-text">
-          Örn: Ekran → 1.47 inç AMOLED
+          <!-- Fiyat & Stok -->
+          <div class="admin-section-label">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M5 8l1.5 1.5M17.5 14.5 19 16M5 16l1.5-1.5M17.5 9.5 19 8"/><circle cx="12" cy="12" r="4"/></svg> Fiyat & Stok
+          </div>
+          <div class="form-grid-3" style="margin-bottom:16px">
+            <div class="form-group">
+              <label class="form-label">Satış Fiyatı (₺) <span class="required">*</span></label>
+              <input type="number" class="form-input" id="p-price" placeholder="2999">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Orijinal Fiyat (₺)</label>
+              <input type="number" class="form-input" id="p-original-price" placeholder="İndirim yoksa boş bırakın">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Stok Adedi <span class="required">*</span></label>
+              <input type="number" class="form-input" id="p-stock" placeholder="25">
+            </div>
+          </div>
+
+          <!-- Görünüm -->
+          <div class="admin-section-label">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M20.6 12.5L12 21l-9-9V4h8l9.6 8.5Z"/><circle cx="7.5" cy="7.5" r="1.3" fill="currentColor" stroke="none"/></svg> Görünüm & Rozet
+          </div>
+          <div class="form-grid-2" style="margin-bottom:16px">
+            <div class="form-group">
+              <label class="form-label">Rozet Türü</label>
+              <select class="form-select" id="p-badge" onchange="updateBadgeLabel()">
+                <option value="">Rozet Yok</option>
+                <option value="new">Yeni</option>
+                <option value="bestseller">Çok Satan</option>
+                <option value="sale">İndirim</option>
+                <option value="limited">Sınırlı Stok</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Rozet Yazısı</label>
+              <input type="text" class="form-input" id="p-badge-label" placeholder="Örn: %20 İndirim">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Puan (1-5)</label>
+              <input type="number" class="form-input" id="p-rating" placeholder="4.5" min="1" max="5" step="0.1" value="4.5">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Değerlendirme Sayısı</label>
+              <input type="number" class="form-input" id="p-reviews" placeholder="128" value="0">
+            </div>
+            <div class="form-group col-span-2">
+              <label class="form-check">
+                <input type="checkbox" id="p-featured">
+                <span class="form-check-label">Ana sayfada öne çıkan ürünler arasında göster</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Açıklama -->
+          <div class="admin-section-label">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3Z"/><path d="M13 6l3 3"/></svg> Açıklama & Özellikler
+          </div>
+          <div class="form-group" style="margin-bottom:16px">
+            <label class="form-label">Ürün Açıklaması</label>
+            <textarea class="form-textarea" id="p-desc" rows="3"
+                      placeholder="Ürünü kısaca tanıtın..."></textarea>
+          </div>
+
+          <!-- Teknik Özellikler -->
+          <div class="form-group">
+            <label class="form-label admin-form-label-row">
+              Teknik Özellikler
+              <button type="button" class="btn btn-ghost btn-sm" onclick="addSpecRow()" style="font-size:0.75rem">
+                + Özellik Ekle
+              </button>
+            </label>
+            <div class="specs-list" id="specs-list">
+              <!-- Dinamik olarak doldurulur -->
+            </div>
+            <div class="admin-hint-text">
+              Örn: Ekran → 1.47 inç AMOLED
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -788,18 +976,34 @@
 <div class="admin-modal-overlay" id="confirm-modal">
   <div class="admin-modal" style="max-width:420px">
     <div class="admin-modal-body" style="text-align:center;padding:40px">
-      <svg class="icon admin-confirm-icon" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><path d="M10 11v6M14 11v6"/></svg>
-      <h3 style="margin-bottom:8px;color:#0F172A">Ürünü Sil</h3>
+      <svg class="icon admin-confirm-icon" id="confirm-icon" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><path d="M10 11v6M14 11v6"/></svg>
+      <h3 style="margin-bottom:8px;color:#0F172A" id="confirm-title">Ürünü Sil</h3>
       <p style="color:var(--text-muted);margin-bottom:24px" id="confirm-msg">
         Bu ürünü silmek istediğinizden emin misiniz?
       </p>
       <div style="display:flex;gap:12px;justify-content:center">
         <button class="btn btn-ghost" onclick="closeConfirmModal()">Vazgeç</button>
-        <button class="btn btn-lg" onclick="confirmDelete()"
+        <button class="btn btn-lg" id="confirm-action-btn" onclick="confirmModalAction()"
                 style="background:var(--error);color:white">
           Evet, Sil
         </button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Sipariş Detay Modal -->
+<div class="admin-modal-overlay" id="order-modal">
+  <div class="admin-modal" style="max-width:640px">
+    <div class="admin-modal-header">
+      <h3 class="admin-modal-title">Sipariş Detayı</h3>
+      <button onclick="closeOrderModal()" class="admin-modal-close"><svg class="icon" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="admin-modal-body" id="order-modal-body">
+      <!-- JS ile doldurulur -->
+    </div>
+    <div class="admin-modal-footer">
+      <button class="btn btn-ghost" onclick="closeOrderModal()">Kapat</button>
     </div>
   </div>
 </div>
@@ -860,6 +1064,7 @@ function initAdmin() {
   updateStats();
   renderDashboard();
   renderProductsTable(PRODUCTS);
+  renderOrdersTable();
   document.getElementById('admin-greeting').textContent =
     `Hoş geldiniz, Admin! — ${new Date().toLocaleDateString('tr-TR', { weekday:'long', day:'numeric', month:'long' })}`;
   document.getElementById('nav-product-count').textContent = PRODUCTS.length;
@@ -874,30 +1079,73 @@ function updateStats() {
   document.getElementById('stat-kulaklik').textContent  = PRODUCTS.filter(p => p.category === 'kulaklik').length;
   document.getElementById('stat-tablet').textContent    = PRODUCTS.filter(p => p.category === 'tablet').length;
   document.getElementById('nav-product-count').textContent = PRODUCTS.length;
+
+  const inventoryValue = PRODUCTS.reduce((sum, p) => sum + p.price * p.stock, 0);
+  document.getElementById('stat-inventory-value').textContent = formatPrice(inventoryValue);
 }
 
 /* ════════════════════════════
    DASHBOARD
 ════════════════════════════ */
 function renderDashboard() {
-  const adminProds = getAdminProducts();
-  const recentEl   = document.getElementById('recent-admin-products');
+  const adminProds  = getAdminProducts();
+  const adminIds    = new Set(adminProds.map(p => p.id));
+  const overrides   = getProductOverrides();
+  const overrideIds = new Set(Object.keys(overrides).map(Number));
+  const recentEl    = document.getElementById('recent-admin-products');
 
-  if (adminProds.length === 0) {
+  // Sipariş özeti
+  const allOrders = getAllOrders();
+  document.getElementById('stat-order-count').textContent   = allOrders.length;
+  document.getElementById('stat-order-revenue').textContent = formatPrice(allOrders.reduce((s, o) => s + o.total, 0));
+
+  const recentOrdersEl = document.getElementById('recent-orders');
+  if (allOrders.length === 0) {
+    recentOrdersEl.innerHTML = `
+      <div class="admin-empty-state">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+        <div>Henüz bu tarayıcıdan verilmiş bir sipariş yok.</div>
+      </div>`;
+  } else {
+    recentOrdersEl.innerHTML = `
+      <table class="admin-table">
+        <thead><tr><th>Sipariş No</th><th>Müşteri</th><th>Tutar</th><th>Kaynak</th><th>Durum</th></tr></thead>
+        <tbody>
+          ${allOrders.slice(0, 5).map(o => `
+            <tr class="admin-row-clickable" onclick="openOrderModal('${o.id}')">
+              <td><strong>${o.id}</strong></td>
+              <td>${o.customerName || 'İsimsiz'}</td>
+              <td>${formatPrice(o.total)}</td>
+              <td><span class="source-badge ${o.source === 'member' ? 'source-admin' : 'source-base'}">
+                <span class="status-dot ${o.source === 'member' ? 'green' : 'blue'}"></span>${o.source === 'member' ? 'Üye' : 'Misafir'}
+              </span></td>
+              <td><span class="status-dot ${ORDER_STATUS_DOT[o.status] || 'blue'}"></span>${o.statusLabel}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>`;
+  }
+
+  // Admin tarafından eklenen + düzenlenen ürünleri, en son güncellenene göre birleştir
+  const recentItems = [
+    ...adminProds.map(p => ({ ...p, kind: 'Yeni' })),
+    ...PRODUCTS.filter(p => overrideIds.has(p.id)).map(p => ({ ...p, kind: 'Düzenlendi' }))
+  ].sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+
+  if (recentItems.length === 0) {
     recentEl.innerHTML = `
       <div class="admin-empty-state">
         <svg class="icon" viewBox="0 0 24 24"><path d="M3 12h5l2 3h4l2-3h5"/><path d="M5 5h14l2 7v8a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-8l2-7Z"/></svg>
-        <div>Henüz admin tarafından ürün eklenmedi.</div>
+        <div>Henüz admin tarafından ürün eklenmedi veya düzenlenmedi.</div>
         <button class="btn btn-primary btn-sm" onclick="openAddModal()" style="margin-top:16px"><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> İlk Ürünü Ekle</button>
       </div>`;
   } else {
     recentEl.innerHTML = `
       <table class="admin-table">
         <thead><tr>
-          <th>Ürün Adı</th><th>Kategori</th><th>Fiyat</th><th>Stok</th><th>İşlemler</th>
+          <th>Ürün Adı</th><th>Kategori</th><th>Fiyat</th><th>Stok</th><th>Durum</th><th>İşlemler</th>
         </tr></thead>
         <tbody>
-          ${adminProds.slice(0,5).map(p => `
+          ${recentItems.slice(0,5).map(p => `
             <tr>
               <td><div class="product-name-cell">
                 <div class="name">${p.name}</div>
@@ -906,14 +1154,58 @@ function renderDashboard() {
               <td>${p.categoryLabel}</td>
               <td><strong>${formatPrice(p.price)}</strong></td>
               <td>${stockBadge(p.stock)}</td>
+              <td><span class="source-badge ${p.kind === 'Yeni' ? 'source-admin' : 'source-base'}">
+                <span class="status-dot ${p.kind === 'Yeni' ? 'green' : 'yellow'}"></span>${p.kind}
+              </span></td>
               <td><div class="action-btns">
                 <button class="action-btn edit" onclick="openEditModal(${p.id})"><svg class="icon" viewBox="0 0 24 24"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3Z"/><path d="M13 6l3 3"/></svg> Düzenle</button>
-                <button class="action-btn delete" onclick="askDelete(${p.id}, '${p.name.replace(/'/g,"\\'")}')"><svg class="icon" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><path d="M10 11v6M14 11v6"/></svg> Sil</button>
+                ${adminIds.has(p.id)
+                  ? `<button class="action-btn delete" onclick="askDelete(${p.id}, '${p.name.replace(/'/g,"\\'")}')"><svg class="icon" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><path d="M10 11v6M14 11v6"/></svg> Sil</button>`
+                  : `<button class="action-btn edit" onclick="askResetOverride(${p.id}, '${p.name.replace(/'/g,"\\'")}')" title="Orijinale sıfırla"><svg class="icon" viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14-5.2M20 12a8 8 0 0 1-14 5.2"/><path d="M18 3v4h-4"/><path d="M6 21v-4h4"/></svg> Sıfırla</button>`}
               </div></td>
             </tr>`).join('')}
         </tbody>
       </table>`;
   }
+
+  // Kategori dağılımı
+  const catMeta = {
+    saat:     { label: 'Akıllı Saat', color: '#F59E0B' },
+    kulaklik: { label: 'Kulaklık',    color: '#10B981' },
+    tablet:   { label: 'Tablet',      color: '#8B5CF6' }
+  };
+  const catEl = document.getElementById('category-dist');
+  const total = PRODUCTS.length || 1;
+  catEl.innerHTML = Object.keys(catMeta).map(cat => {
+    const count = PRODUCTS.filter(p => p.category === cat).length;
+    const pct   = Math.round((count / total) * 100);
+    return `
+      <div class="dist-row">
+        <span class="dist-label">${catMeta[cat].label}</span>
+        <span class="dist-bar-track"><span class="dist-bar-fill" style="width:${pct}%;background:${catMeta[cat].color}"></span></span>
+        <span class="dist-value">${count} · %${pct}</span>
+      </div>`;
+  }).join('');
+
+  // Stok sağlığı
+  const outCount = PRODUCTS.filter(p => p.stock === 0).length;
+  const lowCount = PRODUCTS.filter(p => p.stock > 0 && p.stock <= 5).length;
+  const okCount  = PRODUCTS.filter(p => p.stock > 5).length;
+  const healthEl = document.getElementById('stock-health');
+  const healthRows = [
+    { label: 'Yeterli',  count: okCount,  color: 'var(--success)' },
+    { label: 'Az Kaldı', count: lowCount, color: 'var(--warning)' },
+    { label: 'Tükendi',  count: outCount, color: 'var(--error)' }
+  ];
+  healthEl.innerHTML = healthRows.map(row => {
+    const pct = Math.round((row.count / total) * 100);
+    return `
+      <div class="dist-row">
+        <span class="dist-label">${row.label}</span>
+        <span class="dist-bar-track"><span class="dist-bar-fill" style="width:${pct}%;background:${row.color}"></span></span>
+        <span class="dist-value">${row.count} · %${pct}</span>
+      </div>`;
+  }).join('');
 
   // Düşük stok
   const lowStock = PRODUCTS.filter(p => p.stock <= 5).slice(0, 5);
@@ -942,11 +1234,17 @@ function renderDashboard() {
    ÜRÜN TABLOSU
 ════════════════════════════ */
 function renderProductsTable(products) {
-  const adminIds = new Set(getAdminProducts().map(p => p.id));
+  const adminIds    = new Set(getAdminProducts().map(p => p.id));
+  const overrideIds = new Set(Object.keys(getProductOverrides()).map(Number));
   document.getElementById('products-subtitle').textContent = `${products.length} ürün listeleniyor`;
 
-  document.getElementById('products-table-body').innerHTML = products.map(p => `
-    <tr>
+  document.getElementById('products-table-body').innerHTML = products.map(p => {
+    const source = adminIds.has(p.id) ? 'admin' : overrideIds.has(p.id) ? 'edited' : 'base';
+    const sourceLabel = { admin: 'Admin', edited: 'Düzenlendi', base: 'Sabit' }[source];
+    const sourceDot   = { admin: 'green', edited: 'yellow', base: 'blue' }[source];
+    const safeName    = p.name.replace(/'/g,"\\'");
+    return `
+    <tr class="admin-row-clickable" onclick="openEditModal(${p.id})">
       <td>
         <img class="product-thumb" src="${p.images[0]}"
              onerror="this.src='assets/images/products/placeholder-product.svg'" alt="${p.name}">
@@ -968,20 +1266,23 @@ function renderProductsTable(products) {
         <span style="font-size:0.75rem;color:var(--text-muted)">(${p.reviewCount})</span>
       </td>
       <td>
-        <span class="source-badge ${adminIds.has(p.id) ? 'source-admin' : 'source-base'}">
-          <span class="status-dot ${adminIds.has(p.id) ? 'green' : 'blue'}"></span>${adminIds.has(p.id) ? 'Admin' : 'Sabit'}
+        <span class="source-badge source-${source === 'base' ? 'base' : 'admin'}">
+          <span class="status-dot ${sourceDot}"></span>${sourceLabel}
         </span>
       </td>
-      <td>
+      <td onclick="event.stopPropagation()">
         <div class="action-btns">
-          ${adminIds.has(p.id) ? `
-            <button class="action-btn edit" onclick="openEditModal(${p.id})"><svg class="icon" viewBox="0 0 24 24"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3Z"/><path d="M13 6l3 3"/></svg> Düzenle</button>
-            <button class="action-btn delete" onclick="askDelete(${p.id}, '${p.name.replace(/'/g,"\\'")}')"><svg class="icon" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><path d="M10 11v6M14 11v6"/></svg> Sil</button>
-          ` : `<span style="font-size:0.75rem;color:var(--text-muted)">Sabit ürün</span>`}
+          <button class="action-btn edit" onclick="openEditModal(${p.id})"><svg class="icon" viewBox="0 0 24 24"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3Z"/><path d="M13 6l3 3"/></svg> Düzenle</button>
+          ${source === 'admin' ? `
+            <button class="action-btn delete" onclick="askDelete(${p.id}, '${safeName}')"><svg class="icon" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><path d="M10 11v6M14 11v6"/></svg> Sil</button>
+          ` : ''}
+          ${source === 'edited' ? `
+            <button class="action-btn edit" onclick="askResetOverride(${p.id}, '${safeName}')" title="Orijinale sıfırla"><svg class="icon" viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14-5.2M20 12a8 8 0 0 1-14 5.2"/><path d="M18 3v4h-4"/><path d="M6 21v-4h4"/></svg> Sıfırla</button>
+          ` : ''}
         </div>
       </td>
-    </tr>
-  `).join('');
+    </tr>`;
+  }).join('');
 }
 
 function filterTable() {
@@ -996,6 +1297,149 @@ function filterTable() {
 }
 
 /* ════════════════════════════
+   SİPARİŞLER
+════════════════════════════ */
+const ORDER_STATUS_LABELS = {
+  processing: 'Hazırlanıyor',
+  shipped:    'Kargoda',
+  delivered:  'Teslim Edildi',
+  cancelled:  'İptal'
+};
+const ORDER_STATUS_DOT = {
+  processing: 'blue',
+  shipped:    'yellow',
+  delivered:  'green',
+  cancelled:  'red'
+};
+
+function renderOrdersTable(orders) {
+  const list = orders || getAllOrders();
+  document.getElementById('orders-subtitle').textContent = `${list.length} sipariş listeleniyor`;
+  document.getElementById('nav-order-count').textContent = getAllOrders().length;
+
+  const body = document.getElementById('orders-table-body');
+
+  if (list.length === 0) {
+    body.innerHTML = `<tr><td colspan="8"><div class="admin-empty-state">
+      <svg class="icon" viewBox="0 0 24 24"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+      <div>Henüz bu tarayıcıdan verilmiş bir sipariş yok.</div>
+    </div></td></tr>`;
+    return;
+  }
+
+  body.innerHTML = list.map(o => `
+    <tr class="admin-row-clickable" onclick="openOrderModal('${o.id}')">
+      <td><strong>${o.id}</strong></td>
+      <td>${formatOrderDate(o.date)}</td>
+      <td>
+        <div class="product-name-cell">
+          <div class="name">${o.customerName || 'İsimsiz'}</div>
+          <div class="brand">${o.customerEmail || '—'}</div>
+        </div>
+      </td>
+      <td>${(o.items || []).length} ürün <span style="color:var(--text-muted);font-size:0.75rem">(${(o.items || []).reduce((s,i)=>s+i.qty,0)} adet)</span></td>
+      <td><strong>${formatPrice(o.total)}</strong></td>
+      <td>
+        <span class="source-badge ${o.source === 'member' ? 'source-admin' : 'source-base'}">
+          <span class="status-dot ${o.source === 'member' ? 'green' : 'blue'}"></span>${o.source === 'member' ? 'Üye' : 'Misafir'}
+        </span>
+      </td>
+      <td onclick="event.stopPropagation()">
+        <select class="sort-select" style="padding:6px 10px;font-size:0.8125rem" onchange="changeOrderStatus('${o.id}', this.value)">
+          ${Object.entries(ORDER_STATUS_LABELS).map(([val, label]) =>
+            `<option value="${val}" ${o.status === val ? 'selected' : ''}>${label}</option>`).join('')}
+        </select>
+      </td>
+      <td onclick="event.stopPropagation()">
+        <button class="action-btn edit" onclick="openOrderModal('${o.id}')"><svg class="icon" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg> Detay</button>
+      </td>
+    </tr>`).join('');
+}
+
+function formatOrderDate(iso) {
+  try {
+    return new Date(iso).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  } catch { return iso; }
+}
+
+function filterOrdersTable() {
+  const q      = (document.getElementById('order-search')?.value || '').toLowerCase();
+  const status = document.getElementById('order-status-filter')?.value || 'all';
+  const source = document.getElementById('order-source-filter')?.value || 'all';
+
+  const filtered = getAllOrders().filter(o => {
+    const matchQ = !q ||
+      o.id.toLowerCase().includes(q) ||
+      (o.customerName || '').toLowerCase().includes(q) ||
+      (o.customerEmail || '').toLowerCase().includes(q);
+    const matchStatus = status === 'all' || o.status === status;
+    const matchSource = source === 'all' || o.source === source;
+    return matchQ && matchStatus && matchSource;
+  });
+
+  renderOrdersTable(filtered);
+}
+
+function changeOrderStatus(orderId, status) {
+  updateOrderStatus(orderId, status, ORDER_STATUS_LABELS[status]);
+  filterOrdersTable();
+  renderDashboard();
+  showToast('Sipariş durumu güncellendi.', 'success');
+}
+
+function openOrderModal(orderId) {
+  const order = getAllOrders().find(o => o.id === orderId);
+  if (!order) return;
+
+  const itemsHTML = (order.items || []).map(i => `
+    <tr>
+      <td>${i.name}</td>
+      <td>${i.qty}</td>
+      <td>${formatPrice(i.price)}</td>
+      <td><strong>${formatPrice(i.price * i.qty)}</strong></td>
+    </tr>`).join('');
+
+  const addr = order.address || {};
+  const addressHTML = order.delivery === 'magaza'
+    ? `Mağazadan teslim — ${addr.telefon || ''}`
+    : [addr.adres, addr.mahalle, addr.ilce, addr.il].filter(Boolean).join(', ') || 'Adres bilgisi yok';
+
+  document.getElementById('order-modal-body').innerHTML = `
+    <div class="admin-section-label">Sipariş Bilgisi</div>
+    <div class="form-grid-2" style="margin-bottom:20px">
+      <div><span class="admin-hint-text">Sipariş No</span><br><strong>${order.id}</strong></div>
+      <div><span class="admin-hint-text">Tarih</span><br><strong>${formatOrderDate(order.date)}</strong></div>
+      <div><span class="admin-hint-text">Müşteri</span><br><strong>${order.customerName || 'İsimsiz'}</strong></div>
+      <div><span class="admin-hint-text">E-posta</span><br><strong>${order.customerEmail || '—'}</strong></div>
+      <div><span class="admin-hint-text">Kaynak</span><br><strong>${order.source === 'member' ? 'Üye' : 'Misafir'}</strong></div>
+      <div><span class="admin-hint-text">Ödeme</span><br><strong>${order.paymentMethod === 'eft' ? 'EFT/Havale' : 'Kredi Kartı'}</strong></div>
+    </div>
+
+    <div class="admin-section-label">Teslimat</div>
+    <p style="font-size:0.875rem;color:var(--text-secondary);margin-bottom:20px">${addressHTML}</p>
+
+    <div class="admin-section-label">Ürünler</div>
+    <table class="admin-table" style="margin-bottom:20px">
+      <thead><tr><th>Ürün</th><th>Adet</th><th>Birim Fiyat</th><th>Toplam</th></tr></thead>
+      <tbody>${itemsHTML}</tbody>
+    </table>
+    <div style="text-align:right;font-size:1.125rem;margin-bottom:20px"><strong>Genel Toplam: ${formatPrice(order.total)}</strong></div>
+
+    <div class="admin-section-label">Durum</div>
+    <select class="form-select" onchange="changeOrderStatus('${order.id}', this.value); openOrderModal('${order.id}')">
+      ${Object.entries(ORDER_STATUS_LABELS).map(([val, label]) =>
+        `<option value="${val}" ${order.status === val ? 'selected' : ''}>${label}</option>`).join('')}
+    </select>
+  `;
+
+  document.getElementById('order-modal').classList.add('open');
+}
+
+function closeOrderModal() {
+  document.getElementById('order-modal').classList.remove('open');
+}
+
+/* ════════════════════════════
    MODAL: EKLE / DÜZENLE
 ════════════════════════════ */
 let editMode = false;
@@ -1006,6 +1450,7 @@ function openAddModal() {
   editProductId = null;
   document.getElementById('modal-title').textContent = 'Yeni Ürün Ekle';
   document.getElementById('save-product-btn').textContent = 'Ürünü Kaydet';
+  document.getElementById('modal-source-note').style.display = 'none';
   clearModal();
   addSpecRow('', '');
   addSpecRow('', '');
@@ -1013,13 +1458,19 @@ function openAddModal() {
   document.getElementById('product-modal').classList.add('open');
 }
 
+function isAdminProduct(id) {
+  return getAdminProducts().some(p => p.id === id);
+}
+
+function isOverriddenProduct(id) {
+  return Object.prototype.hasOwnProperty.call(getProductOverrides(), id);
+}
+
 function openEditModal(id) {
-  const allProds  = [...BASE_PRODUCTS, ...getAdminProducts()];
-  const adminProds = getAdminProducts();
-  const product = adminProds.find(p => p.id === id);
+  const product = PRODUCTS.find(p => p.id === id);
 
   if (!product) {
-    showToast('Sabit ürünler düzenlenemez. Yalnızca admin tarafından eklenen ürünler düzenlenebilir.', 'warning');
+    showToast('Ürün bulunamadı.', 'error');
     return;
   }
 
@@ -1027,6 +1478,7 @@ function openEditModal(id) {
   editProductId = id;
   document.getElementById('modal-title').textContent = 'Ürünü Düzenle';
   document.getElementById('save-product-btn').textContent = 'Değişiklikleri Kaydet';
+  document.getElementById('modal-source-note').style.display = isAdminProduct(id) ? 'none' : 'block';
 
   // Formu doldur
   document.getElementById('p-name').value             = product.name;
@@ -1041,6 +1493,7 @@ function openEditModal(id) {
   document.getElementById('p-reviews').value          = product.reviewCount;
   document.getElementById('p-featured').checked       = product.featured || false;
   document.getElementById('p-image').value            = product.images?.[0] || '';
+  document.getElementById('p-image-url').value        = product.images?.[0] || '';
   document.getElementById('p-desc').value             = product.desc || '';
 
   // Görsel önizleme
@@ -1064,7 +1517,7 @@ function closeModal() {
 
 function clearModal() {
   ['p-name','p-brand','p-price','p-original-price','p-stock',
-   'p-badge-label','p-image','p-desc'].forEach(id => {
+   'p-badge-label','p-image','p-image-url','p-desc'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -1074,7 +1527,7 @@ function clearModal() {
   document.getElementById('p-reviews').value  = '0';
   document.getElementById('p-featured').checked = false;
   document.getElementById('specs-list').innerHTML = '';
-  document.getElementById('img-preview').style.display = 'none';
+  previewImage('');
 }
 
 /* ════════════════════════════
@@ -1112,9 +1565,10 @@ function saveProduct() {
   const catLabels = { saat: 'Akıllı Saatler', kulaklik: 'Kulaklıklar', tablet: 'Tabletler' };
 
   const adminProds = getAdminProducts();
+  const now = Date.now();
 
-  if (editMode && editProductId) {
-    // Düzenleme
+  if (editMode && editProductId && isAdminProduct(editProductId)) {
+    // Admin tarafından eklenmiş bir ürünün düzenlenmesi
     const idx = adminProds.findIndex(p => p.id === editProductId);
     if (idx >= 0) {
       adminProds[idx] = {
@@ -1124,11 +1578,25 @@ function saveProduct() {
         badge, badgeLabel: badgeLbl,
         rating, reviewCount: reviews, featured,
         images: image ? [image] : adminProds[idx].images,
-        desc, specs
+        desc, specs, updatedAt: now
       };
       saveAdminProducts(adminProds);
       showToast(`"${name}" güncellendi!`, 'success');
     }
+  } else if (editMode && editProductId) {
+    // Sabit (katalog) bir ürünün düzenlenmesi — bir "override" olarak saklanır
+    const original = BASE_PRODUCTS.find(p => p.id === editProductId);
+    const overrides = getProductOverrides();
+    overrides[editProductId] = {
+      name, category, categoryLabel: catLabels[category],
+      brand, price, originalPrice: origP, stock,
+      badge, badgeLabel: badgeLbl,
+      rating, reviewCount: reviews, featured,
+      images: image ? [image] : original?.images,
+      desc, specs, updatedAt: now
+    };
+    saveProductOverrides(overrides);
+    showToast(`"${name}" güncellendi! (sabit ürün düzenlemesi)`, 'success');
   } else {
     // Yeni ürün
     const maxId = Math.max(...PRODUCTS.map(p => p.id), ...adminProds.map(p => p.id), 100);
@@ -1139,7 +1607,7 @@ function saveProduct() {
       badge, badgeLabel: badgeLbl,
       rating, reviewCount: reviews, featured,
       images: image ? [image] : ['assets/images/products/placeholder-product.svg'],
-      desc, specs
+      desc, specs, updatedAt: now, createdAt: now
     };
     adminProds.push(newProduct);
     saveAdminProducts(adminProds);
@@ -1154,32 +1622,60 @@ function saveProduct() {
 }
 
 /* ════════════════════════════
-   SİLME
+   SİLME / SIFIRLAMA (ortak onay modalı)
 ════════════════════════════ */
-let deleteTargetId = null;
+let confirmTargetId     = null;
+let confirmTargetAction = null; // 'delete' | 'reset'
 
 function askDelete(id, name) {
-  deleteTargetId = id;
+  confirmTargetId     = id;
+  confirmTargetAction = 'delete';
+  document.getElementById('confirm-title').textContent = 'Ürünü Sil';
   document.getElementById('confirm-msg').textContent =
     `"${name}" ürününü silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`;
+  const btn = document.getElementById('confirm-action-btn');
+  btn.textContent = 'Evet, Sil';
+  btn.style.background = 'var(--error)';
+  document.getElementById('confirm-modal').classList.add('open');
+}
+
+function askResetOverride(id, name) {
+  confirmTargetId     = id;
+  confirmTargetAction = 'reset';
+  document.getElementById('confirm-title').textContent = 'Orijinale Sıfırla';
+  document.getElementById('confirm-msg').textContent =
+    `"${name}" için yaptığınız düzenlemeler silinip ürün orijinal katalog haline döndürülecek. Emin misiniz?`;
+  const btn = document.getElementById('confirm-action-btn');
+  btn.textContent = 'Evet, Sıfırla';
+  btn.style.background = 'var(--warning)';
   document.getElementById('confirm-modal').classList.add('open');
 }
 
 function closeConfirmModal() {
   document.getElementById('confirm-modal').classList.remove('open');
-  deleteTargetId = null;
+  confirmTargetId     = null;
+  confirmTargetAction = null;
 }
 
-function confirmDelete() {
-  if (!deleteTargetId) return;
-  const adminProds = getAdminProducts().filter(p => p.id !== deleteTargetId);
-  saveAdminProducts(adminProds);
+function confirmModalAction() {
+  if (!confirmTargetId || !confirmTargetAction) return;
+
+  if (confirmTargetAction === 'delete') {
+    const adminProds = getAdminProducts().filter(p => p.id !== confirmTargetId);
+    saveAdminProducts(adminProds);
+    showToast('Ürün silindi.', 'warning');
+  } else if (confirmTargetAction === 'reset') {
+    const overrides = getProductOverrides();
+    delete overrides[confirmTargetId];
+    saveProductOverrides(overrides);
+    showToast('Ürün orijinal katalog haline sıfırlandı.', 'warning');
+  }
+
   refreshProducts();
   updateStats();
   renderDashboard();
   renderProductsTable(PRODUCTS);
   closeConfirmModal();
-  showToast('Ürün silindi.', 'warning');
 }
 
 /* ════════════════════════════
@@ -1204,13 +1700,67 @@ function addSpecRow(key = '', value = '') {
 }
 
 function previewImage(url) {
-  const preview = document.getElementById('img-preview');
+  const preview  = document.getElementById('img-preview');
+  const empty    = document.getElementById('img-upload-empty');
+  const clearBtn = document.getElementById('img-clear-btn');
   if (url) {
     preview.src = url;
     preview.style.display = 'block';
+    empty.style.display = 'none';
+    clearBtn.style.display = 'block';
   } else {
     preview.style.display = 'none';
+    preview.src = '';
+    empty.style.display = 'flex';
+    clearBtn.style.display = 'none';
   }
+}
+
+/* ─── Görsel: bilgisayardan yükle (resize + sıkıştır, localStorage'ı şişirmesin) ─── */
+function handleImageUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) {
+    showToast('Lütfen bir görsel dosyası seçin.', 'error');
+    event.target.value = '';
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      const maxW  = 800;
+      const scale = Math.min(1, maxW / img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width  = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+      document.getElementById('p-image').value = dataUrl;
+      document.getElementById('p-image-url').value = '';
+      previewImage(dataUrl);
+      showToast('Görsel yüklendi.', 'success');
+    };
+    img.onerror = () => showToast('Görsel okunamadı.', 'error');
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+  event.target.value = '';
+}
+
+function handleImageUrlInput(url) {
+  document.getElementById('p-image').value = url.trim();
+  previewImage(url.trim());
+}
+
+function clearImage() {
+  document.getElementById('p-image').value = '';
+  document.getElementById('p-image-url').value = '';
+  document.getElementById('p-image-file').value = '';
+  previewImage('');
 }
 
 function updateBadgeLabel() {

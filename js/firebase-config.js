@@ -21,4 +21,7 @@ const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
+// Firebase Auth e-postaları (şifre sıfırlama, e-posta doğrulama) Türkçe gönderilsin.
+auth.languageCode = 'tr';
+
 export { app, auth, db };

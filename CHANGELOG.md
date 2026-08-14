@@ -3,6 +3,14 @@
 Bu dosya projede yapılan her ekleme, değişiklik ve kaldırmayı kayıt altına alır.
 En yeni kayıtlar en üstte.
 
+## 2026-08-15 (devam)
+
+### Hakkımızda vergi dairesi/KEP satırları, Firebase mail dili
+- Fix: `hakkimizda.html` şirket bilgileri kartında Vergi Dairesi ve KEP Adresi verisi
+  `site-config.js`'te vardı ama satırlar HTML'de eksikti, görünmüyordu. Eklendi.
+- Fix: `js/firebase-config.js` → `auth.languageCode = 'tr'` eklendi, Firebase Auth
+  e-postaları (şifre sıfırlama, e-posta doğrulama) artık Türkçe gönderiliyor.
+
 ## 2026-08-15
 
 ### Adres autofill, admin ayarlar

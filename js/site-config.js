@@ -22,14 +22,15 @@ const SITE = {
 
   /* ─── Yasal künye (Mesafeli Satış Sözleşmesi ve iyzico başvurusu için zorunlu) ─── */
   legal: {
-    tradeName:      'Efem İletişim Teknoloji San. ve Tic. Ltd. Şti.',
+    tradeName:      'EFEM İLETİŞİM SİNEMA VE TELEVİZYON PROGRAMCILIĞI PRODÜKSİYON ELEKTRONİK BİLİŞİM TİCARET LTD. ŞTİ.',
     tradeNameTodo:  false,
     registryNo:     '70140',
     mersisNo:       '0325058015600016',
     taxNumber:      '3250560156',
-    // TODO: Vergi dairesi adı girilmeli
-    taxOffice:      '',
-    kepAddress:     ''
+    taxOffice:      'Seyhan VD',
+    kepAddress:     'efeiletisim.s921087@hs03.kep.tr',
+    iban:           'TR15 0001 0000 1376 4216 5250 03',
+    ibanBankName:   ''
   },
 
   /* ─── İletişim ─── */
@@ -49,8 +50,8 @@ const SITE = {
     hours: {
       label: 'Her Gün',
       open:  '10:00',
-      close: '18:00',
-      text:  'Her Gün 10:00 – 18:00'
+      close: '22:00',
+      text:  'Her Gün 10:00 – 22:00'
     }
   },
 
@@ -59,7 +60,7 @@ const SITE = {
     whatsapp:        '905434402525',
     whatsappTodo:    false,
     whatsappMessage: 'Merhaba, efemiletisim.com üzerinden yazıyorum.',
-    instagram:       'efemiletisim',
+    instagram:       'efemelektronik',
     instagramTodo:   false,
     facebook:        '',
     youtube:         ''

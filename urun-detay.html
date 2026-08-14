@@ -196,6 +196,7 @@
 <script src="js/main.js"></script>
 <script type="module">
   import { db } from './js/firebase-config.js';
+  import { sendSupportNotificationMail } from './js/firebase-auth.js';
   import {
     collection, addDoc, serverTimestamp, query, where, getDocs
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -242,6 +243,13 @@
       textarea.value = '';
       showToast('Sorunuz alındı, en kısa sürede yanıtlanacaktır.', 'success');
       await loadProductQuestions(productId);
+
+      const productName = PRODUCTS.find(p => p.id === productId)?.name || `Ürün #${productId}`;
+      sendSupportNotificationMail(
+        `Yeni Ürün Sorusu – ${productName}`,
+        `<p><strong>${escapeHtml(productName)}</strong> ürünü için yeni bir soru geldi:</p>
+         <p>${escapeHtml(question)}</p>`
+      );
     } catch (err) {
       console.error(`[qa] Firestore yazma hatası (ürün: ${productId}): ${err.code} – ${err.message}`);
       showToast('Sorunuz gönderilemedi, lütfen tekrar deneyin.', 'error');

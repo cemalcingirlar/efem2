@@ -253,6 +253,13 @@
             <div class="checkout-section-title" style="margin-bottom:var(--space-4)">
               <svg class="icon" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4-9-4Z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg> Teslimat Adresi
             </div>
+
+            <!-- Kayıtlı adreslerden seç (üye ve en az 1 kayıtlı adresi varsa görünür) -->
+            <div id="saved-address-picker" class="hidden" style="margin-bottom:var(--space-5)">
+              <div class="form-label" style="margin-bottom:var(--space-3)">Kayıtlı Adreslerim</div>
+              <div id="saved-address-list" style="display:flex;flex-wrap:wrap;gap:var(--space-3);margin-bottom:var(--space-3)"></div>
+            </div>
+
             <div class="address-form-grid">
               <div class="form-group">
                 <label class="form-label">Ad <span class="required">*</span></label>
@@ -308,6 +315,49 @@
                 <label class="form-label">Posta Kodu <span class="required">*</span></label>
                 <input type="text" class="form-input" id="addr-posta" placeholder="34XXX" maxlength="5">
                 <span class="form-error" id="addr-posta-error"></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fatura Bilgileri -->
+          <div class="checkout-section" id="invoice-form-section">
+            <div class="checkout-section-title" style="margin-bottom:var(--space-4)">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z"/><path d="M9 8h6M9 12h6"/></svg> Fatura Bilgileri
+            </div>
+
+            <label class="form-check" style="margin-bottom:var(--space-4)">
+              <input type="checkbox" id="invoice-same-as-address" checked onchange="toggleInvoiceForm()">
+              <span class="form-check-label">Teslimat adresiyle aynı bilgilerle fatura kes (bireysel)</span>
+            </label>
+
+            <div id="invoice-form-fields" class="hidden">
+              <div style="display:flex;gap:var(--space-4);margin-bottom:var(--space-4)">
+                <label class="form-check">
+                  <input type="radio" name="invoice-type" value="bireysel" checked onchange="toggleInvoiceType()">
+                  <span class="form-check-label">Bireysel</span>
+                </label>
+                <label class="form-check">
+                  <input type="radio" name="invoice-type" value="kurumsal" onchange="toggleInvoiceType()">
+                  <span class="form-check-label">Kurumsal</span>
+                </label>
+              </div>
+              <div class="address-form-grid">
+                <div class="form-group form-group-full" id="invoice-unvan-group">
+                  <label class="form-label">Ad Soyad / Ünvan <span class="required">*</span></label>
+                  <input type="text" class="form-input" id="invoice-unvan">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" id="invoice-tckn-label">T.C. Kimlik No <span class="required">*</span></label>
+                  <input type="text" class="form-input" id="invoice-tckn-vergi-no" maxlength="11">
+                </div>
+                <div class="form-group hidden" id="invoice-vergi-dairesi-group">
+                  <label class="form-label">Vergi Dairesi</label>
+                  <input type="text" class="form-input" id="invoice-vergi-dairesi">
+                </div>
+                <div class="form-group form-group-full">
+                  <label class="form-label">Fatura Adresi <span class="required">*</span></label>
+                  <textarea class="form-textarea" id="invoice-adres" rows="2" placeholder="Teslimat adresinden farklıysa girin"></textarea>
+                </div>
               </div>
             </div>
           </div>
@@ -421,39 +471,14 @@
                   <div class="bank-info-rows">
                     <div class="bank-info-row">
                       <span class="label">Hesap Adı</span>
-                      <span class="value">Efem İletişim Ltd. Şti.</span>
+                      <span class="value" data-text="tradeName"></span>
                     </div>
                     <div class="bank-info-row">
                       <span class="label">IBAN</span>
                       <div style="display:flex;align-items:center;gap:var(--space-2)">
-                        <span class="value mono" id="iban-ziraat">TR12 0001 0023 4567 8901 23</span>
+                        <span class="value mono" id="iban-ziraat" data-text="iban"></span>
                         <button onclick="copyIBAN('iban-ziraat')" title="Kopyala" class="iban-copy-btn"><svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V5a2 2 0 0 1 2-2h9"/></svg></button>
                       </div>
-                    </div>
-                    <div class="bank-info-row">
-                      <span class="label">Şube / Hesap No</span>
-                      <span class="value">0023 / 45678901</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div class="bank-info-card">
-                  <div class="bank-info-name">İş Bankası</div>
-                  <div class="bank-info-rows">
-                    <div class="bank-info-row">
-                      <span class="label">Hesap Adı</span>
-                      <span class="value">Efem İletişim Ltd. Şti.</span>
-                    </div>
-                    <div class="bank-info-row">
-                      <span class="label">IBAN</span>
-                      <div style="display:flex;align-items:center;gap:var(--space-2)">
-                        <span class="value mono" id="iban-isbank">TR98 0006 4000 0012 3456 7890</span>
-                        <button onclick="copyIBAN('iban-isbank')" title="Kopyala" class="iban-copy-btn"><svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V5a2 2 0 0 1 2-2h9"/></svg></button>
-                      </div>
-                    </div>
-                    <div class="bank-info-row">
-                      <span class="label">Şube / Hesap No</span>
-                      <span class="value">0064 / 12345678</span>
                     </div>
                   </div>
                 </div>
@@ -462,6 +487,11 @@
               <div class="eft-warning">
                 <svg class="icon icon-sm" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:2px"><path d="M12 3l10 18H2L12 3Z"/><path d="M12 9v5"/><circle cx="12" cy="17.3" r="0.3" fill="currentColor" stroke="none"/></svg>
                 <span>EFT ile yapılan ödemeler banka işlem saatlerine göre <strong>1–2 iş günü</strong> içinde onaylanır. Siparişiniz ödeme onaylandıktan sonra hazırlanmaya başlar.</span>
+              </div>
+
+              <div class="form-group" style="margin-top:var(--space-4)">
+                <label class="form-label">Dekont No <span style="color:var(--text-muted);font-weight:400">(varsa şimdi girin, yoksa sonra ekleyebilirsiniz)</span></label>
+                <input type="text" class="form-input" id="eft-dekont-no" placeholder="Banka dekontunuzdaki işlem/referans no">
               </div>
             </div>
 
@@ -537,7 +567,7 @@
 <script src="js/main.js"></script>
 <script type="module" src="js/auth.js"></script>
 <script type="module">
-import { saveOrderToFirestore } from './js/firebase-auth.js';
+import { saveOrderToFirestore, sendOrderConfirmationMail } from './js/firebase-auth.js';
 import { authReady, isLoggedIn, getCurrentUser } from './js/auth.js';
 
 /* Ödeme sayfası hem üyelere hem misafirlere açıktır.
@@ -557,6 +587,7 @@ window.saveOrder = async (orderData) => {
     order = await saveOrderToFirestore(getCurrentUser().uid, orderData);
     if (!order) throw new Error('Sipariş Firestore\'a kaydedilemedi.');
     meta = { source: 'member', userId: getCurrentUser().uid, customerName, customerEmail };
+    sendOrderConfirmationMail(order); // arka planda; başarısız olsa da sipariş akışını bloklamaz
   } else {
     order = {
       id:            'EFM' + Date.now().toString().slice(-6),
@@ -567,9 +598,12 @@ window.saveOrder = async (orderData) => {
       items:         orderData.items,
       total:         orderData.total,
       address:       orderData.address       || null,
+      invoice:       orderData.invoice       || null,
       delivery:      orderData.delivery      || 'kargo',
       paymentMethod: orderData.paymentMethod || 'kart',
-      paymentId:     orderData.paymentId     || null
+      paymentId:     orderData.paymentId     || null,
+      eftReceiptNo:  orderData.eftReceiptNo  || null,
+      trackingNumber: null
     };
     meta = { source: 'guest', userId: null, customerName, customerEmail };
   }
@@ -580,6 +614,7 @@ window.saveOrder = async (orderData) => {
 </script>
 <script>
 let addressData  = null;
+let invoiceData  = null;
 let currentStep  = 1;
 let deliveryMode = 'kargo';  // 'kargo' | 'magaza'
 let paymentMode  = 'kart';   // 'kart'  | 'eft'
@@ -603,8 +638,85 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('addr-ad').value    = user.ad    || '';
     document.getElementById('addr-soyad').value = user.soyad || '';
     document.getElementById('addr-email').value = user.email || '';
+    renderSavedAddressPicker(user.addresses || []);
   }
 });
+
+/* ─── Kayıtlı adreslerden seçim ─── */
+function renderSavedAddressPicker(addresses) {
+  if (addresses.length === 0) return;
+
+  document.getElementById('saved-address-picker').classList.remove('hidden');
+  document.getElementById('saved-address-list').innerHTML = addresses.map(a => `
+    <button type="button" class="btn btn-ghost btn-sm" style="text-align:left;height:auto;padding:var(--space-3) var(--space-4)"
+            onclick='applySavedAddress(${JSON.stringify(a).replace(/'/g, "&#39;")})'>
+      <strong>${a.etiket}</strong> · ${a.alici}<br>
+      <span style="font-size:0.75rem;color:var(--text-muted)">${a.ilce} / ${a.il}</span>
+    </button>
+  `).join('');
+}
+
+function applySavedAddress(a) {
+  const [ad, ...rest] = (a.alici || '').split(' ');
+  document.getElementById('addr-ad').value      = ad || '';
+  document.getElementById('addr-soyad').value   = rest.join(' ');
+  document.getElementById('addr-telefon').value = a.telefon || '';
+  document.getElementById('addr-adres').value   = a.adres   || '';
+  document.getElementById('addr-sehir').value   = a.il      || '';
+  document.getElementById('addr-ilce').value    = a.ilce    || '';
+}
+
+/* ─── Fatura bilgileri formu ─── */
+function toggleInvoiceForm() {
+  const sameAsAddress = document.getElementById('invoice-same-as-address').checked;
+  document.getElementById('invoice-form-fields').classList.toggle('hidden', sameAsAddress);
+}
+
+function toggleInvoiceType() {
+  const isKurumsal = document.querySelector('input[name="invoice-type"]:checked').value === 'kurumsal';
+  document.getElementById('invoice-vergi-dairesi-group').classList.toggle('hidden', !isKurumsal);
+  document.getElementById('invoice-tckn-label').innerHTML =
+    isKurumsal ? 'Vergi No <span class="required">*</span>' : 'T.C. Kimlik No <span class="required">*</span>';
+  document.getElementById('invoice-tckn-vergi-no').maxLength = isKurumsal ? 10 : 11;
+}
+
+function collectInvoiceData() {
+  const sameAsAddress = document.getElementById('invoice-same-as-address').checked;
+  if (sameAsAddress) {
+    return {
+      tip:       'bireysel',
+      unvan:     [addressData?.ad, addressData?.soyad].filter(Boolean).join(' '),
+      tcknVergiNo: '',
+      vergiDairesi: '',
+      adres:     addressData?.adres || ''
+    };
+  }
+
+  const tip = document.querySelector('input[name="invoice-type"]:checked').value;
+  return {
+    tip,
+    unvan:        document.getElementById('invoice-unvan').value.trim(),
+    tcknVergiNo:  document.getElementById('invoice-tckn-vergi-no').value.trim(),
+    vergiDairesi: tip === 'kurumsal' ? document.getElementById('invoice-vergi-dairesi').value.trim() : '',
+    adres:        document.getElementById('invoice-adres').value.trim()
+  };
+}
+
+function validateInvoiceForm() {
+  const sameAsAddress = document.getElementById('invoice-same-as-address').checked;
+  if (sameAsAddress) return true;
+
+  const data = collectInvoiceData();
+  if (!data.unvan || !data.tcknVergiNo || !data.adres) {
+    showToast('Lütfen fatura bilgilerini eksiksiz doldurun.', 'error');
+    return false;
+  }
+  if (data.tip === 'kurumsal' && !data.vergiDairesi) {
+    showToast('Kurumsal fatura için vergi dairesi zorunludur.', 'error');
+    return false;
+  }
+  return true;
+}
 
 /* ─── Teslimat yöntemi seçici ─── */
 function selectDelivery(mode) {
@@ -733,6 +845,9 @@ function goToStep2() {
     addressData = data;
   }
 
+  if (!validateInvoiceForm()) return;
+  invoiceData = collectInvoiceData();
+
   setStep(2);
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -755,9 +870,11 @@ async function handlePayment() {
       items:         getCart(),
       total:         total,
       address:       addressData,
+      invoice:       invoiceData,
       delivery:      deliveryMode,
       paymentMethod: 'eft',
-      paymentId:     'EFT-PENDING-' + Date.now()
+      paymentId:     'EFT-PENDING-' + Date.now(),
+      eftReceiptNo:  document.getElementById('eft-dekont-no').value.trim() || null
     });
     clearCart();
     document.getElementById('order-id-display').textContent =
@@ -789,6 +906,7 @@ async function handlePayment() {
         items:         getCart(),
         total:         total,
         address:       addressData,
+        invoice:       invoiceData,
         delivery:      deliveryMode,
         paymentMethod: 'kart',
         paymentId:     result.paymentId

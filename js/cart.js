@@ -161,8 +161,9 @@ function renderCartItem(item) {
   return `
     <div class="cart-item" data-id="${item.id}">
       <img class="cart-item-img" src="${item.image}" alt="${item.name}"
-           onerror="this.src='assets/images/products/placeholder-product.svg'">
-      <div class="cart-item-info">
+           onerror="this.src='assets/images/products/placeholder-product.svg'"
+           onclick="window.location='urun-detay.html?id=${item.id}'" style="cursor:pointer">
+      <div class="cart-item-info" onclick="window.location='urun-detay.html?id=${item.id}'" style="cursor:pointer">
         <div class="name">${item.name}</div>
         <div class="cat">${item.category}</div>
         <div style="margin-top:8px; font-weight:700; color:var(--primary)">

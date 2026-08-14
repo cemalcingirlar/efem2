@@ -1404,6 +1404,17 @@ function openOrderModal(orderId) {
     ? `Mağazadan teslim — ${addr.telefon || ''}`
     : [addr.adres, addr.mahalle, addr.ilce, addr.il].filter(Boolean).join(', ') || 'Adres bilgisi yok';
 
+  const inv = order.invoice || {};
+  const invoiceHTML = inv.unvan
+    ? `<div class="form-grid-2" style="margin-bottom:20px">
+         <div><span class="admin-hint-text">Fatura Tipi</span><br><strong>${inv.tip === 'kurumsal' ? 'Kurumsal' : 'Bireysel'}</strong></div>
+         <div><span class="admin-hint-text">Ad Soyad / Ünvan</span><br><strong>${inv.unvan}</strong></div>
+         <div><span class="admin-hint-text">${inv.tip === 'kurumsal' ? 'Vergi No' : 'T.C. Kimlik No'}</span><br><strong>${inv.tcknVergiNo || '—'}</strong></div>
+         ${inv.tip === 'kurumsal' ? `<div><span class="admin-hint-text">Vergi Dairesi</span><br><strong>${inv.vergiDairesi || '—'}</strong></div>` : ''}
+         <div class="form-group-full" style="grid-column:1/-1"><span class="admin-hint-text">Fatura Adresi</span><br><strong>${inv.adres || '—'}</strong></div>
+       </div>`
+    : `<p style="font-size:0.875rem;color:var(--text-muted);margin-bottom:20px">Fatura bilgisi girilmemiş (teslimat adresiyle aynı).</p>`;
+
   document.getElementById('order-modal-body').innerHTML = `
     <div class="admin-section-label">Sipariş Bilgisi</div>
     <div class="form-grid-2" style="margin-bottom:20px">
@@ -1413,10 +1424,14 @@ function openOrderModal(orderId) {
       <div><span class="admin-hint-text">E-posta</span><br><strong>${order.customerEmail || '—'}</strong></div>
       <div><span class="admin-hint-text">Kaynak</span><br><strong>${order.source === 'member' ? 'Üye' : 'Misafir'}</strong></div>
       <div><span class="admin-hint-text">Ödeme</span><br><strong>${order.paymentMethod === 'eft' ? 'EFT/Havale' : 'Kredi Kartı'}</strong></div>
+      ${order.paymentMethod === 'eft' ? `<div><span class="admin-hint-text">EFT Dekont No</span><br><strong>${order.eftReceiptNo || '—'}</strong></div>` : ''}
     </div>
 
     <div class="admin-section-label">Teslimat</div>
     <p style="font-size:0.875rem;color:var(--text-secondary);margin-bottom:20px">${addressHTML}</p>
+
+    <div class="admin-section-label">Fatura Bilgileri</div>
+    ${invoiceHTML}
 
     <div class="admin-section-label">Ürünler</div>
     <table class="admin-table" style="margin-bottom:20px">
@@ -1426,10 +1441,20 @@ function openOrderModal(orderId) {
     <div style="text-align:right;font-size:1.125rem;margin-bottom:20px"><strong>Genel Toplam: ${formatPrice(order.total)}</strong></div>
 
     <div class="admin-section-label">Durum</div>
-    <select class="form-select" onchange="changeOrderStatus('${order.id}', this.value); openOrderModal('${order.id}')">
+    <select class="form-select" style="margin-bottom:12px" onchange="changeOrderStatus('${order.id}', this.value); openOrderModal('${order.id}')">
       ${Object.entries(ORDER_STATUS_LABELS).map(([val, label]) =>
         `<option value="${val}" ${order.status === val ? 'selected' : ''}>${label}</option>`).join('')}
     </select>
+    ${order.status === 'cancelled' && order.customerEmail ? `
+      <a class="btn btn-ghost btn-sm" style="margin-bottom:20px;display:inline-flex" href="${buildCancellationMailto(order)}">
+        <svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg> Müşteriye İptal Maili Gönder
+      </a>` : ''}
+
+    <div class="admin-section-label">Kargo Takip No</div>
+    <div style="display:flex;gap:10px">
+      <input type="text" class="form-input" id="order-tracking-input" value="${order.trackingNumber || ''}" placeholder="Kargo firması takip numarası">
+      <button class="btn btn-primary btn-sm" onclick="saveTrackingNumber('${order.id}')">Kaydet</button>
+    </div>
   `;
 
   document.getElementById('order-modal').classList.add('open');
@@ -1437,6 +1462,24 @@ function openOrderModal(orderId) {
 
 function closeOrderModal() {
   document.getElementById('order-modal').classList.remove('open');
+}
+
+function buildCancellationMailto(order) {
+  const subject = encodeURIComponent(`Siparişiniz İptal Edildi – ${order.id}`);
+  const body = encodeURIComponent(
+    `Merhaba ${order.customerName || ''},\n\n` +
+    `${order.id} numaralı siparişiniz iptal edilmiştir.\n` +
+    `Herhangi bir ödeme alınmışsa iadeniz en kısa sürede yapılacaktır.\n\n` +
+    `Sorularınız için bu e-postayı yanıtlayabilirsiniz.\n\n` +
+    `efem iletişim\ndestek@efemiletisim.com`
+  );
+  return `mailto:${order.customerEmail}?subject=${subject}&body=${body}`;
+}
+
+function saveTrackingNumber(orderId) {
+  const value = document.getElementById('order-tracking-input').value.trim();
+  updateOrderTrackingNumber(orderId, value || null);
+  showToast('Kargo takip numarası kaydedildi.', 'success');
 }
 
 /* ════════════════════════════

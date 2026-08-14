@@ -13,11 +13,15 @@ import {
   sendPasswordResetEmail,
   signOut,
   onAuthStateChanged,
-  updateProfile
+  updateProfile,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  deleteUser
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import {
-  doc, setDoc, getDoc, updateDoc, arrayUnion, serverTimestamp
+  doc, setDoc, getDoc, deleteDoc, updateDoc, arrayUnion, serverTimestamp,
+  collection, addDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import { auth, db } from "./firebase-config.js";
@@ -132,10 +136,15 @@ async function firebaseLogout() {
 }
 
 /* ─── Şifre sıfırlama e-postası ───
-   continueUrl verilmez; gerekçe firebaseRegister içindeki not ile aynıdır. */
+   actionCodeSettings.url, kullanıcıyı Firebase'in genel action handler'ı yerine
+   kendi Türkçe/çift-şifreli sıfırlama sayfamıza (sifre-sifirla.html) yönlendirir.
+   Bu adres site kendi alan adında olduğu için "Authorized domains" listesinde
+   zaten yetkilidir; ekstra Firebase Console ayarı gerekmez. */
 async function firebaseForgotPassword(email) {
   try {
-    await sendPasswordResetEmail(auth, email);
+    await sendPasswordResetEmail(auth, email, {
+      url: `${window.location.origin}/sifre-sifirla.html`
+    });
     return { success: true };
   } catch (err) {
     return reportAuthError('şifre sıfırlama maili', err);
@@ -165,6 +174,54 @@ async function getUserProfile(uid) {
   }
 }
 
+/* ─── Firestore: profil bilgilerini güncelle ───
+   data: { ad, soyad, telefon, tck, dogumTarihi } içinden sadece verilenler yazılır. */
+async function updateUserProfile(uid, data) {
+  try {
+    await updateDoc(doc(db, "users", uid), data);
+    return { success: true };
+  } catch (err) {
+    return {
+      success: false,
+      msg: `Profil güncellenemedi: ${err.code} – ${err.message}`
+    };
+  }
+}
+
+/* ─── Firestore: kayıtlı adresler listesini tamamen değiştir ───
+   Ekleme/düzenleme/silme tek noktadan, tüm dizi yeniden yazılır
+   (arrayRemove tam obje eşleşmesi istediği için düzenlemeye uygun değil). */
+async function replaceUserAddresses(uid, addresses) {
+  try {
+    await updateDoc(doc(db, "users", uid), { addresses });
+    return { success: true };
+  } catch (err) {
+    return {
+      success: false,
+      msg: `Adresler güncellenemedi: ${err.code} – ${err.message}`
+    };
+  }
+}
+
+/* ─── Hesabı kalıcı sil ───
+   Firebase, hassas işlemler için yakın zamanda giriş şartı koşar;
+   bu yüzden silmeden önce şifre ile yeniden kimlik doğrulama yapılır. */
+async function deleteUserAccount(password) {
+  const user = auth.currentUser;
+  if (!user) {
+    return { success: false, msg: "Oturum bulunamadı. Lütfen tekrar giriş yapın." };
+  }
+  try {
+    const credential = EmailAuthProvider.credential(user.email, password);
+    await reauthenticateWithCredential(user, credential);
+    await deleteDoc(doc(db, "users", user.uid));
+    await deleteUser(user);
+    return { success: true };
+  } catch (err) {
+    return reportAuthError('hesap silme', err);
+  }
+}
+
 /* ─── Firestore: sipariş kaydet ─── */
 async function saveOrderToFirestore(uid, orderData) {
   try {
@@ -176,9 +233,12 @@ async function saveOrderToFirestore(uid, orderData) {
       items:       orderData.items,
       total:       orderData.total,
       address:     orderData.address     || null,
+      invoice:     orderData.invoice     || null,
       delivery:    orderData.delivery    || "kargo",
       paymentMethod: orderData.paymentMethod || "kart",
-      paymentId:   orderData.paymentId   || null
+      paymentId:   orderData.paymentId   || null,
+      eftReceiptNo: orderData.eftReceiptNo || null,
+      trackingNumber: null
     };
 
     await updateDoc(doc(db, "users", uid), {
@@ -192,6 +252,49 @@ async function saveOrderToFirestore(uid, orderData) {
       `${err.code} – ${err.message}`
     );
   }
+}
+
+/* ─── Mail kuyruğuna yaz ───
+   "mail" koleksiyonu firestore.rules tarafından korunur: hedef adres ya
+   destek@efemiletisim.com ya da isteği yapan kullanıcının kendi e-postası olmalıdır.
+   Gerçek gönderim, Firebase Console'a kurulacak "Trigger Email from Firestore"
+   extension'ı tarafından yapılır (bkz. docs/EMAIL-KURULUMU.md). */
+async function queueMail(to, subject, html) {
+  try {
+    await addDoc(collection(db, "mail"), {
+      to,
+      message: { subject, html }
+    });
+    return { success: true };
+  } catch (err) {
+    console.error(`[mail] Kuyruğa yazılamadı (to: ${to}): ${err.code} – ${err.message}`);
+    return { success: false };
+  }
+}
+
+/* ─── Sipariş onay maili (üyeye, kendi e-postasına) ─── */
+async function sendOrderConfirmationMail(order) {
+  const user = auth.currentUser;
+  if (!user?.email) return { success: false };
+
+  const itemsHtml = (order.items || [])
+    .map(i => `<li>${i.name} × ${i.qty} — ${i.price * i.qty} ₺</li>`)
+    .join('');
+
+  return queueMail(
+    user.email,
+    `Siparişiniz Alındı – ${order.id}`,
+    `<p>Merhaba,</p>
+     <p><strong>${order.id}</strong> numaralı siparişiniz alındı ve hazırlanıyor.</p>
+     <ul>${itemsHtml}</ul>
+     <p><strong>Toplam: ${order.total} ₺</strong></p>
+     <p>Bizi tercih ettiğiniz için teşekkür ederiz.<br>efem iletişim</p>`
+  );
+}
+
+/* ─── Destek/soru bildirim maili (herkes → destek@) ─── */
+async function sendSupportNotificationMail(subject, html) {
+  return queueMail('destek@efemiletisim.com', subject, html);
 }
 
 /* ─── Auth state değişikliğini dinle ─── */
@@ -211,7 +314,12 @@ export {
   firebaseForgotPassword,
   resendVerificationEmail,
   getUserProfile,
+  updateUserProfile,
+  replaceUserAddresses,
+  deleteUserAccount,
   saveOrderToFirestore,
+  sendOrderConfirmationMail,
+  sendSupportNotificationMail,
   onAuthChange,
   getCurrentFirebaseUser
 };

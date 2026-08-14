@@ -16,6 +16,25 @@ service cloud.firestore {
       allow read, update, delete: if false;
     }
 
+    // Mail kuyruğu: "Trigger Email from Firestore" Firebase Extension'ı bu koleksiyonu
+    // izler ve buraya yazılan her dokümanı e-posta olarak gönderir (bkz. docs/EMAIL-KURULUMU.md).
+    // İstismarı önlemek için hedef adres ya destek kutusu ya da isteği yapan kullanıcının
+    // kendi doğrulanmış e-postası olmak zorundadır; okuma/güncelleme/silme yalnızca
+    // extension'ın kullandığı admin yetkisiyle (kurallardan muaf) yapılabilir.
+    match /mail/{mailId} {
+      allow create: if request.resource.data.keys().hasAll(['to', 'message'])
+                    && request.resource.data.message.keys().hasAll(['subject', 'html'])
+                    && request.resource.data.message.subject is string
+                    && request.resource.data.message.subject.size() < 200
+                    && request.resource.data.message.html is string
+                    && request.resource.data.message.html.size() < 20000
+                    && (
+                         request.resource.data.to == 'destek@efemiletisim.com'
+                         || (request.auth != null && request.resource.data.to == request.auth.token.email)
+                       );
+      allow read, update, delete: if false;
+    }
+
     // Ürün soru-cevap: herkes okuyabilir ve soru oluşturabilir;
     // cevap alanı sadece null olarak oluşturulabilir (yanıtlama şimdilik Firebase Console'dan yapılır,
     // admin panelinden yanıtlama akışı henüz kurulmadı).

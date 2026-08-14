@@ -68,6 +68,15 @@ function updateOrderStatus(orderId, status, statusLabel) {
   }
 }
 
+function updateOrderTrackingNumber(orderId, trackingNumber) {
+  const orders = getAllOrders();
+  const idx = orders.findIndex(o => o.id === orderId);
+  if (idx >= 0) {
+    orders[idx].trackingNumber = trackingNumber;
+    saveAllOrders(orders);
+  }
+}
+
 /* ─── BASE_PRODUCTS: Sabit ürün listesi ─── */
 const BASE_PRODUCTS = [
 

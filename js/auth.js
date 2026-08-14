@@ -11,7 +11,10 @@
 import {
   onAuthChange,
   firebaseLogout,
-  getUserProfile
+  getUserProfile,
+  updateUserProfile,
+  replaceUserAddresses,
+  deleteUserAccount
 } from './firebase-auth.js';
 
 /* ─── Misafir oturumu ───
@@ -67,6 +70,9 @@ function getCurrentUser() {
       email: session.user.email,
       ad:    session.profile?.ad    ?? ad   ?? '',
       soyad: session.profile?.soyad ?? rest.join(' ') ?? '',
+      telefon:      session.profile?.telefon      ?? '',
+      tck:          session.profile?.tck          ?? '',
+      dogumTarihi:  session.profile?.dogumTarihi  ?? '',
       orders:    session.profile?.orders    ?? [],
       addresses: session.profile?.addresses ?? []
     };
@@ -83,6 +89,37 @@ function getCurrentUser() {
     };
   }
   return null;
+}
+
+/* ─── Profil bilgilerini güncelle ─── */
+async function saveProfileFields(data) {
+  if (!session.user) return { success: false, msg: "Oturum bulunamadı." };
+  const result = await updateUserProfile(session.user.uid, data);
+  if (result.success) {
+    session.profile = { ...session.profile, ...data };
+  }
+  return result;
+}
+
+/* ─── Kayıtlı adres listesini güncelle ─── */
+async function saveAddresses(addresses) {
+  if (!session.user) return { success: false, msg: "Oturum bulunamadı." };
+  const result = await replaceUserAddresses(session.user.uid, addresses);
+  if (result.success) {
+    session.profile = { ...session.profile, addresses };
+  }
+  return result;
+}
+
+/* ─── Hesabı kalıcı sil ─── */
+async function deleteAccount(password) {
+  const result = await deleteUserAccount(password);
+  if (result.success) {
+    clearGuest();
+    session.user    = null;
+    session.profile = null;
+  }
+  return result;
 }
 
 /* ─── Çıkış ─── */
@@ -177,7 +214,10 @@ Object.assign(window, {
   updateNavAuth,
   requireAuth,
   validateEmail,
-  validatePassword
+  validatePassword,
+  saveProfileFields,
+  saveAddresses,
+  deleteAccount
 });
 
 export {
@@ -190,5 +230,8 @@ export {
   clearGuest,
   logout,
   updateNavAuth,
-  requireAuth
+  requireAuth,
+  saveProfileFields,
+  saveAddresses,
+  deleteAccount
 };

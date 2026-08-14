@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <script>(function(){try{var t=localStorage.getItem("efemi_theme");if(!t){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Şifre Sıfırla – efemiletisim.com</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/logos/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="assets/logos/favicon-512.png">
+  <link rel="apple-touch-icon" href="assets/logos/favicon-180.png">
+  <meta name="description" content="efemiletisim.com hesap şifrenizi sıfırlayın.">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="canonical" href="https://efemiletisim.com/sifre-sifirla.html">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+
+<div class="auth-loading" id="auth-loading" style="display:none">
+  <div class="spinner"></div>
+  <p id="loading-text">İşleniyor...</p>
+</div>
+
+<nav id="navbar">
+  <div class="container">
+    <div class="navbar-inner">
+      <a href="index.html" class="navbar-logo">
+        <div class="logo-icon"><img src="assets/logos/icon-square.png" alt="Efem İletişim" loading="eager"></div>
+        <div class="logo-text">
+          <span class="logo-name">efem</span>
+          <span class="logo-sub">iletişim</span>
+        </div>
+      </a>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:var(--space-3)">
+        <button class="theme-toggle" id="theme-toggle" title="Karanlık / Aydınlık mod">
+          <svg class="icon theme-icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 3v2.2M12 18.8V21M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M3 12h2.2M18.8 12H21M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6"/></svg>
+          <svg class="icon theme-icon-moon" viewBox="0 0 24 24"><path d="M20.5 14.7A8.5 8.5 0 1 1 9.3 3.5a7 7 0 0 0 11.2 11.2Z"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <div class="auth-page">
+    <div class="auth-card">
+      <a href="index.html" class="auth-logo">
+        <div class="logo-icon logo-icon-lg"><img src="assets/logos/icon-square.png" alt="Efem İletişim" loading="eager"></div>
+        <div class="logo-text">
+          <span class="logo-name">efem</span>
+          <span class="logo-sub">iletişim</span>
+        </div>
+      </a>
+
+      <!-- ─── DURUM: Kod doğrulanıyor ─── -->
+      <div id="panel-checking">
+        <div class="auth-title" style="text-align:center;padding:var(--space-4) 0 0">
+          <div style="margin-bottom:var(--space-3);display:flex;justify-content:center">
+            <svg class="icon" viewBox="0 0 24 24" style="width:2.5rem;height:2.5rem;animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-2.64-6.36"/></svg>
+          </div>
+          <h2>Bağlantı Kontrol Ediliyor</h2>
+          <p>Lütfen bekleyin...</p>
+        </div>
+      </div>
+
+      <!-- ─── DURUM: Bağlantı geçersiz/süresi dolmuş ─── -->
+      <div id="panel-invalid" style="display:none">
+        <div class="auth-title" style="text-align:center;padding:var(--space-4) 0 0">
+          <div style="margin-bottom:var(--space-3);display:flex;justify-content:center;color:var(--error)">
+            <svg class="icon" viewBox="0 0 24 24" style="width:2.5rem;height:2.5rem"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>
+          </div>
+          <h2>Bağlantı Geçersiz</h2>
+          <p id="invalid-reason">Bu şifre sıfırlama bağlantısının süresi dolmuş veya daha önce kullanılmış.</p>
+        </div>
+        <div class="auth-form">
+          <a href="hesap.html" class="btn btn-primary btn-block btn-lg">Yeni Bağlantı İste</a>
+        </div>
+      </div>
+
+      <!-- ─── DURUM: Yeni şifre formu ─── -->
+      <div id="panel-form" style="display:none">
+        <div class="auth-title" style="text-align:center;padding:var(--space-4) 0 0">
+          <div style="margin-bottom:var(--space-3);display:flex;justify-content:center"><svg class="icon" viewBox="0 0 24 24" style="width:2.5rem;height:2.5rem"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+          <h2>Yeni Şifre Belirle</h2>
+          <p><strong id="email-target"></strong> hesabı için <strong>efemiletisim.com</strong> şifrenizi sıfırlıyorsunuz.</p>
+        </div>
+        <div class="auth-form">
+          <div class="form-group">
+            <label class="form-label">Yeni Şifre <span class="required">*</span></label>
+            <input type="password" class="form-input" id="new-password"
+                   placeholder="En az 6 karakter" autocomplete="new-password">
+            <span class="form-error" id="new-password-error"></span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Yeni Şifre (Tekrar) <span class="required">*</span></label>
+            <input type="password" class="form-input" id="new-password2"
+                   placeholder="Şifrenizi tekrar girin" autocomplete="new-password">
+            <span class="form-error" id="new-password2-error"></span>
+          </div>
+          <span id="form-error" style="color:var(--error);font-size:0.875rem;display:none"></span>
+          <button class="btn btn-primary btn-block btn-lg" id="submit-btn" onclick="handleResetSubmit()">
+            Şifreyi Güncelle
+          </button>
+        </div>
+      </div>
+
+      <!-- ─── DURUM: Başarılı ─── -->
+      <div id="panel-success" style="display:none">
+        <div class="auth-title" style="text-align:center;padding:var(--space-4) 0 0">
+          <div style="margin-bottom:var(--space-3);display:flex;justify-content:center;color:var(--success)">
+            <svg class="icon" viewBox="0 0 24 24" style="width:2.5rem;height:2.5rem"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>
+          </div>
+          <h2>Şifreniz Güncellendi</h2>
+          <p><strong>efemiletisim.com</strong> hesabınızın şifresi başarıyla değiştirildi. Artık yeni şifrenizle giriş yapabilirsiniz.</p>
+        </div>
+        <div class="auth-form">
+          <a href="hesap.html" class="btn btn-primary btn-block btn-lg">Giriş Yap →</a>
+        </div>
+      </div>
+
+    </div><!-- /auth-card -->
+  </div>
+</main>
+
+<style>
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+</style>
+
+<script type="module">
+  import { auth } from "./js/firebase-config.js";
+  import {
+    verifyPasswordResetCode,
+    confirmPasswordReset
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+  const params  = new URLSearchParams(window.location.search);
+  const mode    = params.get("mode");
+  const oobCode = params.get("oobCode");
+
+  const panelChecking = document.getElementById("panel-checking");
+  const panelInvalid  = document.getElementById("panel-invalid");
+  const panelForm     = document.getElementById("panel-form");
+  const panelSuccess  = document.getElementById("panel-success");
+
+  function showPanel(panel) {
+    [panelChecking, panelInvalid, panelForm, panelSuccess].forEach(p => p.style.display = "none");
+    panel.style.display = "block";
+  }
+
+  const RESET_ERROR_MESSAGES = {
+    "auth/expired-action-code": "Bu bağlantının süresi dolmuş. Şifre sıfırlama işlemini tekrar başlatın.",
+    "auth/invalid-action-code": "Bu bağlantı geçersiz veya daha önce kullanılmış. Şifre sıfırlama işlemini tekrar başlatın.",
+    "auth/user-disabled":       "Bu hesap devre dışı bırakılmış.",
+    "auth/user-not-found":      "Bu bağlantıya ait bir hesap bulunamadı.",
+    "auth/weak-password":       "Şifre en az 6 karakter olmalıdır."
+  };
+
+  async function init() {
+    if (mode !== "resetPassword" || !oobCode) {
+      document.getElementById("invalid-reason").textContent =
+        "Bu sayfa doğrudan açılamaz — şifre sıfırlama linkine e-posta üzerinden ulaşmalısınız.";
+      showPanel(panelInvalid);
+      return;
+    }
+
+    try {
+      const email = await verifyPasswordResetCode(auth, oobCode);
+      document.getElementById("email-target").textContent = email;
+      showPanel(panelForm);
+    } catch (err) {
+      document.getElementById("invalid-reason").textContent =
+        RESET_ERROR_MESSAGES[err.code] || `Bağlantı doğrulanamadı (${err.code}).`;
+      showPanel(panelInvalid);
+    }
+  }
+
+  window.handleResetSubmit = async function handleResetSubmit() {
+    const pw1El  = document.getElementById("new-password");
+    const pw2El  = document.getElementById("new-password2");
+    const pw1Err = document.getElementById("new-password-error");
+    const pw2Err = document.getElementById("new-password2-error");
+    const formErr = document.getElementById("form-error");
+    const submitBtn = document.getElementById("submit-btn");
+
+    pw1Err.textContent = ""; pw2Err.textContent = ""; formErr.style.display = "none";
+
+    const pw1 = pw1El.value;
+    const pw2 = pw2El.value;
+
+    let valid = true;
+    if (pw1.length < 6) { pw1Err.textContent = "Şifre en az 6 karakter olmalıdır."; valid = false; }
+    if (pw2.length === 0) { pw2Err.textContent = "Şifreyi tekrar girin."; valid = false; }
+    else if (pw1 !== pw2) { pw2Err.textContent = "Şifreler birbiriyle eşleşmiyor."; valid = false; }
+    if (!valid) return;
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Güncelleniyor...";
+
+    try {
+      await confirmPasswordReset(auth, oobCode, pw1);
+      showPanel(panelSuccess);
+    } catch (err) {
+      formErr.textContent = RESET_ERROR_MESSAGES[err.code] || `Şifre güncellenemedi (${err.code}).`;
+      formErr.style.display = "block";
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Şifreyi Güncelle";
+    }
+  };
+
+  init();
+</script>
+
+<script src="js/site-config.js"></script>
+<script src="js/main.js"></script>
+
+</body>
+</html>

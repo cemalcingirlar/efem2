@@ -3,6 +3,36 @@
 Bu dosya projede yapılan her ekleme, değişiklik ve kaldırmayı kayıt altına alır.
 En yeni kayıtlar en üstte.
 
+## 2026-08-15
+
+### Adres autofill, yasal künye, şifre sıfırlama, admin ayarları
+- Fix: `odeme.html` teslimat adresi formunda `autocomplete` attribute'leri eksikti
+  (ad/soyad/adres/şehir/ilçe/posta kodu) — tarayıcının kayıtlı adres önerisine tıklandığında
+  sadece telefon/e-posta doluyor, gerisi boş kalıyordu. Standart autocomplete token'ları
+  (`given-name`, `family-name`, `street-address`, `address-level1/2`, `postal-code`) eklendi.
+- Add: `js/site-config.js` → `legal.taxOffice` = "Seyhan Vergi Dairesi", `legal.kepAddress` eklendi.
+  `hakkimizda.html` şirket bilgileri kartına Vergi Dairesi ve KEP Adresi satırları eklendi
+  (mevcut `info-row` düzenine birebir uyumlu).
+- Add: Firebase Auth e-postaları (`js/firebase-config.js` → `auth.languageCode = 'tr'`) artık
+  Türkçe gönderiliyor (Firebase'in dahili çeviri desteği, Console erişimi gerekmez).
+- Add: `sifre-sifirla.html` — Firebase şifre sıfırlama artık Firebase'in varsayılan (tek şifre
+  alanlı, İngilizce) hosted sayfası yerine bu özel sayfaya düşüyor: çift şifre alanı + eşleşme
+  kontrolü, Türkçe, hangi hesap/site için sıfırlandığı açıkça gösteriliyor.
+  `js/firebase-auth.js` → `firebaseForgotPassword` artık `actionCodeSettings` (`handleCodeInApp:true`)
+  gönderiyor. Not: domain Firebase Console → Authentication → Authorized domains listesinde
+  değilse `auth/unauthorized-continue-uri` hatası döner (mesajı zaten Türkçe hazırdı).
+- Add: Admin panel — sipariş detayına "Kargo Takip No" alanı eklendi (`js/data.js` →
+  `updateOrderTracking`, siparişe `trackingNumber` alanı).
+- Add: Admin panel — yeni "Ayarlar" sekmesi: şifre değiştirme (mevcut şifre doğrulamalı),
+  kurtarma e-postası ve telefon numarası. `localStorage` tabanlı (mevcut admin auth zaten
+  client-side demo seviyesinde — bkz. `docs/ARKADAS-YAPILACAKLAR.md` Prompt 2, gerçek Firebase
+  Auth'a taşıma planı orada).
+- Fix: Ayarlar sekmesindeki kartların hiç padding'i yoktu, alanlar birbirine yapışık duruyordu
+  ve `autocomplete="new-password"` Chrome'un şifre öneri kutucuğunu "Şifreyi Güncelle"
+  butonunun üstüne bindiriyordu. Kartlar site genelindeki `admin-card-header`/`auth-form`
+  düzenine (padding + tutarlı boşluk) alındı, admin şifre alanlarında `autocomplete="off"`
+  kullanıldı.
+
 ## 2026-08-14 (devam 8)
 
 ### Karanlık mod, footer, admin panel, sipariş yönetimi

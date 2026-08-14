@@ -232,6 +232,7 @@ function initSiteLinks() {
     tradeName: () => SITE.legal.tradeName,
     taxNumber: () => SITE.legal.taxNumber,
     taxOffice: () => SITE.legal.taxOffice || '[Vergi dairesi bilgisi eklenecek]',
+    kepAddress:() => SITE.legal.kepAddress || '[KEP adresi eklenecek]',
     mersisNo:  () => SITE.legal.mersisNo,
     registryNo:() => SITE.legal.registryNo,
     returnDays:() => SITE.commerce.returnDays,

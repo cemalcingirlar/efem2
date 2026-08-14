@@ -27,9 +27,8 @@ const SITE = {
     registryNo:     '70140',
     mersisNo:       '0325058015600016',
     taxNumber:      '3250560156',
-    // TODO: Vergi dairesi adı girilmeli
-    taxOffice:      '',
-    kepAddress:     ''
+    taxOffice:      'Seyhan Vergi Dairesi',
+    kepAddress:     'efeiletisim.s921087@hs03.kep.tr'
   },
 
   /* ─── İletişim ─── */

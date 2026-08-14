@@ -568,6 +568,9 @@
         <span class="icon"><svg class="icon" viewBox="0 0 24 24"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></span> Siparişler
         <span class="badge-count" id="nav-order-count">0</span>
       </div>
+      <div class="admin-nav-item" id="nav-settings" onclick="showSection('settings')">
+        <span class="icon"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></span> Ayarlar
+      </div>
 
       <div class="admin-nav-label">Hızlı İşlemler</div>
       <div class="admin-nav-item" onclick="openAddModal()">
@@ -812,6 +815,58 @@
       </div>
     </section>
 
+    <!-- ─── AYARLAR ─── -->
+    <section id="section-settings" style="display:none">
+      <div class="admin-topbar">
+        <div>
+          <h1><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg> Ayarlar</h1>
+          <p>Admin hesap güvenliği</p>
+        </div>
+      </div>
+
+      <div class="admin-card" style="max-width:480px">
+        <div class="admin-card-header">
+          <span class="admin-card-title">Şifre Değiştir</span>
+        </div>
+        <div class="auth-form" style="padding:24px">
+          <div class="form-group">
+            <label class="form-label">Mevcut Şifre <span class="required">*</span></label>
+            <input type="password" class="form-input" id="settings-current-password" autocomplete="off">
+            <span class="form-error" id="settings-current-password-error"></span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Yeni Şifre <span class="required">*</span></label>
+            <input type="password" class="form-input" id="settings-new-password" placeholder="En az 6 karakter" autocomplete="off">
+            <span class="form-error" id="settings-new-password-error"></span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Yeni Şifre (Tekrar) <span class="required">*</span></label>
+            <input type="password" class="form-input" id="settings-new-password2" autocomplete="off">
+            <span class="form-error" id="settings-new-password2-error"></span>
+          </div>
+          <button class="btn btn-primary" onclick="handleAdminPasswordChange()">Şifreyi Güncelle</button>
+        </div>
+      </div>
+
+      <div class="admin-card" style="max-width:480px">
+        <div class="admin-card-header">
+          <span class="admin-card-title">Kurtarma Bilgileri</span>
+        </div>
+        <div class="auth-form" style="padding:24px">
+          <p class="admin-hint-text" style="margin:-8px 0 0">Şifrenizi unutursanız sizinle bu bilgilerle iletişime geçilir.</p>
+          <div class="form-group">
+            <label class="form-label">Kurtarma E-postası</label>
+            <input type="email" class="form-input" id="settings-recovery-email" placeholder="ornek@mail.com" autocomplete="email">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Telefon Numarası</label>
+            <input type="tel" class="form-input" id="settings-recovery-phone" placeholder="05XX XXX XX XX" autocomplete="tel">
+          </div>
+          <button class="btn btn-secondary" onclick="handleAdminRecoveryInfoSave()">Kaydet</button>
+        </div>
+      </div>
+    </section>
+
   </div><!-- /admin-main -->
 </div><!-- /admin-wrapper -->
 
@@ -1020,13 +1075,31 @@
    ADMIN AUTH
 ════════════════════════════ */
 const ADMIN_CREDS = { username: 'admin', password: 'efemi2024' };
-const ADMIN_SESSION_KEY = 'efemi_admin_session';
+const ADMIN_SESSION_KEY  = 'efemi_admin_session';
+const ADMIN_SETTINGS_KEY = 'efemi_admin_settings';
+
+/* ─── Admin ayarları (şifre override, kurtarma e-postası/telefon) ───
+   Demo seviyesi client-side depolama — ürünler/siparişler gibi bu da
+   localStorage'da tutulur (bkz. docs/ARKADAS-YAPILACAKLAR.md Prompt 2,
+   admin auth'un Firebase Auth'a taşınması planı). */
+function getAdminSettings() {
+  try { return JSON.parse(localStorage.getItem(ADMIN_SETTINGS_KEY)) || {}; }
+  catch { return {}; }
+}
+
+function saveAdminSettings(settings) {
+  localStorage.setItem(ADMIN_SETTINGS_KEY, JSON.stringify(settings));
+}
+
+function getAdminPassword() {
+  return getAdminSettings().password || ADMIN_CREDS.password;
+}
 
 function adminLogin() {
   const u = document.getElementById('admin-username').value.trim();
   const p = document.getElementById('admin-password').value;
 
-  if (u === ADMIN_CREDS.username && p === ADMIN_CREDS.password) {
+  if (u === ADMIN_CREDS.username && p === getAdminPassword()) {
     sessionStorage.setItem(ADMIN_SESSION_KEY, '1');
     document.getElementById('admin-login').style.display   = 'none';
     document.getElementById('admin-wrapper').classList.add('active');
@@ -1387,6 +1460,13 @@ function changeOrderStatus(orderId, status) {
   showToast('Sipariş durumu güncellendi.', 'success');
 }
 
+function saveOrderTracking(orderId) {
+  const input = document.getElementById(`tracking-input-${orderId}`);
+  updateOrderTracking(orderId, input.value.trim());
+  filterOrdersTable();
+  showToast('Kargo takip numarası kaydedildi.', 'success');
+}
+
 function openOrderModal(orderId) {
   const order = getAllOrders().find(o => o.id === orderId);
   if (!order) return;
@@ -1430,6 +1510,13 @@ function openOrderModal(orderId) {
       ${Object.entries(ORDER_STATUS_LABELS).map(([val, label]) =>
         `<option value="${val}" ${order.status === val ? 'selected' : ''}>${label}</option>`).join('')}
     </select>
+
+    <div class="admin-section-label" style="margin-top:20px">Kargo Takip No</div>
+    <div style="display:flex;gap:8px">
+      <input type="text" class="form-input" id="tracking-input-${order.id}"
+             placeholder="Örn: 123456789TR" value="${order.trackingNumber || ''}">
+      <button class="btn btn-secondary" onclick="saveOrderTracking('${order.id}')">Kaydet</button>
+    </div>
   `;
 
   document.getElementById('order-modal').classList.add('open');
@@ -1686,6 +1773,54 @@ function showSection(name) {
   document.getElementById('section-' + name).style.display = 'block';
   document.querySelectorAll('.admin-nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('nav-' + name)?.classList.add('active');
+  if (name === 'settings') populateAdminSettingsForm();
+}
+
+/* ════════════════════════════
+   AYARLAR
+════════════════════════════ */
+function populateAdminSettingsForm() {
+  const settings = getAdminSettings();
+  document.getElementById('settings-recovery-email').value = settings.recoveryEmail || '';
+  document.getElementById('settings-recovery-phone').value = settings.phone || '';
+}
+
+function handleAdminPasswordChange() {
+  const currentEl = document.getElementById('settings-current-password');
+  const newEl     = document.getElementById('settings-new-password');
+  const new2El    = document.getElementById('settings-new-password2');
+  const currentErr = document.getElementById('settings-current-password-error');
+  const newErr      = document.getElementById('settings-new-password-error');
+  const new2Err     = document.getElementById('settings-new-password2-error');
+
+  currentErr.textContent = ''; newErr.textContent = ''; new2Err.textContent = '';
+
+  let valid = true;
+  if (currentEl.value !== getAdminPassword()) {
+    currentErr.textContent = 'Mevcut şifre hatalı.'; valid = false;
+  }
+  if (newEl.value.length < 6) {
+    newErr.textContent = 'Yeni şifre en az 6 karakter olmalıdır.'; valid = false;
+  }
+  if (new2El.value !== newEl.value) {
+    new2Err.textContent = 'Şifreler birbiriyle eşleşmiyor.'; valid = false;
+  }
+  if (!valid) return;
+
+  const settings = getAdminSettings();
+  settings.password = newEl.value;
+  saveAdminSettings(settings);
+
+  currentEl.value = ''; newEl.value = ''; new2El.value = '';
+  showToast('Şifre güncellendi.', 'success');
+}
+
+function handleAdminRecoveryInfoSave() {
+  const settings = getAdminSettings();
+  settings.recoveryEmail = document.getElementById('settings-recovery-email').value.trim();
+  settings.phone         = document.getElementById('settings-recovery-phone').value.trim();
+  saveAdminSettings(settings);
+  showToast('Kurtarma bilgileri kaydedildi.', 'success');
 }
 
 function addSpecRow(key = '', value = '') {

@@ -78,6 +78,8 @@ Adım 1 ve 2 bitince bana haber ver, `efemiletisim.com` üzerinden ben de kontro
 4. **Prompt 4 — Kupon yönetim ekranı**
 5. **Prompt 5 — Mobil app (opsiyonel, en son)**
 6. **Prompt 6 — CSP sıkılaştırma (opsiyonel, ileri seviye güvenlik)**
+7. **Prompt 7 — Sipariş ve destek e-postaları (Vercel Functions + e-posta API'si)** — Prompt 1 ve
+   Prompt 3 tamamlanmadan gerçek anlamda çalışmaz (sipariş şu an sahte/localStorage).
 
 Ayrıca aşağıda **senin doldurman gereken veriler** ve **iş kararı bekleyen konular** listesi var
 (bunlar AI'nin yapabileceği iş değil, senin bilgi/karar vermen gerekiyor).
@@ -296,13 +298,58 @@ Bu büyük bir refactor, acil değil — sadece "tam puan" bir güvenlik denetim
 
 ---
 
+## Prompt 7 — Sipariş ve destek e-postaları (Vercel Functions + e-posta API'si)
+
+```
+efemiletisim.com projesinde şu an hiçbir otomatik e-posta gönderimi yok (Firebase Auth'un kendi
+doğrulama/şifre sıfırlama mailleri hariç, onlar zaten çalışıyor). İstiyorum ki:
+
+1. Sipariş verildiğinde müşteriye onay e-postası gitsin (sipariş no, ürünler, tutar, teslimat
+   adresi özeti).
+2. Sipariş durumu admin panelinden "İptal" (cancelled) yapıldığında müşteriye iptal bildirimi
+   gitsin.
+3. Yeni bir sipariş verildiğinde VE (varsa) müşterinin sorduğu bir soru olduğunda
+   destek@efemiletisim.com adresine bildirim gitsin.
+4. Tüm mailler destek@efemiletisim.com adresinden gönderilmiş gibi görünsün (gönderen adı
+   "efemiletisim.com").
+
+Bunu yapman gerekenler:
+
+1. Bir e-posta gönderim servisi seç (Resend, SendGrid veya benzeri — Vercel Marketplace
+   entegrasyonlarına bak) ve API key'i Vercel proje ortam değişkeni olarak ekle (ör.
+   `RESEND_API_KEY`). Gönderen adres olarak destek@efemiletisim.com kullanılacaksa o domain'in
+   ilgili DNS kayıtlarını (SPF/DKIM) doğrulaman gerekir, yoksa mailler spam kutusuna düşer —
+   bu adım hesap/domain erişimi gerektirir, senin yapman lazım.
+
+2. `/api` altında Vercel Functions oluştur:
+   - POST /api/send-order-confirmation — sipariş verildiğinde odeme.html'den (veya backend
+     ödeme akışından, bkz. Prompt 1) tetiklenir, müşteriye + destek@'e mail atar.
+   - POST /api/send-order-cancellation — admin panelden sipariş "İptal" yapıldığında tetiklenir,
+     müşteriye mail atar. admin.html → changeOrderStatus() fonksiyonunu, status 'cancelled'
+     olduğunda bu endpoint'i çağıracak şekilde güncelle.
+
+3. Sipariş gerçekten Firestore'a yazılmadan (bkz. Prompt 3) bu e-postalar güvenilir şekilde
+   tetiklenemez — misafir siparişleri şu an hiçbir yere kaydedilmiyor, admin "İptal" durumunu
+   sadece kendi tarayıcısındaki localStorage'da görüyor. Prompt 1 ve Prompt 3 tamamlanmadan bu
+   Prompt'u yapma, yarım bir sistem olur.
+
+4. Varsa bir "soru sor" formu (ürün detay sayfası veya iletişim) ekleyeceksen, o da aynı
+   /api altından destek@'e mail atan ayrı bir endpoint olsun (ör. /api/send-support-question).
+
+Bitirince: sandbox/test modunda uçtan uca bir test siparişi ver, hem müşteri hem destek@ mailinin
+gerçekten ulaştığını doğrula, sonucu bana raporla.
+```
+
+---
+
 ## Senin doldurman gereken veriler (AI'nin işi değil, bilgi eksik)
 
 `js/site-config.js` içinde:
 
 | Alan | Şu anki durum | Ne gerekiyor |
 |---|---|---|
-| `legal.taxOffice` | boş `''` | Vergi dairesi adı (fatura/yasal metinlerde görünüyor) |
+| `legal.taxOffice` | ✅ dolduruldu — "Seyhan Vergi Dairesi" | — |
+| `legal.kepAddress` | ✅ dolduruldu — `efeiletisim.s921087@hs03.kep.tr` (verildiği gibi girildi, "efeiletisim" yazımı KEP sağlayıcısından geldiği için değiştirilmedi — gerçekten `efemiletisim` olması gerekiyorsa haber ver, düzeltilir) | — |
 | `partners.distributors` → İndeks, Ouno Servis | logo yok, metin rozeti | PNG/SVG logo dosyası ver, `assets/logos/indeks.svg` ve `assets/logos/ouno.svg` olarak eklenip bağlanır |
 | Huawei Watch GT4, Watch Fit 3 görselleri | placeholder SVG | `consumer.huawei.com` bot korumalı, elle indirip `assets/images/products/huawei-watch-gt4.jpg` / `huawei-watch-fit3.jpg` olarak koy |
 | JBL Tune 770NC, Live 660NC görselleri | placeholder SVG | `jbl.com` (Harman) otomatik erişimi engelliyor, elle indirip `jbl-tune770nc.jpg` / `jbl-live660nc.jpg` olarak koy |

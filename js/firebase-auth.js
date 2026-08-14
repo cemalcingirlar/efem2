@@ -132,10 +132,18 @@ async function firebaseLogout() {
 }
 
 /* ─── Şifre sıfırlama e-postası ───
-   continueUrl verilmez; gerekçe firebaseRegister içindeki not ile aynıdır. */
+   handleCodeInApp:true ile Firebase'in kendi hosted action sayfası yerine
+   sifre-sifirla.html kullanılır (Türkçe, çift şifre alanlı, marka bilgili).
+   Bu, domain'in Firebase Console → Authentication → Settings →
+   Authorized domains listesinde olmasını gerektirir; değilse
+   auth/unauthorized-continue-uri hatası (aşağıda Türkçe mesajı hazır) döner. */
 async function firebaseForgotPassword(email) {
   try {
-    await sendPasswordResetEmail(auth, email);
+    const actionCodeSettings = {
+      url: `${location.origin}/sifre-sifirla.html`,
+      handleCodeInApp: true
+    };
+    await sendPasswordResetEmail(auth, email, actionCodeSettings);
     return { success: true };
   } catch (err) {
     return reportAuthError('şifre sıfırlama maili', err);

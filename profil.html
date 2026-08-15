@@ -589,7 +589,8 @@ function renderOrders() {
           <div style="display:flex;flex-direction:column;gap:var(--space-2);margin-bottom:var(--space-4)">
             ${(o.items || []).map(item => `
               <div style="display:flex;justify-content:space-between;font-size:0.875rem">
-                <span>${item.name} × ${item.qty}</span>
+                <span>${item.name}${[item.color, item.size].filter(Boolean).length
+                  ? ` <span style="color:var(--text-muted)">(${[item.color, item.size].filter(Boolean).join(' · ')})</span>` : ''} × ${item.qty}</span>
                 <span style="font-weight:600">${formatPrice(item.price * item.qty)}</span>
               </div>`).join('')}
           </div>

@@ -3,6 +3,77 @@
 Bu dosya projede yapılan her ekleme, değişiklik ve kaldırmayı kayıt altına alır.
 En yeni kayıtlar en üstte.
 
+## 2026-08-16 (devam)
+
+### Renk / beden varyantları — müşteri sepete eklerken seçiyor
+- Add: `js/data.js` → her ürüne `variants: [{ sku, color, size? }]` eklendi. Excel'deki
+  **114 satırın her biri bir varyant**; SKU listedeki Malzeme kodudur. Daha önce renkler
+  sadece `specs` içinde metin olarak yazıyordu, seçilemiyordu. Doğrulandı: 114 Excel satırı
+  ↔ 114 varyant, birebir eşleşiyor, tekrar eden SKU yok. Apple Watch ürünlerinde ayrıca
+  kordon bedeni (`size`: S/M, M/L) var; `sizeLabel` ile etiketleniyor.
+- Add: `js/data.js` → varyant yardımcıları (`getVariantColors`, `getSizesForColor`,
+  `findVariant`, `hasVariantChoice`, `defaultVariant`) ve `COLOR_SWATCHES` renk paleti.
+- Add: `urun-detay.html` → renk ve beden seçici (`buildVariantPicker`). **Her renk × beden
+  kombinasyonu mevcut değil** (ör. Watch Series 11 42mm Jet Siyah yalnızca S/M) — seçili
+  renkte üretilmeyen beden pasif ve üstü çizili gösteriliyor, altında "Jet Siyah rengi
+  yalnızca S/M bedeninde mevcut." açıklaması çıkıyor. Olmayan kombinasyon sepete eklenemiyor.
+- Change: `js/cart.js` → sepet satırları artık ürün id'si yerine **varyant SKU'su** ile
+  ayrışıyor (`cartLineKey`). Aynı ürünün farklı rengi ayrı satır; aynı varyant tekrar
+  eklenince miktar artıyor. `addToCart(id, qty, variant)`; seçim gerektiren üründe varyant
+  verilmezse ekleme reddediliyor. `removeFromCart`/`updateCartQty` artık satır anahtarı alıyor.
+- Change: Seçilen renk/beden sepet kartında (renk noktası + metin), ödeme özetinde, sipariş
+  geçmişinde (`profil.html`) ve admin sipariş detayında (Malzeme kodu ile birlikte) görünüyor.
+- Change: `js/products.js` → çok seçenekli ürünlerin kartındaki buton "Sepete Ekle" yerine
+  **"Seçenekleri Gör"** (renk seçmeden sepete eklenemez); kartlarda renk noktaları gösteriliyor.
+  Tek varyantlı 24 üründe buton eskisi gibi doğrudan ekliyor.
+
+## 2026-08-16
+
+### Gerçek stok kataloğu (54 ürün), yeni kategoriler, ürün görselleri
+- Change: `js/data.js` → `BASE_PRODUCTS` tamamen değiştirildi. Kaynak: `stok bilgisi.xlsx`
+  (114 satır). Satırların çoğu aynı modelin renk çeşidi olduğu için **marka + model + fiyat**
+  kırılımıyla gruplandı → **54 ürün**. Renkler ürün başına tek satırda (`specs` → "Renk")
+  listeleniyor. Her üründe `sku` alanı var (listedeki Malzeme kodu), stok tümünde 10.
+  Önceki 20 demo ürün (iPad, Casper tablet, Anker/Sony vb.) kaldırıldı — stokta olmayan
+  ürünün sitede satılıyor görünmemesi için.
+- Change: Kategori yapısı `saat / kulaklik / tablet` → **`saat` (22) · `kulaklik` (21) ·
+  `aksesuar` (7) · `ses` (4)**. Stok listesinde hiç tablet yok; buna karşılık şarj adaptörü,
+  şarj kablosu, telefon askısı (→ Aksesuarlar) ve Bluetooth hoparlör, WiFi mesh, projektör
+  (→ Ses & Diğer) var. Navbar dropdown, mobil menü, footer, `urunler.html` filtreleri ve
+  hızlı kategori butonları, `index.html` kategori kartları, `admin.html` istatistik/seçim
+  alanları güncellendi.
+- Add: `js/data.js` → `CATEGORY_LABELS` tek kaynak olarak eklendi. `urunler.html` breadcrumb'ı,
+  `urun-detay.html` kategori linki ve `admin.html` ürün kaydetme akışı artık kendi kopya
+  kategori haritalarını tutmuyor, buradan besleniyor. Yeni kategori eklerken tek yer değişiyor
+  (navbar/footer linkleri hâlâ HTML içinde sabit).
+- Add: Ürün görselleri internetten indirildi — toplam **153 görsel** (48 üründe 3'er,
+  6 üründe 1–2 tane; `assets/images/products/`). Kaynak seçimi önce markanın resmi sitesiyle
+  (`site:apple.com`, `site:samsung.com` …) kısıtlanıyor, ardından aday URL'nin **model kodunu
+  içermesi zorunlu** tutuluyor (`fetch-images.ps1` → `Test-Relevant`); ayrıca üst model
+  görselinin alt modele girmemesi için negatif eşleşme (ör. "buds4" ararken "buds4pro" hariç),
+  stok fotoğraf/konsept-render siteleri, 500px altı görseller ve 16:9'dan geniş reklam
+  banner'ları eleniyor.
+  Bu filtreler şart: filtresiz denemede görsel arama AirPods 4 yerine AirPods Pro,
+  Samsung üçlü adaptör yerine alakasız bir stok fotoğraf, Galaxy Watch9 yerine Watch8 ve
+  JBL Tune 680BT NC yerine 530BT getirdi. **Yanlış görsel yerine eksik görsel** tercih edildi:
+  2026 modeli olduğu için resmi görseli az olan 6 üründe (Galaxy Watch9 40/44mm, Redmi Watch 6,
+  Redmi Buds 8, JBL Tune 680BT NC, JBL Go 5) 3 yerine 1–2 görsel var.
+- Remove: Katalogdan çıkan 20 demo ürünün 100 görseli silindi (13.2 MB).
+- Change: Ürünlerin `rating`/`reviewCount` değerleri 0. Gerçek müşteri değerlendirmesi
+  olmadan yıldız/yorum sayısı göstermek yanıltıcı olduğu için ürün kartında ve detay
+  sayfasında puan bloğu yerine "Henüz değerlendirilmedi" yazıyor (`js/products.js`,
+  `urun-detay.html`); `urunler.html` içindeki "Minimum Puan" filtresi ve "En Çok Beğenilen"
+  sıralaması hiç değerlendirme yokken otomatik gizleniyor. `js/main.js` ürün schema'sı zaten
+  `reviewCount > 0` koşuluyla `aggregateRating` yayınlıyordu, o davranış korundu.
+- Change: `urunler.html` sol filtredeki kategori sayaçları ("Tümü (20)" gibi) HTML'de sabit
+  yazılıydı, katalog değişince yanlış oluyordu; artık `PRODUCTS`'tan hesaplanıyor.
+- Change: `index.html` öne çıkanlar şeridi ilk 8 ürünle sınırlandı (21 "featured" ürün
+  şeridi şişiriyordu). `.categories-grid` 3 → 4 sütun.
+- Change: Meta açıklamalar, sayfa başlıkları ve footer metinleri gerçek katalogla uyumlandı
+  (artık satılmayan "tablet" ve "Sony/Anker" ifadeleri kaldırıldı; `js/site-config.js` →
+  `brand.description` dahil).
+- Add: `.claude/launch.json` — `node dev-server.js` (port 3000) preview yapılandırması.
+
 ## 2026-08-15 (devam 2)
 
 ### Adres senkronu, 81 il, navbar dropdown bug, ürün fotoğrafları

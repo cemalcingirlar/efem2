@@ -630,10 +630,17 @@
             </div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon purple"><svg class="icon" viewBox="0 0 24 24"><rect x="5" y="2.5" width="14" height="19" rx="2.8"/><path d="M11.5 3.6h1"/><path d="M10.3 19.6h3.4"/></svg></div>
+            <div class="stat-icon purple"><svg class="icon" viewBox="0 0 24 24"><path d="M9 2.5v5"/><path d="M15 2.5v5"/><path d="M5.5 7.5h13v3.5a6.5 6.5 0 0 1-13 0V7.5Z"/><path d="M12 17.5v4"/></svg></div>
             <div>
-              <div class="stat-num" id="stat-tablet">0</div>
-              <div class="stat-label">Tablet</div>
+              <div class="stat-num" id="stat-aksesuar">0</div>
+              <div class="stat-label">Aksesuar</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon blue"><svg class="icon" viewBox="0 0 24 24"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><circle cx="12" cy="14.5" r="3.5"/><circle cx="12" cy="6.5" r="1.3"/></svg></div>
+            <div>
+              <div class="stat-num" id="stat-ses">0</div>
+              <div class="stat-label">Ses &amp; Diğer</div>
             </div>
           </div>
           <div class="stat-card">
@@ -734,9 +741,10 @@
                  placeholder="Ürün ara..." oninput="filterTable(this.value)">
           <select id="cat-filter" class="sort-select" onchange="filterTable()" style="padding:10px 14px">
             <option value="all">Tümü</option>
-            <option value="saat">Saatler</option>
+            <option value="saat">Akıllı Saatler</option>
             <option value="kulaklik">Kulaklıklar</option>
-            <option value="tablet">Tabletler</option>
+            <option value="aksesuar">Aksesuarlar</option>
+            <option value="ses">Ses &amp; Diğer</option>
           </select>
           <button class="btn btn-primary" onclick="openAddModal()"><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Ürün Ekle</button>
         </div>
@@ -926,7 +934,8 @@
               <select class="form-select" id="p-category" onchange="updateCategoryLabel()">
                 <option value="saat">Akıllı Saatler</option>
                 <option value="kulaklik">Kulaklıklar</option>
-                <option value="tablet">Tabletler</option>
+                <option value="aksesuar">Aksesuarlar</option>
+                <option value="ses">Ses &amp; Diğer</option>
               </select>
             </div>
             <div class="form-group">
@@ -1150,7 +1159,8 @@ function updateStats() {
   document.getElementById('stat-total-products').textContent = PRODUCTS.length;
   document.getElementById('stat-saat').textContent      = PRODUCTS.filter(p => p.category === 'saat').length;
   document.getElementById('stat-kulaklik').textContent  = PRODUCTS.filter(p => p.category === 'kulaklik').length;
-  document.getElementById('stat-tablet').textContent    = PRODUCTS.filter(p => p.category === 'tablet').length;
+  document.getElementById('stat-aksesuar').textContent  = PRODUCTS.filter(p => p.category === 'aksesuar').length;
+  document.getElementById('stat-ses').textContent       = PRODUCTS.filter(p => p.category === 'ses').length;
   document.getElementById('nav-product-count').textContent = PRODUCTS.length;
 
   const inventoryValue = PRODUCTS.reduce((sum, p) => sum + p.price * p.stock, 0);
@@ -1243,9 +1253,10 @@ function renderDashboard() {
 
   // Kategori dağılımı
   const catMeta = {
-    saat:     { label: 'Akıllı Saat', color: '#F59E0B' },
-    kulaklik: { label: 'Kulaklık',    color: '#10B981' },
-    tablet:   { label: 'Tablet',      color: '#8B5CF6' }
+    saat:     { label: 'Akıllı Saat',  color: '#F59E0B' },
+    kulaklik: { label: 'Kulaklık',     color: '#10B981' },
+    aksesuar: { label: 'Aksesuar',     color: '#8B5CF6' },
+    ses:      { label: 'Ses & Diğer',  color: '#0EA5E9' }
   };
   const catEl = document.getElementById('category-dist');
   const total = PRODUCTS.length || 1;
@@ -1464,13 +1475,19 @@ function openOrderModal(orderId) {
   const order = getAllOrders().find(o => o.id === orderId);
   if (!order) return;
 
-  const itemsHTML = (order.items || []).map(i => `
+  const itemsHTML = (order.items || []).map(i => {
+    const varyant = [i.color, i.size].filter(Boolean).join(' · ');
+    return `
     <tr>
-      <td>${i.name}</td>
+      <td>
+        ${i.name}
+        ${varyant ? `<div style="font-size:0.75rem;color:var(--text-muted)">${varyant}${i.sku ? ` — Kod: ${i.sku}` : ''}</div>` : ''}
+      </td>
       <td>${i.qty}</td>
       <td>${formatPrice(i.price)}</td>
       <td><strong>${formatPrice(i.price * i.qty)}</strong></td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
 
   const addr = order.address || {};
   const addressHTML = order.delivery === 'magaza'
@@ -1678,7 +1695,7 @@ function saveProduct() {
     if (k && v) specs.push({ key: k, value: v });
   });
 
-  const catLabels = { saat: 'Akıllı Saatler', kulaklik: 'Kulaklıklar', tablet: 'Tabletler' };
+  const catLabels = CATEGORY_LABELS;
 
   const adminProds = getAdminProducts();
   const now = Date.now();

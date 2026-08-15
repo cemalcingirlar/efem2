@@ -19,19 +19,39 @@ function saveCart(cart) {
   dispatchCartEvent(cart);
 }
 
-/* ─── Ürün ekle ─── */
-function addToCart(productId, quantity = 1) {
+/* ─── Sepet satırı anahtarı ───
+   Aynı ürünün farklı renk/bedeni ayrı satır olmalı; bu yüzden sepet
+   satırları ürün id'si değil, varyantın Malzeme kodu (sku) ile ayrışır.
+   Varyantsız/eski kayıtlar için id'ye düşer. */
+function cartLineKey(productId, sku) {
+  return sku ? `${productId}::${sku}` : String(productId);
+}
+
+function findCartLine(cart, key) {
+  return cart.findIndex(item => cartLineKey(item.id, item.sku) === key);
+}
+
+/* ─── Ürün ekle ───
+   variant: { sku, color, size? } — ürün detayında seçilen varyant.
+   Verilmezse tek varyantlı üründe otomatik seçilir. */
+function addToCart(productId, quantity = 1, variant = null) {
   const product = getProductById(productId);
   if (!product) return false;
 
-  const cart = getCart();
-  const existingIndex = cart.findIndex(item => item.id === productId);
+  const secili = variant || defaultVariant(product);
 
-  if (existingIndex >= 0) {
-    cart[existingIndex].qty = Math.min(
-      cart[existingIndex].qty + quantity,
-      product.stock
-    );
+  // Birden fazla seçenek varsa seçim yapılmadan sepete eklenemez
+  if (!variant && hasVariantChoice(product)) {
+    showToast('Lütfen renk ve beden seçin.', 'warning');
+    return false;
+  }
+
+  const cart = getCart();
+  const key  = cartLineKey(product.id, secili?.sku);
+  const idx  = findCartLine(cart, key);
+
+  if (idx >= 0) {
+    cart[idx].qty = Math.min(cart[idx].qty + quantity, product.stock);
   } else {
     cart.push({
       id:       product.id,
@@ -40,30 +60,34 @@ function addToCart(productId, quantity = 1) {
       price:    product.price,
       image:    product.images[0],
       qty:      Math.min(quantity, product.stock),
-      stock:    product.stock
+      stock:    product.stock,
+      sku:      secili?.sku  || null,
+      color:    secili?.color || null,
+      size:     secili?.size  || null
     });
   }
 
   saveCart(cart);
-  showToast(`"${product.name}" sepete eklendi!`, 'success');
+  const ek = secili && variantLabel(secili) ? ` (${variantLabel(secili)})` : '';
+  showToast(`"${product.name}"${ek} sepete eklendi!`, 'success');
   return true;
 }
 
 /* ─── Ürün çıkar ─── */
-function removeFromCart(productId) {
-  const cart = getCart().filter(item => item.id !== productId);
+function removeFromCart(key) {
+  const cart = getCart().filter(item => cartLineKey(item.id, item.sku) !== String(key));
   saveCart(cart);
   showToast('Ürün sepetten çıkarıldı.', 'warning');
 }
 
 /* ─── Miktar güncelle ─── */
-function updateCartQty(productId, newQty) {
+function updateCartQty(key, newQty) {
   const cart = getCart();
-  const idx  = cart.findIndex(item => item.id === productId);
+  const idx  = findCartLine(cart, String(key));
   if (idx < 0) return;
 
   if (newQty <= 0) {
-    removeFromCart(productId);
+    removeFromCart(key);
     return;
   }
 
@@ -156,30 +180,46 @@ function dispatchCartEvent(cart) {
   window.dispatchEvent(new CustomEvent('cartUpdated', { detail: { cart } }));
 }
 
+/* ─── Seçilen varyantı rozet olarak göster (renk noktası + beden) ─── */
+function cartVariantBadge(item) {
+  if (!item.color && !item.size) return '';
+  const nokta = item.color
+    ? `<span style="display:inline-block;width:11px;height:11px;border-radius:50%;
+         background:${colorSwatch(item.color)};border:1px solid var(--border);
+         vertical-align:-1px;margin-right:5px"></span>`
+    : '';
+  const metin = [item.color, item.size].filter(Boolean).join(' · ');
+  return `<div class="cart-item-variant" style="margin-top:4px;font-size:0.8125rem;color:var(--text-muted)">
+            ${nokta}${metin}
+          </div>`;
+}
+
 /* ─── Sepet HTML oluştur ─── */
 function renderCartItem(item) {
+  const key = cartLineKey(item.id, item.sku);
   return `
-    <div class="cart-item" data-id="${item.id}">
+    <div class="cart-item" data-key="${key}">
       <img class="cart-item-img" src="${item.image}" alt="${item.name}"
            onerror="this.src='assets/images/products/placeholder-product.svg'"
            onclick="window.location='urun-detay.html?id=${item.id}'" style="cursor:pointer">
       <div class="cart-item-info" onclick="window.location='urun-detay.html?id=${item.id}'" style="cursor:pointer">
         <div class="name">${item.name}</div>
         <div class="cat">${item.category}</div>
+        ${cartVariantBadge(item)}
         <div style="margin-top:8px; font-weight:700; color:var(--primary)">
           ${formatPrice(item.price)}
         </div>
       </div>
       <div class="qty-control">
-        <button class="qty-btn" onclick="changeQty(${item.id}, -1)">−</button>
+        <button class="qty-btn" onclick="changeQty('${key}', -1)">−</button>
         <span class="qty-num">${item.qty}</span>
-        <button class="qty-btn" onclick="changeQty(${item.id}, 1)">+</button>
+        <button class="qty-btn" onclick="changeQty('${key}', 1)">+</button>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
         <div style="font-weight:700;font-size:1.125rem">
           ${formatPrice(item.price * item.qty)}
         </div>
-        <button class="btn btn-ghost btn-sm" onclick="removeItem(${item.id})"
+        <button class="btn btn-ghost btn-sm" onclick="removeItem('${key}')"
                 style="color:var(--error);border-color:var(--error)">
           <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><path d="M10 11v6M14 11v6"/></svg> Kaldır
         </button>
@@ -189,16 +229,16 @@ function renderCartItem(item) {
 }
 
 /* ─── Miktar değiştir (sepet sayfasında) ─── */
-function changeQty(productId, delta) {
+function changeQty(key, delta) {
   const cart = getCart();
-  const item = cart.find(i => i.id === productId);
+  const item = cart[findCartLine(cart, String(key))];
   if (!item) return;
-  updateCartQty(productId, item.qty + delta);
+  updateCartQty(key, item.qty + delta);
   if (typeof renderCartPage === 'function') renderCartPage();
 }
 
 /* ─── Sil (sepet sayfasında) ─── */
-function removeItem(productId) {
-  removeFromCart(productId);
+function removeItem(key) {
+  removeFromCart(key);
   if (typeof renderCartPage === 'function') renderCartPage();
 }

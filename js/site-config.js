@@ -16,7 +16,7 @@ const SITE = {
     domain:      'efemiletisim.com',
     url:         'https://efemiletisim.com',
     tagline:     'Teknoloji aksesuarlarında güvenilir adres',
-    description: 'Apple, Samsung, Huawei, JBL ve Anker akıllı saat, kulaklık ve tablet ürünleri. Orijinal, garantili, ücretsiz kargo.',
+    description: 'Apple, Samsung, Huawei, JBL ve Xiaomi akıllı saat, kulaklık ve teknoloji aksesuarları. Orijinal, garantili, ücretsiz kargo.',
     foundedYear: 2015
   },
 

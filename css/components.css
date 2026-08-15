@@ -652,6 +652,27 @@
 .stars { color: var(--accent); letter-spacing: -1px; }
 .rating-count { color: var(--text-muted); }
 
+/* Kartta renk seçenekleri */
+.product-swatches {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: var(--space-2);
+}
+
+.product-swatch {
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.product-swatch-more {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
 /* Fiyat */
 .product-price-row {
   display: flex;
@@ -804,7 +825,8 @@
 }
 .category-bg-fallback.saat     { background: linear-gradient(135deg,#1e3a8a,#2563eb); }
 .category-bg-fallback.kulaklik { background: linear-gradient(135deg,#1e1b4b,#4338ca); }
-.category-bg-fallback.tablet   { background: linear-gradient(135deg,#0c4a6e,#0284c7); }
+.category-bg-fallback.aksesuar { background: linear-gradient(135deg,#0c4a6e,#0284c7); }
+.category-bg-fallback.ses      { background: linear-gradient(135deg,#134e4a,#0d9488); }
 .category-bg-fallback .icon {
   width: 40%;
   height: 40%;

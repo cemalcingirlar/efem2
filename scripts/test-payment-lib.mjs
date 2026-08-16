@@ -88,26 +88,59 @@ console.log('\nwebhook X-IYZ-SIGNATURE-V3');
   truthy('doğrudan biçim imzası kabul edilir', iyzico.verifyWebhookSignatureV3(direct, directSig, secret));
 }
 
+/* Katalog js/data.js'ten üretildiği için test verisi de oradan alınır;
+   fiyat/sku değiştiğinde testler kendiliğinden uyum sağlar. */
+const catalog = require('../api/_lib/catalog.json');
+const P1 = catalog.products[0];
+const P2 = catalog.products[1];
+const SKU1 = P1.variants[0].sku;
+const SKU1B = P1.variants[1].sku;
+const SKU2 = P2.variants[0].sku;
+
 console.log('\npriceBasket — sunucu otoritesi');
 {
-  const ok = orders.priceBasket([{ id: 1, qty: 2 }]);
-  check('bilinen ürün fiyatlanır', ok.totalKurus, 749900 * 2);
+  const ok = orders.priceBasket([{ id: P1.id, sku: SKU1, qty: 2 }]);
+  check('bilinen ürün fiyatlanır', ok.totalKurus, P1.priceKurus * 2);
 
   // İstemcinin gönderdiği fiyat alanı YOK SAYILIR (TC-PRICE-TAMPER)
-  const tampered = orders.priceBasket([{ id: 1, qty: 1, price: 1, total: 1 }]);
-  check('istemci fiyatı yok sayılır', tampered.totalKurus, 749900);
+  const tampered = orders.priceBasket([{ id: P1.id, sku: SKU1, qty: 1, price: 1, total: 1 }]);
+  check('istemci fiyatı yok sayılır', tampered.totalKurus, P1.priceKurus);
 
-  truthy('bilinmeyen ürün reddedilir', orders.priceBasket([{ id: 999999, qty: 1 }]).error);
-  truthy('sıfır adet reddedilir',      orders.priceBasket([{ id: 1, qty: 0 }]).error);
-  truthy('negatif adet reddedilir',    orders.priceBasket([{ id: 1, qty: -3 }]).error);
-  truthy('aşırı adet reddedilir',      orders.priceBasket([{ id: 1, qty: 999 }]).error);
-  truthy('yinelenen satır reddedilir', orders.priceBasket([{ id: 1, qty: 1 }, { id: 1, qty: 1 }]).error);
+  truthy('bilinmeyen ürün reddedilir', orders.priceBasket([{ id: 999999, sku: SKU1, qty: 1 }]).error);
+  truthy('sıfır adet reddedilir',      orders.priceBasket([{ id: P1.id, sku: SKU1, qty: 0 }]).error);
+  truthy('negatif adet reddedilir',    orders.priceBasket([{ id: P1.id, sku: SKU1, qty: -3 }]).error);
+  truthy('aşırı adet reddedilir',      orders.priceBasket([{ id: P1.id, sku: SKU1, qty: 999 }]).error);
+  truthy('aynı varyant iki satırda reddedilir',
+    orders.priceBasket([{ id: P1.id, sku: SKU1, qty: 1 }, { id: P1.id, sku: SKU1, qty: 1 }]).error);
   truthy('boş sepet reddedilir',       orders.priceBasket([]).error);
+}
+
+console.log('\nvaryantlar');
+{
+  truthy('sku eksikse reddedilir', orders.priceBasket([{ id: P1.id, qty: 1 }]).error);
+  truthy('sahte sku reddedilir',   orders.priceBasket([{ id: P1.id, sku: 'YOK-123', qty: 1 }]).error);
+  truthy('başka ürünün sku\'su reddedilir', orders.priceBasket([{ id: P1.id, sku: SKU2, qty: 1 }]).error);
+
+  // Aynı ürünün iki farklı rengi AYRI satırdır (js/cart.js ile aynı davranış)
+  const twoColors = orders.priceBasket([
+    { id: P1.id, sku: SKU1,  qty: 1 },
+    { id: P1.id, sku: SKU1B, qty: 2 }
+  ]);
+  check('iki varyant ayrı satır', twoColors.lines?.length, 2);
+  check('toplam doğru', twoColors.totalKurus, P1.priceKurus * 3);
+
+  // Renk/beden istemciden değil katalogdan okunur
+  const spoofed = orders.priceBasket([{ id: P1.id, sku: SKU1, qty: 1, color: 'Altın Sarısı', size: 'XXL' }]);
+  check('renk katalogdan', spoofed.lines[0].color, P1.variants[0].color);
+  check('beden katalogdan', spoofed.lines[0].size, P1.variants[0].size);
+  check('sku kaydedilir', spoofed.lines[0].sku, SKU1);
+  check('satır başlığı', orders.lineTitle(spoofed.lines[0]),
+    `${P1.name} (${[P1.variants[0].color, P1.variants[0].size].filter(Boolean).join(' · ')})`);
 }
 
 console.log('\nsepet toplamı = iyzico basketItems toplamı');
 {
-  const basket = orders.priceBasket([{ id: 1, qty: 2 }, { id: 2, qty: 1 }]);
+  const basket = orders.priceBasket([{ id: P1.id, sku: SKU1, qty: 2 }, { id: P2.id, sku: SKU2, qty: 1 }]);
   const itemsSum = basket.lines.reduce((sum, l) => sum + Number(iyzico.formatPriceFromKurus(l.totalKurus)) * 100, 0);
   check('toplamlar eşit', Math.round(itemsSum), basket.subtotalKurus);
 }

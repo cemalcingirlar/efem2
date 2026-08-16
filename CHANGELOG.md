@@ -3,6 +3,29 @@
 Bu dosya projede yapılan her ekleme, değişiklik ve kaldırmayı kayıt altına alır.
 En yeni kayıtlar en üstte.
 
+## 2026-08-16 (devam 3)
+
+### Ödeme sunucusu ürün varyantlarına (renk/beden) uyarlandı
+- Change: `scripts/sync-catalog.mjs` artık varyantları da yazıyor; `api/_lib/catalog.json`
+  yeni katalogdan yeniden üretildi (**54 ürün, 114 varyant**). Katalog eski 20 ürünlük
+  listeden kaldığı sürece yeni ürünlerin siparişi reddediliyordu.
+- Change: `api/_lib/orders.js` → `priceBasket()` sepet satırlarını artık **ürün id + sku**
+  ile ayrıştırıyor (`js/cart.js` → `cartLineKey` ile aynı mantık). Aynı ürünün iki farklı
+  rengi iki ayrı satır olarak fiyatlanıyor; daha önce "aynı ürün iki satırda" diye
+  reddediliyordu.
+- Change: sku doğrulaması eklendi — sku eksikse, sahteyse veya **başka bir ürünün**
+  sku'suysa sipariş reddediliyor.
+- Change: Renk/beden bilgisi istemciden değil **sunucudaki katalogdan** okunuyor; müşteri
+  yalnız hangi sku'yu seçtiğini bildiriyor (uydurulan renk metni yok sayılıyor).
+- Change: iyzico sepet kaleminin kimliği varyantlı üründe **sku**, adı ise
+  `Ürün (Renk · Beden)` biçiminde gönderiliyor — ödeme kaydı ile depodan çıkan ürün birebir
+  eşleşiyor. Sipariş kaydı, sipariş maili, profil siparişleri ve ödeme sonucu sayfası da
+  varyantı gösteriyor.
+- Change: `js/payment.js` → `cartForServer()` artık `{id, sku, qty}` gönderiyor.
+- Add: Testler yeni katalog ve varyant kurallarına göre genişletildi; fiyat/sku sabitleri
+  katalogdan okunuyor, böylece katalog değişince testler kendiliğinden uyum sağlıyor.
+  `npm run test:payment` → **43 birim + 38 akış testi** (hız sınırı testi dahil).
+
 ## 2026-08-16 (devam 2)
 
 ### Gerçek iyzico entegrasyonu (Checkout Form) + canlı öncesi denetim düzeltmeleri

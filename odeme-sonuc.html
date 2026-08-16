@@ -133,11 +133,14 @@ function escapeHtml(value) {
 
 function render(view, order) {
   const itemsHtml = order && order.items && order.items.length
-    ? order.items.map(i => `
+    ? order.items.map(i => {
+        const variant = [i.color, i.size].filter(Boolean).join(' · ');
+        return `
         <div class="result-meta-row">
-          <span class="label">${escapeHtml(i.name)} × ${i.qty}</span>
+          <span class="label">${escapeHtml(i.name)}${variant ? ` (${escapeHtml(variant)})` : ''} × ${i.qty}</span>
           <span class="value">${escapeHtml(formatPrice(i.totalKurus / 100))}</span>
-        </div>`).join('')
+        </div>`;
+      }).join('')
     : '';
 
   const metaHtml = order ? `
@@ -213,7 +216,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         date: order.date,
         status: order.status === 'paid' ? 'processing' : 'pending',
         statusLabel: order.statusLabel,
-        items: (order.items || []).map(i => ({ name: i.name, qty: i.qty, price: i.totalKurus / 100 / i.qty })),
+        items: (order.items || []).map(i => ({
+          name: i.name, color: i.color || null, size: i.size || null,
+          qty: i.qty, price: i.totalKurus / 100 / i.qty
+        })),
         total: order.totalKurus / 100,
         paymentMethod: order.paymentMethod,
         trackingNumber: null

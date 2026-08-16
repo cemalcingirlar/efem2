@@ -23,7 +23,7 @@ const iyzico = require('./iyzico');
 const store  = require('./store');
 const { iyzicoConfig } = require('./env');
 const { MERCHANT } = require('./merchant');
-const { formatTry, legacyOrderSummary } = require('./orders');
+const { formatTry, legacyOrderSummary, lineTitle } = require('./orders');
 const { logPaymentEvent } = require('./http');
 
 const TERMINAL = new Set(['paid', 'refunded', 'cancelled']);
@@ -202,7 +202,7 @@ async function runPaidSideEffects(order) {
 
 function orderMailHtml(order) {
   const rows = (order.items || [])
-    .map(i => `<li>${escapeHtml(i.name)} × ${i.qty} — ${formatTry(i.totalKurus)}</li>`)
+    .map(i => `<li>${escapeHtml(lineTitle(i))} × ${i.qty} — ${formatTry(i.totalKurus)}</li>`)
     .join('');
 
   return `<p>Merhaba ${escapeHtml(order.buyer.ad)},</p>

@@ -4,7 +4,7 @@ Tarih: 2026-08-16
 Denetim promptu: `docs/deep-research-report.md`
 Denetlenen sürüm: `main` (bu denetimle birlikte yapılan düzeltmeler dahil)
 Denetim yöntemi: kaynak kod incelemesi + yerel çalıştırma (`node dev-server.js`) +
-tarayıcı ile uçtan uca akış denemesi + `npm run test:payment` (34 birim + 30 akış testi;
+tarayıcı ile uçtan uca akış denemesi + `npm run test:payment` (43 birim + 38 akış testi;
 akış testleri iyzico'yu taklit eden yerel bir sunucuya karşı koşar).
 
 > **Kapsam sınırı — okumadan geçmeyin.** Bu denetim, gerçek iyzico sandbox/production
@@ -59,7 +59,7 @@ Sınıflar: `İYZİCO-ZORUNLU` · `MEVZUAT-ZORUNLU` · `ENTEGRASYONA-BAĞLI` · 
 |---|---|---|---|---|---|---|
 | F-01 | Ödeme doğruluğu | GÜVENLİK-KRİTİK / İYZİCO-ZORUNLU | CRITICAL | Ödeme client-side simüle ediliyordu; tanınmayan kart "başarılı" sayılıyor, para tahsil edilmeden sipariş oluşuyordu | Simülasyon tamamen silindi. Ödeme sonucu artık yalnızca iyzico `checkoutform/auth/ecom/detail` (retrieve) yanıtından, sunucuda belirleniyor | `js/payment.js` (yeniden yazıldı), `api/_lib/settle.js` |
 | F-02 | PCI kapsamı | GÜVENLİK-KRİTİK | CRITICAL | Kart numarası, son kullanma ve **CVV** merchant frontend'inde toplanıyordu | Kart alanları ve kart önizleme bileşeni kaldırıldı. Checkout Form'a geçildi: PAN/CVV yalnız iyzico'nun kendi sayfasına giriliyor, bu sitenin ve sunucunun hiçbir katmanından geçmiyor | `odeme.html`, `css/pages.css` (kart input stilleri silindi) |
-| F-03 | Fiyat bütünlüğü | GÜVENLİK-KRİTİK | CRITICAL | Tutar tarayıcıda hesaplanıyor, sipariş toplamı istemciden yazılıyordu (`price=1` saldırısı mümkündü) | Sunucu sepeti kendi kataloğundan (`api/_lib/catalog.json`, `js/data.js`'ten üretilir) yeniden fiyatlıyor. İstemciden yalnız `{id, qty}` kabul ediliyor; gönderilen fiyat/tutar alanları yok sayılıyor | `api/_lib/orders.js` → `priceBasket()`, `npm run test:payment` (8 test) |
+| F-03 | Fiyat bütünlüğü | GÜVENLİK-KRİTİK | CRITICAL | Tutar tarayıcıda hesaplanıyor, sipariş toplamı istemciden yazılıyordu (`price=1` saldırısı mümkündü) | Sunucu sepeti kendi kataloğundan (`api/_lib/catalog.json`, `js/data.js`'ten üretilir) yeniden fiyatlıyor. İstemciden yalnız `{id, sku, qty}` kabul ediliyor; gönderilen fiyat/tutar ve renk/beden alanları yok sayılıyor | `api/_lib/orders.js` → `priceBasket()`, `npm run test:payment` (8 test) |
 | F-04 | Sandbox/production ayrımı | GÜVENLİK-KRİTİK | CRITICAL | Canlı checkout'ta test kartı listesi gösteriliyordu; "sandbox" ibaresi kod içinde sabitti | Test kartı listesi kaldırıldı. Ortam artık `IYZICO_MODE` ile belirleniyor; sandbox modda müşteriye açık uyarı gösteriliyor; mode ile base URL çelişirse ödeme başlatma reddediliyor | `api/_lib/env.js` → `environmentMismatch()`, `odeme.html` → `#sandbox-warning` |
 | F-05 | Sipariş durumu otoritesi | GÜVENLİK-KRİTİK | CRITICAL | Sipariş kaydını ve "ödendi" bilgisini tarayıcı yazıyordu | Kart siparişleri artık yalnız sunucu tarafından `orders/{orderId}` koleksiyonuna yazılıyor; istemci yazamıyor (`firestore.rules`). Durum geçişleri Firestore transaction'ı içinde, idempotent | `api/payment/initialize.js`, `api/_lib/store.js`, `firestore.rules` |
 | F-09 | Callback güvenliği | GÜVENLİK-KRİTİK | CRITICAL | (Yeni akışta ortaya çıkabilecek risk) Tarayıcı callback'inin "başarılı" sayılması | Callback'teki hiçbir parametre kanıt sayılmıyor; sonuç retrieve ile sorgulanıyor, yanıt imzası doğrulanıyor, `conversationId` ve tutar siparişle karşılaştırılıyor; uyuşmazlıkta sipariş `pending_review`'a düşüyor, sevkiyat başlamıyor | `api/payment/callback.js`, `api/_lib/settle.js` |
@@ -170,14 +170,16 @@ hane** ile kart ailesi bilgisidir; bunlar PAN değildir ve iade/mutabakat için 
 
 `GEÇTİ` = bu denetimde fiilen çalıştırıldı · `KOD` = kod düzeyinde garanti altına alındı, gerçek gateway ile doğrulanmalı · `NOT VERIFIED` = gerçek iyzico erişimi gerekiyor
 
-Otomatik testler: `npm run test:payment` → 34 birim testi (`scripts/test-payment-lib.mjs`) +
-30 akış testi (`scripts/test-payment-flow.mjs`). Akış testi, iyzico gibi davranan yerel bir
+Otomatik testler: `npm run test:payment` → 43 birim testi (`scripts/test-payment-lib.mjs`) +
+38 akış testi (`scripts/test-payment-flow.mjs`). Akış testi, iyzico gibi davranan yerel bir
 sunucu kullanır: gönderilen **IYZWSv2 yetkilendirme başlığını bağımsız olarak yeniden
 hesaplayıp doğrular**, yani imzalama mantığı gerçekten sınanır.
 
 | TC | Senaryo | Durum | Not |
 |---|---|---|---|
-| TC-PRICE-TAMPER | İstemci düşük tutar/fiyat gönderir | **GEÇTİ** | Birim + akış testi: `items[].price=1` gönderilse de sunucu 14.998 ₺ hesaplıyor ve iyzico'ya `14998.0` gidiyor |
+| TC-PRICE-TAMPER | İstemci düşük tutar/fiyat gönderir | **GEÇTİ** | Birim + akış testi: `items[].price=1` gönderilse de sunucu katalog fiyatını kullanıyor ve iyzico'ya o tutar gidiyor |
+| TC-VARIANT | Sepette sku yok / sahte sku / başka ürünün sku'su / istemcinin uydurduğu renk | **GEÇTİ** | Birim + akış testi: hepsi reddediliyor; renk/beden katalogdan okunuyor |
+| TC-RATE-LIMIT | Aynı IP'den ardışık ödeme denemesi | **GEÇTİ** | Akış testi: 8 denemeden sonra 429 |
 | TC-BASKET | Sepet satır toplamı = iyzico `price` | **GEÇTİ** | Birim + akış testi |
 | TC-BAD-ITEM | Olmayan ürün / 0 / negatif / 999 adet / yinelenen satır | **GEÇTİ** | Birim test (5 vaka) + akış testi (400) |
 | TC-AUTH-HEADER | IYZWSv2 imzası doğru üretiliyor mu | **GEÇTİ** | Sahte gateway imzayı bağımsız hesaplayıp karşılaştırıyor |

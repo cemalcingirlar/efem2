@@ -113,12 +113,22 @@ varsa `.env.local` dosyasını yükler. Yerelde gerçek ödeme testi yapacaksan�
 `SITE_BASE_URL` yerel adresinize işaret etmeli ve iyzico'nun bu adrese callback
 gönderebilmesi için tünel (ör. ngrok) gerekir.
 
-Fiyat değiştirdiğinizde:
+**Katalog değiştiğinde (fiyat, yeni ürün, yeni renk/beden) mutlaka çalıştırın:**
 
 ```bash
 npm run sync-catalog     # js/data.js → api/_lib/catalog.json
-npm run check-catalog    # fark varsa hata verir
 ```
+
+```bash
+npm run check-catalog    # fark varsa hata verir (commit öncesi kontrol)
+```
+
+Sunucu, sepeti bu dosyadaki fiyatlarla hesaplar ve müşterinin seçtiği varyantı
+`sku` üzerinden doğrular. Katalog güncellenmezse yeni ürün/varyant siparişleri
+**reddedilir** — yanlış tahsilat olmaz ama sipariş alınamaz.
+
+Tarayıcının sunucuya gönderdiği tek sepet bilgisi: `{ id, sku, qty }`.
+Fiyat, toplam, renk ve beden metni gönderilmez; hepsi katalogdan okunur.
 
 ---
 

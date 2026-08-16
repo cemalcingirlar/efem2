@@ -67,16 +67,42 @@ function toKurus(price) {
   return Math.round(price * 100);
 }
 
+/* Varyantlar (renk/beden) sunucuya da taşınır: müşteri hangi varyantı
+   seçtiyse sipariş kaydında ve iyzico sepetinde o görünmelidir. Fiyat ürün
+   düzeyindedir; varyant fiyatı yoktur. Renk/beden bilgisi istemciden DEĞİL,
+   buradan okunur. */
+function buildVariants(product) {
+  if (!Array.isArray(product.variants)) return [];
+  return product.variants.map(v => {
+    const sku = String(v.sku || '').trim();
+    if (!sku) throw new Error(`Ürün ${product.id}: sku'suz varyant`);
+    return {
+      sku,
+      color: v.color ? String(v.color) : '',
+      size:  v.size  ? String(v.size)  : ''
+    };
+  });
+}
+
 function buildCatalog(products) {
   const items = products.map(p => {
     if (!Number.isInteger(p.id)) throw new Error(`Geçersiz ürün id: ${p.id}`);
+    const variants = buildVariants(p);
+
+    const skus = new Set();
+    for (const v of variants) {
+      if (skus.has(v.sku)) throw new Error(`Ürün ${p.id}: yinelenen sku ${v.sku}`);
+      skus.add(v.sku);
+    }
+
     return {
       id:            p.id,
       name:          String(p.name),
       category:      String(p.categoryLabel || p.category || 'Aksesuar'),
       brand:         String(p.brand || ''),
       priceKurus:    toKurus(p.price),
-      itemType:      'PHYSICAL'
+      itemType:      'PHYSICAL',
+      variants
     };
   });
 
@@ -105,8 +131,12 @@ if (process.argv.includes('--check')) {
     console.error('HATA: api/_lib/catalog.json, js/data.js ile uyumsuz. `npm run sync-catalog` çalıştırın.');
     process.exit(1);
   }
-  console.log(`catalog.json güncel (${catalog.products.length} ürün).`);
+  console.log(`catalog.json güncel (${catalog.products.length} ürün, ${variantCount(catalog)} varyant).`);
 } else {
   writeFileSync(TARGET, json, 'utf8');
-  console.log(`catalog.json yazıldı: ${catalog.products.length} ürün.`);
+  console.log(`catalog.json yazıldı: ${catalog.products.length} ürün, ${variantCount(catalog)} varyant.`);
+}
+
+function variantCount(cat) {
+  return cat.products.reduce((sum, p) => sum + p.variants.length, 0);
 }

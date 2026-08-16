@@ -33,13 +33,28 @@ function formatTry(kurus) {
   return (kurus / 100).toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ₺';
 }
 
-/* ─── Sepeti sunucu fiyatlarıyla yeniden hesapla ─── */
+/* ─── Varyant etiketi (renk · beden) ───
+   Renk/beden bilgisi istemciden DEĞİL, sunucudaki katalogdan okunur;
+   müşteri yalnız hangi sku'yu seçtiğini bildirir. */
+function variantLabel(line) {
+  return [line.color, line.size].filter(Boolean).join(' · ');
+}
+
+/* Sipariş satırının müşteriye ve iyzico'ya gösterilen tam adı. */
+function lineTitle(line) {
+  const label = variantLabel(line);
+  return label ? `${line.name} (${label})` : line.name;
+}
+
+/* ─── Sepeti sunucu fiyatlarıyla yeniden hesapla ───
+   Sepet satırları ürün id'si + varyant sku'su ile ayrışır: aynı ürünün iki
+   farklı rengi iki ayrı satırdır (js/cart.js → cartLineKey ile aynı mantık). */
 function priceBasket(rawItems) {
   if (!Array.isArray(rawItems) || rawItems.length === 0) {
     return { error: 'Sepetiniz boş görünüyor.' };
   }
   if (rawItems.length > MAX_DISTINCT_ITEMS) {
-    return { error: 'Tek siparişte en fazla 20 farklı ürün bulunabilir.' };
+    return { error: `Tek siparişte en fazla ${MAX_DISTINCT_ITEMS} farklı ürün bulunabilir.` };
   }
 
   const lines = [];
@@ -48,21 +63,40 @@ function priceBasket(rawItems) {
   for (const raw of rawItems) {
     const id  = Number(raw && raw.id);
     const qty = Number(raw && raw.qty);
+    const sku = raw && raw.sku ? String(raw.sku).trim() : '';
 
     if (!Number.isInteger(id) || !PRODUCTS.has(id)) {
       return { error: 'Sepetinizde artık satışta olmayan bir ürün var. Lütfen sepetinizi yenileyin.' };
-    }
-    if (seen.has(id)) {
-      return { error: 'Sepette aynı ürün birden fazla satırda görünüyor. Lütfen sepetinizi yenileyin.' };
     }
     if (!Number.isInteger(qty) || qty < 1 || qty > MAX_ITEM_QTY) {
       return { error: `Ürün adedi 1 ile ${MAX_ITEM_QTY} arasında olmalıdır.` };
     }
 
-    seen.add(id);
     const product = PRODUCTS.get(id);
+    const variants = product.variants || [];
+    let variant = null;
+
+    if (variants.length) {
+      if (!sku) {
+        return { error: 'Sepetinizdeki bir ürünün renk/beden seçimi eksik. Lütfen sepetinizi yenileyin.' };
+      }
+      variant = variants.find(v => v.sku === sku) || null;
+      if (!variant) {
+        return { error: 'Sepetinizde artık satışta olmayan bir seçenek var. Lütfen sepetinizi yenileyin.' };
+      }
+    }
+
+    const key = `${id}::${variant ? variant.sku : ''}`;
+    if (seen.has(key)) {
+      return { error: 'Sepette aynı ürün birden fazla satırda görünüyor. Lütfen sepetinizi yenileyin.' };
+    }
+    seen.add(key);
+
     lines.push({
       id,
+      sku:        variant ? variant.sku : null,
+      color:      variant ? variant.color : '',
+      size:       variant ? variant.size : '',
       name:       product.name,
       category:   product.category,
       itemType:   product.itemType,
@@ -183,7 +217,9 @@ function publicOrderView(order) {
     delivery:      order.delivery,
     totalKurus:    order.totalKurus,
     totalText:     formatTry(order.totalKurus),
-    items:         (order.items || []).map(i => ({ name: i.name, qty: i.qty, totalKurus: i.totalKurus })),
+    items:         (order.items || []).map(i => ({
+      name: i.name, color: i.color || '', size: i.size || '', qty: i.qty, totalKurus: i.totalKurus
+    })),
     date:          order.date,
     errorMessage:  order.customerMessage || null
   };
@@ -197,7 +233,9 @@ function legacyOrderSummary(order) {
     status:         order.status,
     statusLabel:    order.statusLabel,
     items:          (order.items || []).map(i => ({
-      id: i.id, name: i.name, qty: i.qty, price: i.unitKurus / 100, category: i.category
+      id: i.id, name: i.name, qty: i.qty, price: i.unitKurus / 100, category: i.category,
+      // profil.html ve admin.html renk/bedeni bu alanlardan okuyor
+      sku: i.sku || null, color: i.color || null, size: i.size || null
     })),
     total:          order.totalKurus / 100,
     address:        order.address || null,
@@ -215,6 +253,8 @@ module.exports = {
   MAX_ITEM_QTY,
   clean,
   formatTry,
+  variantLabel,
+  lineTitle,
   priceBasket,
   validateBuyer,
   toGsmNumber,

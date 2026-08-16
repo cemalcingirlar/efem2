@@ -169,8 +169,13 @@ require.cache[require.resolve('../api/_lib/store.js')] = {
 const initialize = require('../api/_lib/../payment/initialize.js');
 const callback   = require('../api/payment/callback.js');
 const { priceBasket } = require('../api/_lib/orders.js');
+const catalog = require('../api/_lib/catalog.json');
+const P1 = catalog.products[0];
+const SKU1 = P1.variants[0].sku;
+const SKU1B = P1.variants[1].sku;
 
-const EXPECTED_PRICE = Number((priceBasket([{ id: 1, qty: 2 }]).totalKurus / 100).toFixed(2));
+const EXPECTED_TOTAL_KURUS = priceBasket([{ id: P1.id, sku: SKU1, qty: 2 }, { id: P1.id, sku: SKU1B, qty: 1 }]).totalKurus;
+const EXPECTED_PRICE = Number((EXPECTED_TOTAL_KURUS / 100).toFixed(2));
 
 /* ─── Handler çağırma yardımcıları ─── */
 function makeRes() {
@@ -184,8 +189,15 @@ function makeRes() {
   return res;
 }
 
-async function call(handler, { method = 'POST', body = {}, query = {}, headers = {} } = {}) {
-  const req = { method, body, query, headers, socket: { remoteAddress: '85.34.78.112' } };
+/* Her çağrı varsayılan olarak FARKLI bir IP'den gelir: initialize'daki hız
+   sınırı (5 dakikada 8 deneme) testleri kilitlemesin. Hız sınırının kendisi
+   ayrıca test ediliyor (bölüm 8). */
+let ipCounter = 0;
+
+async function call(handler, { method = 'POST', body = {}, query = {}, headers = {}, ip = null } = {}) {
+  const clientIp = ip || `10.0.0.${++ipCounter % 250}`;
+  headers = { 'x-forwarded-for': clientIp, ...headers };
+  const req = { method, body, query, headers, socket: { remoteAddress: clientIp } };
   const res = makeRes();
   await handler(req, res);
   let json = null;
@@ -194,7 +206,11 @@ async function call(handler, { method = 'POST', body = {}, query = {}, headers =
 }
 
 const ORDER_INPUT = {
-  items: [{ id: 1, qty: 2, price: 1 }],          // price BİLEREK yanlış: yok sayılmalı
+  // price ve color BİLEREK yanlış gönderiliyor: sunucu ikisini de yok saymalı
+  items: [
+    { id: P1.id, sku: SKU1,  qty: 2, price: 1 },
+    { id: P1.id, sku: SKU1B, qty: 1, color: "Altın Sarısı" }
+  ],
   buyer: { ad: 'Ali', soyad: 'Veli', email: 'ali@example.com', telefon: '05001112233' },
   address: { adres: 'Yeni Mahalle 87071 Sokak No:5', sehir: 'Adana', ilce: 'Seyhan', posta: '01150' },
   invoice: { tip: 'bireysel' },
@@ -206,9 +222,18 @@ console.log('\n1) initialize');
 const init = await call(initialize, { body: ORDER_INPUT });
 check('HTTP 200', init.res.statusCode, 200);
 check('sipariş numarası döndü', /^EFM\d{6}-[0-9A-F]{6}$/.test(init.json?.orderId || ''), true);
-check('tutar sunucudan (14.998 ₺)', init.json?.totalKurus, 1499800);
-check('iyzico\'ya giden fiyat', fakeIyzico.lastInitializeBody?.paidPrice, '14998.0');
-check('basket item fiyatı', fakeIyzico.lastInitializeBody?.basketItems?.[0]?.price, '14998.0');
+check('tutar sunucudan', init.json?.totalKurus, EXPECTED_TOTAL_KURUS);
+check('iyzico\'ya giden fiyat', fakeIyzico.lastInitializeBody?.paidPrice, String(EXPECTED_PRICE) + (String(EXPECTED_PRICE).includes('.') ? '' : '.0'));
+check('basket item sayısı (iki varyant = iki satır)', fakeIyzico.lastInitializeBody?.basketItems?.length, 2);
+check('basket item kimliği sku', fakeIyzico.lastInitializeBody?.basketItems?.[0]?.id, SKU1);
+check('basket item adında varyant var',
+  fakeIyzico.lastInitializeBody?.basketItems?.[0]?.name.includes(P1.variants[0].color), true);
+check('istemcinin uydurduğu renk kullanılmadı',
+  fakeIyzico.lastInitializeBody?.basketItems?.[1]?.name.includes('Altın Sarısı'), false);
+check('basket item toplamı = paidPrice',
+  fakeIyzico.lastInitializeBody?.basketItems?.reduce((s, i) => s + Math.round(Number(i.price) * 100), 0),
+  EXPECTED_TOTAL_KURUS);
+check('siparişte sku saklandı', db.get(init.json.orderId)?.items?.[0]?.sku, SKU1);
 check('gsm normalize', fakeIyzico.lastInitializeBody?.buyer?.gsmNumber, '+905001112233');
 check('callback adresi', fakeIyzico.lastInitializeBody?.callbackUrl, 'https://example.test/api/payment/callback');
 check('sipariş awaiting_payment', db.get(init.json.orderId)?.status, 'awaiting_payment');
@@ -266,12 +291,27 @@ fakeIyzico.paymentStatus = 'SUCCESS';
 console.log('\n7) doğrulama kapıları');
 const noAgreement = await call(initialize, { body: { ...ORDER_INPUT, agreements: {} } });
 check('sözleşme onayı yoksa 400', noAgreement.res.statusCode, 400);
-const badItem = await call(initialize, { body: { ...ORDER_INPUT, items: [{ id: 999999, qty: 1 }] } });
+const badItem = await call(initialize, { body: { ...ORDER_INPUT, items: [{ id: 999999, sku: SKU1, qty: 1 }] } });
 check('olmayan ürün 400', badItem.res.statusCode, 400);
+const noSku = await call(initialize, { body: { ...ORDER_INPUT, items: [{ id: P1.id, qty: 1 }] } });
+check('varyant seçimi eksikse 400', noSku.res.statusCode, 400);
+const fakeSku = await call(initialize, { body: { ...ORDER_INPUT, items: [{ id: P1.id, sku: 'YOK-1', qty: 1 }] } });
+check('sahte sku 400', fakeSku.res.statusCode, 400);
 const badBuyer = await call(initialize, { body: { ...ORDER_INPUT, buyer: { ad: 'A', soyad: 'B', email: 'x', telefon: '1' } } });
 check('geçersiz alıcı 400', badBuyer.res.statusCode, 400);
 const noToken = await call(callback, { body: {} });
 check('token\'sız callback hata sayfasına gider', noToken.res.headers.location.includes('durum=hata'), true);
+
+console.log('\n8) hız sınırı (kart deneme freni)');
+{
+  const attacker = '203.0.113.77';
+  let lastStatus = 0;
+  for (let i = 0; i < 10; i++) {
+    const r = await call(initialize, { body: ORDER_INPUT, ip: attacker });
+    lastStatus = r.res.statusCode;
+  }
+  check('aynı IP\'den ardışık denemeler 429 ile durur', lastStatus, 429);
+}
 
 await new Promise(resolve => gateway.close(resolve));
 console.log(`\n${passed} test geçti, ${failed} test başarısız.\n`);

@@ -48,10 +48,10 @@ async function loadPaymentCapabilities() {
 }
 
 /* ─── Sunucuya gidecek sepet ───
-   Yalnız ürün kimliği ve adet gönderilir. Fiyat/toplam gönderilmez;
-   sunucu kendi kataloğundan hesaplar. */
+   Yalnız ürün kimliği, varyant sku'su ve adet gönderilir. Fiyat/toplam ve
+   renk/beden metni gönderilmez; sunucu bunları kendi kataloğundan okur. */
 function cartForServer() {
-  return getCart().map(item => ({ id: item.id, qty: item.qty }));
+  return getCart().map(item => ({ id: item.id, sku: item.sku || null, qty: item.qty }));
 }
 
 async function authHeader() {

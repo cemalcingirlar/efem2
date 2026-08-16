@@ -19,7 +19,7 @@ const iyzico = require('../_lib/iyzico');
 const store  = require('../_lib/store');
 const {
   priceBasket, validateBuyer, validateAddress, normalizeInvoice,
-  newOrderId, orderAccessToken, toGsmNumber
+  newOrderId, orderAccessToken, toGsmNumber, lineTitle, clean
 } = require('../_lib/orders');
 
 module.exports = async (req, res) => {
@@ -147,8 +147,10 @@ module.exports = async (req, res) => {
     shippingAddress,
     billingAddress,
     basketItems: basket.lines.map(line => ({
-      id:        String(line.id),
-      name:      line.name,
+      // Varyantlı üründe iyzico'daki kalem kimliği sku'dur: ödeme kaydı ile
+      // depodan çıkan ürün birebir eşleşsin.
+      id:        String(line.sku || line.id),
+      name:      clean(lineTitle(line), 120),
       category1: line.category,
       itemType:  'PHYSICAL',
       price:     iyzico.formatPriceFromKurus(line.totalKurus)

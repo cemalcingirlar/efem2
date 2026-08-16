@@ -15,7 +15,7 @@ Detaylı ilerleme raporu: `docs/RAPOR.md`. Değişiklik günlüğü: `CHANGELOG.
 Bozulmaması gereken kurallar:
 
 - Bu projede **kart numarası/CVV toplanmaz, taşınmaz, saklanmaz.** Checkout'a kart alanı geri eklenmez.
-- **Tutar istemciden alınmaz.** Sunucu, sepeti `api/_lib/catalog.json` üzerinden yeniden fiyatlar; istemciden yalnız `{id, qty}` kabul edilir. Fiyat değişirse `npm run sync-catalog`.
+- **Tutar istemciden alınmaz.** Sunucu, sepeti `api/_lib/catalog.json` üzerinden yeniden fiyatlar; istemciden yalnız `{id, sku, qty}` kabul edilir; renk/beden bilgisi de katalogdan okunur, istemciden gelen metin kullanılmaz. Katalog (fiyat/varyant) değişirse `npm run sync-catalog`.
 - **Ödeme sonucu tarayıcıdan gelen veriye göre belirlenmez.** Callback/webhook yalnız tetikleyicidir; sonuç iyzico retrieve yanıtından okunur ve imzası doğrulanır (`api/_lib/settle.js`).
 - İmza/tutar/`conversationId` uyuşmazlığında sipariş `pending_review` olur — `failed` veya `paid` yapılmaz, sevkiyat başlamaz.
 - Sırlar (`IYZICO_SECRET_KEY`, service account) yalnız sunucu ortam değişkeninde durur; repoya, istemci koduna veya loga girmez.

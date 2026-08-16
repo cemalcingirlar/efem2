@@ -350,6 +350,8 @@ foreach ($item in $spec.images) {
   }
   $bmp = $r[0]; $g = $r[1]
   $dest = Join-Path $outDir $item.file
+  $destDir = Split-Path $dest -Parent          # gonderi-NN klasorleri: toplu yuklemede sira korunur
+  if (-not (Test-Path $destDir)) { New-Item -ItemType Directory -Path $destDir | Out-Null }
   $bmp.Save($dest, [System.Drawing.Imaging.ImageFormat]::Png)
   $g.Dispose(); $bmp.Dispose()
   $made++

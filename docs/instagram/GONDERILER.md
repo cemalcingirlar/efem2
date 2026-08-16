@@ -1,6 +1,6 @@
 # İlk 9 gönderi — yayına hazır paket
 
-Görseller: `docs/instagram/gorseller/` · 29 kare, 1080×1080 PNG · **video ya da fotoğraf çekimi gerekmiyor**
+Görseller: `docs/instagram/gorseller/gonderi-NN/` · 29 kare, 1080×1080 PNG · **video ya da fotoğraf çekimi gerekmiyor**
 Yeniden üretmek için: `powershell -ExecutionPolicy Bypass -File docs/instagram/build.ps1`
 Metinler `docs/instagram/spec.json` içinde; değiştirip yeniden çalıştırabilirsin.
 
@@ -15,7 +15,7 @@ ayarlar → Alternatif metin); hem erişilebilirlik hem aramada bulunabilirlik i
 
 ## 01 · Tanıtım (karusel, 2 kare)
 
-**Görseller:** `01-tanitim.png` → `01-2-kunye.png`
+**Görseller:** `gonderi-01/01-tanitim.png` → `gonderi-01/01-2-kunye.png`
 **Alt metin:** Efem İletişim tanıtım görseli: akıllı saat, kulaklık, aksesuar ve ses sistemleri; mağaza adresi ve telefon.
 **Not:** Kapak, katalogdaki dört gerçek üründen kuruldu — mağaza fotoğrafı gerekmiyor. İkinci kare künye ve adres.
 
@@ -33,7 +33,7 @@ Mağazamız her gün 10.00-22.00 açık. Sorunuz varsa WhatsApp'tan yazın, ayn�
 
 ## 02 · Apple Watch Series 11 (karusel, 3 kare)
 
-**Görseller:** `02-1-watch-s11.png` → `02-2-renkler.png` → `02-3-guvence.png`
+**Görseller:** `gonderi-02/02-1-watch-s11.png` → `gonderi-02/02-2-renkler.png` → `gonderi-02/02-3-guvence.png`
 **Alt metin:** Apple Watch Series 11 42 mm akıllı saat, renk seçenekleriyle.
 
 ```
@@ -50,7 +50,7 @@ Güncel fiyat ve stok için profildeki bağlantı → Akıllı Saatler
 
 ## 03 · Karşılaştırma: SE 3 mü, Series 11 mi? (karusel, 4 kare)
 
-**Görseller:** `03-1-kapak.png` → `03-2-se3.png` → `03-3-s11.png` → `03-4-danis.png`
+**Görseller:** `gonderi-03/03-1-kapak.png` → `gonderi-03/03-2-se3.png` → `gonderi-03/03-3-s11.png` → `gonderi-03/03-4-danis.png`
 **Alt metin:** Apple Watch SE 3 ve Apple Watch Series 11 karşılaştırması.
 **Not:** Kaydedilme (save) getiren tür budur; profilde ikinci sıraya sabitlemeye değer.
 
@@ -68,7 +68,7 @@ Apple Watch Series 11 — daha büyük ve her zaman açık ekran, gelişmiş sa�
 
 ## 04 · AirPods Pro 3 (karusel, 3 kare)
 
-**Görseller:** `04-1-airpods.png` → `04-2-detay.png` → `04-3-anc.png`
+**Görseller:** `gonderi-04/04-1-airpods.png` → `gonderi-04/04-2-detay.png` → `gonderi-04/04-3-anc.png`
 **Alt metin:** AirPods Pro 3 kablosuz kulaklık, aktif gürültü engelleme.
 
 ```
@@ -83,7 +83,7 @@ Mağazamızda deneyebilir, sitemizden ücretsiz kargoyla sipariş verebilirsiniz
 
 ## 05 · Neden bizden? (karusel, 6 kare)
 
-**Görseller:** `05-1-kapak.png` → `05-2.png` → `05-3.png` → `05-4.png` → `05-5.png` → `05-6.png`
+**Görseller:** `gonderi-05/05-1-kapak.png` → `gonderi-05/05-2.png` → `gonderi-05/05-3.png` → `gonderi-05/05-4.png` → `gonderi-05/05-5.png` → `gonderi-05/05-6.png`
 **Alt metin:** İnternetten teknoloji alırken sorulan 5 soru ve cevapları.
 **Not:** Bu gönderi hesabın güven omurgası. Yeni takipçi geldiğinde ilk okuyacağı yer burası olsun.
 
@@ -103,7 +103,7 @@ efemiletisim.com
 
 ## 06 · JBL PartyBox Club 120 (karusel, 3 kare)
 
-**Görseller:** `06-1-jbl.png` → `06-2-detay.png` → `06-3-dinle.png`
+**Görseller:** `gonderi-06/06-1-jbl.png` → `gonderi-06/06-2-detay.png` → `gonderi-06/06-3-dinle.png`
 **Alt metin:** JBL PartyBox Club 120 ışıklı bluetooth hoparlör.
 
 ```
@@ -118,7 +118,7 @@ Stok ve fiyat için profildeki bağlantı → Ses & Diğer
 
 ## 07 · Vodafone İş Ortağı + mağaza konumu
 
-**Görsel:** `07-vodafone.png`
+**Görsel:** `gonderi-07/07-vodafone.png`
 **Konum etiketi:** M1 Merkez Adana — bu gönderide etiket şart.
 **Not:** Vodafone logosu bilerek kullanılmadı; kendi tasarladığın görselin içine başka markanın logosunu koymak izin gerektirir. "Vodafone İş Ortağıyız" ifadesi yazıyla geçiyor, bu yeterli.
 **Alt metin:** Efem İletişim, Vodafone İş Ortağı — M1 AVM Seyhan Adana mağaza bilgileri.
@@ -136,7 +136,7 @@ Yeni Mahalle 87071 Sokak No:5 Z32, M1 AVM — Seyhan / Adana
 
 ## 08 · Huawei Watch GT 6 kampanya (karusel, 2 kare)
 
-**Görseller:** `08-1-gt6.png` → `08-2-ozellik.png`
+**Görseller:** `gonderi-08/08-1-gt6.png` → `gonderi-08/08-2-ozellik.png`
 **Alt metin:** Huawei Watch GT 6 46 mm akıllı saat, indirim rozetiyle.
 **Not:** İndirim oranı `%15` olarak basıldı. Oran değişirse `spec.json` içindeki `badge` alanını güncelleyip `build.ps1`'i tekrar çalıştır.
 
@@ -153,7 +153,7 @@ Kampanya stoklarla sınırlıdır.
 
 ## 09 · Sık sorulanlar (karusel, 5 kare) — **profilde sabitle**
 
-**Görseller:** `09-1-kapak.png` → `09-2.png` → `09-3.png` → `09-4.png` → `09-5.png`
+**Görseller:** `gonderi-09/09-1-kapak.png` → `gonderi-09/09-2.png` → `gonderi-09/09-3.png` → `gonderi-09/09-4.png` → `gonderi-09/09-5.png`
 **Alt metin:** Kargo, iade ve ödeme hakkında sık sorulan sorular.
 
 ```

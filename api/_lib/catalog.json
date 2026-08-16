@@ -1,0 +1,1117 @@
+{
+  "_comment": "OTOMATİK ÜRETİLDİ — elle düzenlemeyin. Kaynak: js/data.js (npm run sync-catalog).",
+  "currency": "TRY",
+  "vatIncluded": true,
+  "products": [
+    {
+      "id": 1,
+      "name": "Apple Watch Series 11 42mm GPS",
+      "category": "Akıllı Saatler",
+      "brand": "Apple",
+      "priceKurus": 2345900,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1422880",
+          "color": "Jet Siyah",
+          "size": "S/M"
+        },
+        {
+          "sku": "1422884",
+          "color": "Roze Altın",
+          "size": "S/M"
+        },
+        {
+          "sku": "1422885",
+          "color": "Roze Altın",
+          "size": "M/L"
+        },
+        {
+          "sku": "1422882",
+          "color": "Uzay Grisi",
+          "size": "S/M"
+        },
+        {
+          "sku": "1422887",
+          "color": "Gümüş",
+          "size": "M/L"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Apple Watch Series 11 46mm GPS",
+      "category": "Akıllı Saatler",
+      "brand": "Apple",
+      "priceKurus": 2492500,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1422888",
+          "color": "Jet Siyah",
+          "size": "S/M"
+        },
+        {
+          "sku": "1422889",
+          "color": "Jet Siyah",
+          "size": "M/L"
+        },
+        {
+          "sku": "1422893",
+          "color": "Roze Altın",
+          "size": "M/L"
+        },
+        {
+          "sku": "1422891",
+          "color": "Uzay Grisi",
+          "size": "M/L"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Apple Watch SE 3 40mm GPS",
+      "category": "Akıllı Saatler",
+      "brand": "Apple",
+      "priceKurus": 1515100,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1422860",
+          "color": "Gece Yarısı",
+          "size": "S/M"
+        },
+        {
+          "sku": "1422861",
+          "color": "Gece Yarısı",
+          "size": "M/L"
+        },
+        {
+          "sku": "1422858",
+          "color": "Yıldız Işığı",
+          "size": "S/M"
+        },
+        {
+          "sku": "1422859",
+          "color": "Yıldız Işığı",
+          "size": "M/L"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Apple Watch SE 3 44mm GPS",
+      "category": "Akıllı Saatler",
+      "brand": "Apple",
+      "priceKurus": 1661700,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1422864",
+          "color": "Gece Yarısı",
+          "size": "S/M"
+        },
+        {
+          "sku": "1422865",
+          "color": "Gece Yarısı",
+          "size": "M/L"
+        },
+        {
+          "sku": "1422862",
+          "color": "Yıldız Işığı",
+          "size": "S/M"
+        },
+        {
+          "sku": "1422863",
+          "color": "Yıldız Işığı",
+          "size": "M/L"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Apple Watch Series 10 46mm Alüminyum Cellular",
+      "category": "Akıllı Saatler",
+      "brand": "Apple",
+      "priceKurus": 3665400,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1411754",
+          "color": "Jet Siyah",
+          "size": "S/M"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Apple Watch Series 10 42mm Titanyum Cellular",
+      "category": "Akıllı Saatler",
+      "brand": "Apple",
+      "priceKurus": 4755600,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1411772",
+          "color": "Altın",
+          "size": "M/L"
+        },
+        {
+          "sku": "1411769",
+          "color": "Gümüş",
+          "size": "M/L"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Apple Watch Series 10 46mm Titanyum Cellular",
+      "category": "Akıllı Saatler",
+      "brand": "Apple",
+      "priceKurus": 4986500,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1411775",
+          "color": "Altın",
+          "size": "S/M"
+        },
+        {
+          "sku": "1411768",
+          "color": "Altın",
+          "size": "M/L"
+        },
+        {
+          "sku": "1411773",
+          "color": "Natürel Titanyum",
+          "size": "S/M"
+        },
+        {
+          "sku": "1411774",
+          "color": "Gümüş",
+          "size": "S/M"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "name": "Apple Watch Series 9 41mm GPS",
+      "category": "Akıllı Saatler",
+      "brand": "Apple",
+      "priceKurus": 1710600,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1401236",
+          "color": "Kırmızı",
+          "size": "S/M"
+        },
+        {
+          "sku": "1401237",
+          "color": "Kırmızı",
+          "size": "M/L"
+        },
+        {
+          "sku": "1401173",
+          "color": "Pembe",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "name": "Huawei Watch GT 5 Pro 46mm",
+      "category": "Akıllı Saatler",
+      "brand": "Huawei",
+      "priceKurus": 1196100,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1424338",
+          "color": "Siyah",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "name": "Huawei Watch GT 6 41mm",
+      "category": "Akıllı Saatler",
+      "brand": "Huawei",
+      "priceKurus": 1012099,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1424736",
+          "color": "Mor",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "name": "Huawei Watch GT 6 41mm Altın",
+      "category": "Akıllı Saatler",
+      "brand": "Huawei",
+      "priceKurus": 1196100,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1424734",
+          "color": "Altın",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "name": "Huawei Watch GT 6 46mm",
+      "category": "Akıllı Saatler",
+      "brand": "Huawei",
+      "priceKurus": 1104101,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1424728",
+          "color": "Siyah",
+          "size": ""
+        },
+        {
+          "sku": "1424730",
+          "color": "Yeşil",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "name": "Huawei Watch GT 6 Pro 46mm",
+      "category": "Akıllı Saatler",
+      "brand": "Huawei",
+      "priceKurus": 1564100,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1424731",
+          "color": "Siyah",
+          "size": ""
+        },
+        {
+          "sku": "1424733",
+          "color": "Kahverengi",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "name": "Huawei Watch GT 6 Pro 46mm Titanyum",
+      "category": "Akıllı Saatler",
+      "brand": "Huawei",
+      "priceKurus": 2024100,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1424732",
+          "color": "Titanyum",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "name": "Huawei Watch Fit 4",
+      "category": "Akıllı Saatler",
+      "brand": "Huawei",
+      "priceKurus": 605500,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1423710",
+          "color": "Siyah",
+          "size": ""
+        },
+        {
+          "sku": "1423707",
+          "color": "Mor",
+          "size": ""
+        },
+        {
+          "sku": "1423699",
+          "color": "Beyaz",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "name": "Samsung Galaxy Watch8 Classic 46mm",
+      "category": "Akıllı Saatler",
+      "brand": "Samsung",
+      "priceKurus": 1818300,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1424310",
+          "color": "Beyaz",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "name": "Samsung Galaxy Watch9 40mm",
+      "category": "Akıllı Saatler",
+      "brand": "Samsung",
+      "priceKurus": 1818300,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1434606",
+          "color": "Siyah",
+          "size": ""
+        },
+        {
+          "sku": "1434605",
+          "color": "Bej",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "name": "Samsung Galaxy Watch9 44mm",
+      "category": "Akıllı Saatler",
+      "brand": "Samsung",
+      "priceKurus": 1909200,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1434610",
+          "color": "Siyah",
+          "size": ""
+        },
+        {
+          "sku": "1434612",
+          "color": "Gümüş",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "name": "Xiaomi Redmi Watch 5 Active",
+      "category": "Akıllı Saatler",
+      "brand": "Xiaomi",
+      "priceKurus": 224800,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1424506",
+          "color": "Gece Siyahı",
+          "size": ""
+        },
+        {
+          "sku": "1424505",
+          "color": "Mat Gümüş",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "name": "Xiaomi Redmi Watch 5 Lite",
+      "category": "Akıllı Saatler",
+      "brand": "Xiaomi",
+      "priceKurus": 328000,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1424507",
+          "color": "Siyah",
+          "size": ""
+        },
+        {
+          "sku": "1424508",
+          "color": "Açık Altın",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "name": "Xiaomi Redmi Watch 6",
+      "category": "Akıllı Saatler",
+      "brand": "Xiaomi",
+      "priceKurus": 647200,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1434008",
+          "color": "Buzul Mavisi",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "name": "Xiaomi Redmi Watch 3 Active",
+      "category": "Akıllı Saatler",
+      "brand": "Xiaomi",
+      "priceKurus": 180600,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1424503",
+          "color": "Gri",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "name": "Apple AirPods 4",
+      "category": "Kulaklıklar",
+      "brand": "Apple",
+      "priceKurus": 865500,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1424419",
+          "color": "Beyaz",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "name": "Apple AirPods 4 (Aktif Gürültü Engelleme)",
+      "category": "Kulaklıklar",
+      "brand": "Apple",
+      "priceKurus": 1150600,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1424422",
+          "color": "Beyaz",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "name": "Apple AirPods Pro 3",
+      "category": "Kulaklıklar",
+      "brand": "Apple",
+      "priceKurus": 1483200,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1425176",
+          "color": "Beyaz",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "name": "Huawei FreeBuds SE 3",
+      "category": "Kulaklıklar",
+      "brand": "Huawei",
+      "priceKurus": 174900,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1424324",
+          "color": "Siyah",
+          "size": ""
+        },
+        {
+          "sku": "1424323",
+          "color": "Bej",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "name": "JBL Tune 520BT Kablosuz Kulaklık",
+      "category": "Kulaklıklar",
+      "brand": "JBL",
+      "priceKurus": 246600,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1400813",
+          "color": "Siyah",
+          "size": ""
+        },
+        {
+          "sku": "1400810",
+          "color": "Mavi",
+          "size": ""
+        },
+        {
+          "sku": "1400812",
+          "color": "Mor",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 28,
+      "name": "JBL Tune 530BT Kablosuz Kulaklık",
+      "category": "Kulaklıklar",
+      "brand": "JBL",
+      "priceKurus": 252300,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1430503",
+          "color": "Siyah",
+          "size": ""
+        },
+        {
+          "sku": "1430501",
+          "color": "Beyaz",
+          "size": ""
+        },
+        {
+          "sku": "1430500",
+          "color": "Bej",
+          "size": ""
+        },
+        {
+          "sku": "1430502",
+          "color": "Mavi",
+          "size": ""
+        },
+        {
+          "sku": "1430504",
+          "color": "Lavanta",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "name": "JBL Tune 680BT NC Kablosuz Kulaklık",
+      "category": "Kulaklıklar",
+      "brand": "JBL",
+      "priceKurus": 344800,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1430508",
+          "color": "Siyah",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "name": "JBL Tune 730BT Kablosuz Kulaklık",
+      "category": "Kulaklıklar",
+      "brand": "JBL",
+      "priceKurus": 358399,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1430515",
+          "color": "Siyah",
+          "size": ""
+        },
+        {
+          "sku": "1430510",
+          "color": "Beyaz",
+          "size": ""
+        },
+        {
+          "sku": "1430509",
+          "color": "Bej",
+          "size": ""
+        },
+        {
+          "sku": "1430514",
+          "color": "Mavi",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 31,
+      "name": "JBL Tune Beam 2 TWS Kulaklık",
+      "category": "Kulaklıklar",
+      "brand": "JBL",
+      "priceKurus": 472999,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1424125",
+          "color": "Siyah",
+          "size": ""
+        },
+        {
+          "sku": "1424100",
+          "color": "Ghost Mor",
+          "size": ""
+        },
+        {
+          "sku": "1424089",
+          "color": "Turkuaz",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 32,
+      "name": "JBL Tune Flex 2 TWS Kulaklık",
+      "category": "Kulaklıklar",
+      "brand": "JBL",
+      "priceKurus": 567900,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1424112",
+          "color": "Siyah",
+          "size": ""
+        },
+        {
+          "sku": "1424111",
+          "color": "Beyaz",
+          "size": ""
+        },
+        {
+          "sku": "1424127",
+          "color": "Ghost Siyah",
+          "size": ""
+        },
+        {
+          "sku": "1424090",
+          "color": "Ghost Bej",
+          "size": ""
+        },
+        {
+          "sku": "1424113",
+          "color": "Ghost Mor",
+          "size": ""
+        },
+        {
+          "sku": "1424126",
+          "color": "Turkuaz",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 33,
+      "name": "JBL Wave Beam 2 TWS Kulaklık",
+      "category": "Kulaklıklar",
+      "brand": "JBL",
+      "priceKurus": 385500,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1424122",
+          "color": "Siyah",
+          "size": ""
+        },
+        {
+          "sku": "1424121",
+          "color": "Beyaz",
+          "size": ""
+        },
+        {
+          "sku": "1424101",
+          "color": "Mavi",
+          "size": ""
+        },
+        {
+          "sku": "1424087",
+          "color": "Pembe",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 34,
+      "name": "JBL Wave Buds 2 TWS Kulaklık",
+      "category": "Kulaklıklar",
+      "brand": "JBL",
+      "priceKurus": 345499,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1424099",
+          "color": "Siyah",
+          "size": ""
+        },
+        {
+          "sku": "1424079",
+          "color": "Beyaz",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 35,
+      "name": "Samsung EO-IC100B Type-C Kulaklık",
+      "category": "Kulaklıklar",
+      "brand": "Samsung",
+      "priceKurus": 105400,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1367269",
+          "color": "Siyah",
+          "size": ""
+        },
+        {
+          "sku": "1367271",
+          "color": "Beyaz",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 36,
+      "name": "Samsung Galaxy Buds3 FE",
+      "category": "Kulaklıklar",
+      "brand": "Samsung",
+      "priceKurus": 499800,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1424745",
+          "color": "Siyah",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 37,
+      "name": "Samsung Galaxy Buds4",
+      "category": "Kulaklıklar",
+      "brand": "Samsung",
+      "priceKurus": 817700,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1430043",
+          "color": "Siyah",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 38,
+      "name": "Samsung Galaxy Buds4 Pro",
+      "category": "Kulaklıklar",
+      "brand": "Samsung",
+      "priceKurus": 1135700,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1430045",
+          "color": "Siyah",
+          "size": ""
+        },
+        {
+          "sku": "1430046",
+          "color": "Beyaz",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 39,
+      "name": "Xiaomi Redmi Buds 6 Play",
+      "category": "Kulaklıklar",
+      "brand": "Xiaomi",
+      "priceKurus": 77100,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1424254",
+          "color": "Siyah",
+          "size": ""
+        },
+        {
+          "sku": "1418684",
+          "color": "Beyaz",
+          "size": ""
+        },
+        {
+          "sku": "1418685",
+          "color": "Mavi",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 40,
+      "name": "Xiaomi Redmi Buds 8",
+      "category": "Kulaklıklar",
+      "brand": "Xiaomi",
+      "priceKurus": 386800,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1434004",
+          "color": "Siyah",
+          "size": ""
+        },
+        {
+          "sku": "1434006",
+          "color": "Beyaz",
+          "size": ""
+        },
+        {
+          "sku": "1434007",
+          "color": "Yeşil",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 41,
+      "name": "Xiaomi Redmi Buds 8 Active",
+      "category": "Kulaklıklar",
+      "brand": "Xiaomi",
+      "priceKurus": 159500,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1431551",
+          "color": "Siyah",
+          "size": ""
+        },
+        {
+          "sku": "1431552",
+          "color": "Beyaz",
+          "size": ""
+        },
+        {
+          "sku": "1431550",
+          "color": "Mavi",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 42,
+      "name": "Xiaomi Redmi Buds 8 Lite",
+      "category": "Kulaklıklar",
+      "brand": "Xiaomi",
+      "priceKurus": 189200,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1429167",
+          "color": "Siyah",
+          "size": ""
+        },
+        {
+          "sku": "1429169",
+          "color": "Beyaz",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 43,
+      "name": "Xiaomi Redmi Buds 8 Pro",
+      "category": "Kulaklıklar",
+      "brand": "Xiaomi",
+      "priceKurus": 517300,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1431549",
+          "color": "Obsidyen Siyah",
+          "size": ""
+        },
+        {
+          "sku": "1431547",
+          "color": "Bulut Beyazı",
+          "size": ""
+        },
+        {
+          "sku": "1431548",
+          "color": "Buzul Mavisi",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 44,
+      "name": "Apple 20W USB-C Güç Adaptörü",
+      "category": "Aksesuarlar",
+      "brand": "Apple",
+      "priceKurus": 104899,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1424409",
+          "color": "Beyaz",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 45,
+      "name": "Apple 35W Çift USB-C Portlu Güç Adaptörü",
+      "category": "Aksesuarlar",
+      "brand": "Apple",
+      "priceKurus": 312800,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1426785",
+          "color": "Beyaz",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 46,
+      "name": "Apple Crossbody Strap – Bright Guava",
+      "category": "Aksesuarlar",
+      "brand": "Apple",
+      "priceKurus": 346402,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1430850",
+          "color": "Bright Guava",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 47,
+      "name": "Apple Watch Manyetik Hızlı Şarj Kablosu (USB-C, 1m)",
+      "category": "Aksesuarlar",
+      "brand": "Apple",
+      "priceKurus": 123000,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1424405",
+          "color": "Beyaz",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 48,
+      "name": "Samsung 25W USB-C Hızlı Şarj Adaptörü",
+      "category": "Aksesuarlar",
+      "brand": "Samsung",
+      "priceKurus": 99101,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1400929",
+          "color": "Siyah",
+          "size": ""
+        },
+        {
+          "sku": "1400928",
+          "color": "Beyaz",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 49,
+      "name": "Samsung EP-T4511 45W USB-C Şarj Adaptörü",
+      "category": "Aksesuarlar",
+      "brand": "Samsung",
+      "priceKurus": 183000,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1422348",
+          "color": "Siyah",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 50,
+      "name": "Samsung EP-T6530N Üçlü Şarj Adaptörü",
+      "category": "Aksesuarlar",
+      "brand": "Samsung",
+      "priceKurus": 280300,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1387575",
+          "color": "Siyah",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 51,
+      "name": "Huawei WiFi Mesh X3 Pro",
+      "category": "Ses & Diğer",
+      "brand": "Huawei",
+      "priceKurus": 819600,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1432160",
+          "color": "Siyah",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 52,
+      "name": "JBL Go 5 Bluetooth Hoparlör",
+      "category": "Ses & Diğer",
+      "brand": "JBL",
+      "priceKurus": 290900,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1433138",
+          "color": "Mavi",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 53,
+      "name": "JBL PartyBox Club 120 Bluetooth Hoparlör",
+      "category": "Ses & Diğer",
+      "brand": "JBL",
+      "priceKurus": 2401500,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1433141",
+          "color": "Siyah",
+          "size": ""
+        }
+      ]
+    },
+    {
+      "id": 54,
+      "name": "Xiaomi Smart Projector L1",
+      "category": "Ses & Diğer",
+      "brand": "Xiaomi",
+      "priceKurus": 1399896,
+      "itemType": "PHYSICAL",
+      "variants": [
+        {
+          "sku": "1433821",
+          "color": "Gri",
+          "size": ""
+        }
+      ]
+    }
+  ]
+}

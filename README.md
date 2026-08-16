@@ -8,7 +8,7 @@
     <img src="https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?style=flat-square&logo=javascript&logoColor=black" alt="Vanilla JS">
     <img src="https://img.shields.io/badge/Firebase-Auth%20%2B%20Firestore-FFCA28?style=flat-square&logo=firebase&logoColor=black" alt="Firebase">
     <img src="https://img.shields.io/badge/Hosting-Vercel-000000?style=flat-square&logo=vercel" alt="Vercel">
-    <img src="https://img.shields.io/badge/Payment-iyzico%20(sandbox)-2563EB?style=flat-square" alt="iyzico sandbox">
+    <img src="https://img.shields.io/badge/Payment-iyzico%20Checkout%20Form-2563EB?style=flat-square" alt="iyzico Checkout Form">
     <img src="https://img.shields.io/badge/license-Proprietary-lightgrey?style=flat-square" alt="License">
   </p>
 </div>
@@ -34,7 +34,7 @@
 - **Ürün detay** — galeri, teknik özellik tablosu, ilgili ürünler, stok durumu
 - **Favoriler** — localStorage tabanlı, profil sayfasında listeleniyor
 - **Sepet** — miktar güncelleme, kupon kodu desteği (altyapı hazır, kampanya aktif edilmeyi bekliyor)
-- **Ödeme akışı** — adres formu + kart formu, iyzico sandbox simülasyonu ile test kartları
+- **Ödeme akışı** — adres/fatura formu + iyzico Checkout Form yönlendirmesi; kart bilgisi sitede toplanmaz, tutar sunucuda hesaplanır, sonuç iyzico'dan doğrulanır (`api/`)
 - **Üyelik** — Firebase Authentication (e-posta doğrulama dahil), Firestore'da sipariş/favori geçmişi
 - **Hesap paneli** — sipariş geçmişi, favoriler, adres ve profil yönetimi
 - **Admin paneli** (`admin.html`) — ürün/sipariş yönetimi arayüzü
@@ -50,7 +50,7 @@
 |---|---|
 | Frontend | Vanilla HTML5 / CSS3 / JavaScript (framework yok, build adımı yok) |
 | Kimlik doğrulama & veri | Firebase Authentication + Firestore |
-| Ödeme | iyzico (şu an **sandbox simülasyonu**, gerçek entegrasyon bekliyor) |
+| Ödeme | iyzico **Checkout Form** (hosted) — Vercel Functions (`api/`), Node.js, bağımlılıksız IYZWSv2 imzalama |
 | Hosting | Vercel (`vercel.json`) + Firebase Hosting yapılandırması (`firebase.json`) |
 | Diğer | localStorage (sepet/favoriler), schema.org JSON-LD, CSP güvenlik başlıkları |
 
@@ -66,32 +66,45 @@
 │  ├─ data.js                            → ürün kataloğu
 │  ├─ products.js                        → filtre, arama, favori, ürün kartı
 │  ├─ cart.js                            → sepet, kupon, toplam hesaplama
-│  ├─ payment.js                         → ödeme formu + iyzico sandbox simülasyonu
+│  ├─ payment.js                         → ödeme API istemcisi (kart verisi toplamaz)
 │  ├─ auth.js / firebase-auth.js         → üyelik, Firestore sipariş/favori
 │  └─ main.js                            → navbar, toast, animasyonlar, SEO schema
+├─ api/                                  → Vercel Functions (sunucu tarafı ödeme)
+│  ├─ _lib/                              → iyzico istemcisi, sipariş/fiyat mantığı, Firestore
+│  ├─ payment/                           → config · initialize · callback · webhook
+│  └─ order/                             → eft · status
+├─ scripts/                              → sync-catalog · test-payment-lib · test-payment-flow
 ├─ assets/                               → images, icons, logos
-├─ docs/                                 → RAPOR.md, ARKADAS-YAPILACAKLAR.md, screenshots
+├─ docs/                                 → RAPOR.md, IYZICO-DENETIM-RAPORU.md,
+│                                          IYZICO-ENTEGRASYON.md, ARKADAS-YAPILACAKLAR.md
 ├─ vercel.json / firebase.json           → hosting + güvenlik başlıkları
+├─ .env.example                          → sunucu ortam değişkenleri şablonu
 └─ sitemap.xml / robots.txt
 ```
 
 ## Kurulum
 
-Build adımı yok — statik dosyalar. Yerelde çalıştırmak için herhangi bir statik sunucu yeterli:
+Vitrin tarafında build adımı yok. Ödeme API'si (`api/`) Node.js gerektirir:
 
 ```bash
-python3 -m http.server 8000
-# veya
-npx serve .
+npm install
 ```
 
-Ardından `http://localhost:8000` adresini açın.
+```bash
+node dev-server.js
+```
 
-Firebase bağlantısı için `js/firebase-config.js` içindeki proje anahtarlarını kendi Firebase projenizle güncelleyin.
+Ardından `http://localhost:3000` adresini açın — `dev-server.js` hem statik dosyaları servis eder hem de `/api/*` isteklerini Vercel Functions ile aynı imzayla çalıştırır. Ödeme kütüphanesinin birim testleri: `npm run test:payment`.
+
+Firebase bağlantısı için `js/firebase-config.js` içindeki proje anahtarlarını kendi Firebase projenizle güncelleyin. Ödeme için gereken sunucu değişkenleri: `.env.example`.
 
 ## Durum
 
-Ödeme akışı şu an **iyzico sandbox simülasyonu** ile çalışıyor (gerçek para hareketi yok, test kartlarıyla başarılı/başarısız senaryo üretiliyor). Prod'a çıkmadan önce gerçek iyzico API entegrasyonu ve bir backend/serverless katmanı gerekiyor — detaylar için `docs/RAPOR.md`.
+Gerçek iyzico **Checkout Form** entegrasyonu yazıldı: tutar sunucuda hesaplanır, sipariş sunucuda açılır, ödeme sonucu iyzico'dan sorgulanıp imzası doğrulanarak yazılır; kart numarası/CVV bu projenin hiçbir katmanına girmez.
+
+Ortam değişkenleri (`.env.example`) girilene kadar kart ödemesi **kapalıdır** — checkout bu durumda EFT/havale sunar ve hiçbir koşulda "ödeme başarılı" taklidi yapılmaz.
+
+Canlıya çıkış adımları: `docs/IYZICO-ENTEGRASYON.md` · Denetim bulguları: `docs/IYZICO-DENETIM-RAPORU.md`
 
 ---
 

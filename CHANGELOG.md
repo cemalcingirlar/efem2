@@ -3,6 +3,96 @@
 Bu dosya projede yapılan her ekleme, değişiklik ve kaldırmayı kayıt altına alır.
 En yeni kayıtlar en üstte.
 
+## 2026-08-16 (devam 3)
+
+### Ödeme sunucusu ürün varyantlarına (renk/beden) uyarlandı
+- Change: `scripts/sync-catalog.mjs` artık varyantları da yazıyor; `api/_lib/catalog.json`
+  yeni katalogdan yeniden üretildi (**54 ürün, 114 varyant**). Katalog eski 20 ürünlük
+  listeden kaldığı sürece yeni ürünlerin siparişi reddediliyordu.
+- Change: `api/_lib/orders.js` → `priceBasket()` sepet satırlarını artık **ürün id + sku**
+  ile ayrıştırıyor (`js/cart.js` → `cartLineKey` ile aynı mantık). Aynı ürünün iki farklı
+  rengi iki ayrı satır olarak fiyatlanıyor; daha önce "aynı ürün iki satırda" diye
+  reddediliyordu.
+- Change: sku doğrulaması eklendi — sku eksikse, sahteyse veya **başka bir ürünün**
+  sku'suysa sipariş reddediliyor.
+- Change: Renk/beden bilgisi istemciden değil **sunucudaki katalogdan** okunuyor; müşteri
+  yalnız hangi sku'yu seçtiğini bildiriyor (uydurulan renk metni yok sayılıyor).
+- Change: iyzico sepet kaleminin kimliği varyantlı üründe **sku**, adı ise
+  `Ürün (Renk · Beden)` biçiminde gönderiliyor — ödeme kaydı ile depodan çıkan ürün birebir
+  eşleşiyor. Sipariş kaydı, sipariş maili, profil siparişleri ve ödeme sonucu sayfası da
+  varyantı gösteriyor.
+- Change: `js/payment.js` → `cartForServer()` artık `{id, sku, qty}` gönderiyor.
+- Add: Testler yeni katalog ve varyant kurallarına göre genişletildi; fiyat/sku sabitleri
+  katalogdan okunuyor, böylece katalog değişince testler kendiliğinden uyum sağlıyor.
+  `npm run test:payment` → **43 birim + 38 akış testi** (hız sınırı testi dahil).
+
+## 2026-08-16 (devam 2)
+
+### Gerçek iyzico entegrasyonu (Checkout Form) + canlı öncesi denetim düzeltmeleri
+
+`docs/deep-research-report.md` içindeki denetim promptu proje üzerinde uygulandı;
+çıkan CRITICAL bulgular kapatıldı. Denetim sonucu: `docs/IYZICO-DENETIM-RAPORU.md`.
+
+**Kaldırılanlar (CRITICAL)**
+- Remove: `js/payment.js` içindeki **sahte ödeme simülasyonu**. `simulatePaymentResult()`
+  kart numarasına bakıp 1,5 sn sonra "başarılı" dönüyordu ve **tanınmayan her kart başarılı
+  sayılıyordu** (`testCards[cleanNumber] || 'success'`) — yani hiç para tahsil edilmeden
+  sipariş "Hazırlanıyor" olarak oluşuyor, müşteriye "ödeme alındı" deniyordu.
+- Remove: `odeme.html` kart formu (kart no, son kullanma, **CVV**, kart sahibi) ve kart
+  önizleme bileşeni. Kart verisi artık bu sitede hiç toplanmıyor; PAN/CVV yalnız iyzico'nun
+  kendi ödeme sayfasına giriliyor (PCI kapsamı dışında kalmak için).
+- Remove: Canlı checkout sayfasında gösterilen **test kartı listesi** (`showTestCards()`).
+- Remove: `css/pages.css` içindeki kart input stilleri; `vercel.json` CSP `connect-src`
+  listesinden iyzico host'ları (tarayıcı artık gateway'e doğrudan konuşamaz).
+
+**Eklenenler — sunucu tarafı ödeme (Vercel Functions)**
+- Add: `api/payment/config.js` — kart ödemesinin açık olup olmadığını bildirir.
+  Yapılandırma eksikse checkout kart sekmesini kapatır, EFT/havaleye düşer.
+- Add: `api/payment/initialize.js` — sepeti **sunucu fiyatlarıyla** yeniden hesaplar,
+  siparişi `awaiting_payment` olarak açar, iyzico Checkout Form'u başlatır ve ödeme
+  sayfasına yönlendirir. İstemciden yalnız `{id, qty}` kabul edilir; gönderilen
+  fiyat/tutar alanları yok sayılır.
+- Add: `api/payment/callback.js` — tarayıcı dönüşü. Callback'teki hiçbir parametre kanıt
+  sayılmaz; sonuç iyzico retrieve ile sorgulanır, yanıt imzası + `conversationId` + tutar
+  + fraud durumu doğrulanır. Uyuşmazlıkta sipariş `pending_review` olur, sevkiyat başlamaz.
+- Add: `api/payment/webhook.js` — `X-IYZ-SIGNATURE-V3` doğrulaması (V1/V2 desteklenmiyor).
+  Kullanıcı sekmeyi kapatsa bile sipariş doğru sonuçlanır; tekrar gelen olaylar tek sonuç üretir.
+- Add: `api/order/eft.js`, `api/order/status.js` — sunucu tarafı EFT siparişi ve
+  siparişe özel HMAC jetonuyla korunan durum sorgusu (IDOR koruması).
+- Add: `api/_lib/` — `iyzico.js` (bağımlılıksız IYZWSv2 imzalama, endpoint'ler, yanıt imzası),
+  `settle.js` (callback + webhook ortak, idempotent sonuçlandırma), `store.js` (Firebase Admin),
+  `orders.js` (fiyatlama/doğrulama/kimlikler), `env.js`, `http.js`, `merchant.js`, `catalog.json`.
+- Add: `odeme-sonuc.html` — ödeme sonucu sayfası. "Başarılı" bilgisi tarayıcıda üretilmez,
+  `/api/order/status` üzerinden sunucudan okunur.
+- Add: `package.json`, `.env.example`, `scripts/sync-catalog.mjs` (js/data.js → sunucu fiyat
+  kataloğu), `scripts/test-payment-lib.mjs` (34 birim testi: imza, fiyat manipülasyonu,
+  webhook doğrulama, erişim jetonu).
+- Change: `dev-server.js` artık `/api/*` isteklerini Vercel Functions imzasıyla çalıştırıyor
+  ve `.env.local` yüklüyor; ödeme akışı yerelde test edilebiliyor.
+
+**Mevzuat**
+- Add: `on-bilgilendirme-formu.html` — Mesafeli Sözleşmeler Yönetmeliği'nin aradığı ön
+  bilgilendirme (satıcı künyesi, KDV dahil toplam, ödeme/teslimat, cayma hakkı ve
+  istisnaları, şikâyet yolları). Tüm sayfaların footer'ına ve `sitemap.xml`'e eklendi.
+- Add: `odeme.html` — sipariş onayından hemen önce satıcı + ödenecek tutar + **"Bu sipariş
+  ödeme yükümlülüğü doğurur"** bloğu; onay kutusu ön bilgilendirme formuna da atıf yapıyor;
+  onay kaydı (zaman damgası + IP) siparişle birlikte saklanıyor. Buton metni "Ödemeyi Tamamla".
+
+**Güvenlik**
+- Change: `firestore.rules` — yeni `orders` koleksiyonu yalnız sunucudan yazılabilir, üye
+  yalnız kendi siparişini okur; `paymentEvents` istemciye tamamen kapalı. `users/{uid}.orders`
+  yazma izni, sunucu API'si yapılandırılana kadar EFT yedeği için bilinçli olarak açık
+  bırakıldı (bulgu F-06, kapatma kuralı dosyada yorumlu).
+- Change: `.gitignore` — `node_modules/`, `.env*`, service account JSON'ları; `.vercelignore`
+  — `scripts/`, `.env*`, Firebase yapılandırmaları.
+- Add: `js/auth.js` → `getIdToken()`; sipariş API'sine üyelik kanıtı Firebase ID token ile
+  gönderiliyor ve sunucuda Admin SDK ile doğrulanıyor.
+
+**Dokümantasyon**
+- Add: `docs/IYZICO-DENETIM-RAPORU.md` (bulgular, test matrisi, PCI veri akışı, rollback,
+  mutabakat, nihai kararlar), `docs/IYZICO-ENTEGRASYON.md` (kurulum, sandbox kabul testleri,
+  production geçiş, işletim, sık hatalar).
+
 ## 2026-08-16 (devam)
 
 ### Renk / beden varyantları — müşteri sepete eklerken seçiyor

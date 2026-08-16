@@ -740,26 +740,8 @@
   flex-shrink: 0;
 }
 
-/* Kart input */
-.card-input-row {
-  display: grid;
-  gap: var(--space-4);
-}
-
-.card-number-wrap { position: relative; }
-
-.card-number-wrap input { padding-right: 50px; }
-
-.card-type-icons {
-  position: absolute;
-  right: 14px; top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  gap: 4px;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--text-muted);
-}
+/* Kart numarası/CVV alanları KALDIRILDI: ödeme iyzico'nun kendi sayfasında
+   alınır, bu sitede kart verisi toplanmaz (PCI kapsamı dışında kalmak için). */
 
 /* Iyzico branding */
 .iyzico-badge {

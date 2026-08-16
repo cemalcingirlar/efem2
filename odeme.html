@@ -73,35 +73,55 @@
     .checkout-step-actions { margin-top: var(--space-5); }
     .checkout-actions-row { display: grid; grid-template-columns: 1fr auto; gap: var(--space-3); margin-top: var(--space-5); }
 
-    .card-preview {
+    /* Kart bilgisi bu sitede TOPLANMAZ; müşteri iyzico'nun ödeme sayfasına
+       yönlendirilir. Aşağıdaki panel bu yönlendirmeyi anlatır. */
+    .redirect-hero {
       position: relative;
       overflow: hidden;
-      min-height: 160px;
       padding: var(--space-6);
-      margin-bottom: var(--space-6);
+      margin-bottom: var(--space-5);
       color: white;
       background: linear-gradient(135deg, #1e3a8a, #2563eb);
       border-radius: var(--radius-xl);
     }
-    .card-preview::before,
-    .card-preview::after {
+    .redirect-hero::before {
       content: '';
       position: absolute;
+      top: -30px; right: -30px;
+      width: 150px; height: 150px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.05);
+      background: rgba(255,255,255,0.06);
     }
-    .card-preview::before { top: -30px; right: -30px; width: 150px; height: 150px; }
-    .card-preview::after  { bottom: -40px; left: 40px; width: 200px; height: 200px; background: rgba(255,255,255,0.03); }
-    .card-preview-label  { position: relative; font-size: 0.75rem; opacity: 0.7; margin-bottom: var(--space-4); letter-spacing: 0.1em; }
-    .card-preview-number { position: relative; font-size: 1.25rem; font-weight: 700; letter-spacing: 0.15em; margin-bottom: var(--space-4); }
-    .card-preview-row { position: relative; display: flex; justify-content: space-between; align-items: flex-end; }
-    .card-preview-row .field-label { font-size: 0.625rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 0.05em; }
-    .card-preview-row .field-value { font-weight: 600; font-size: 0.9375rem; margin-top: 2px; }
-    .card-preview-row .align-right { text-align: right; }
+    .redirect-hero .icon { position: relative; width: 2rem; height: 2rem; margin-bottom: var(--space-3); }
+    .redirect-hero-title { position: relative; font-weight: 700; font-size: 1.125rem; margin-bottom: var(--space-2); }
+    .redirect-hero-desc  { position: relative; font-size: 0.875rem; opacity: 0.9; line-height: 1.6; }
 
-    .card-form-grid  { display: grid; gap: var(--space-4); }
-    .card-form-row   { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
-    .card-name-input { text-transform: uppercase; }
+    .redirect-steps { display: grid; gap: var(--space-2); margin-bottom: var(--space-5); font-size: 0.875rem; color: var(--text-secondary); }
+    .redirect-steps li { display: flex; gap: var(--space-2); align-items: flex-start; }
+    .redirect-steps .icon { flex-shrink: 0; margin-top: 2px; color: var(--success); }
+
+    .sandbox-warning {
+      display: flex; align-items: flex-start; gap: var(--space-2);
+      background: rgba(234,179,8,0.1);
+      border: 1px solid rgba(234,179,8,0.3);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      font-size: 0.875rem;
+      color: var(--warning, #d97706);
+      margin-bottom: var(--space-4);
+    }
+
+    .payment-obligation {
+      margin-top: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      font-size: 0.8125rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+    .payment-obligation strong { color: var(--text-primary); }
 
     .eft-hero {
       position: relative;
@@ -397,65 +417,41 @@
               </button>
             </div>
 
-            <!-- Kredi Kartı Paneli -->
+            <!-- Kredi Kartı Paneli — kart bilgisi bu sayfada TOPLANMAZ -->
             <div id="panel-kart">
-              <!-- Kart Önizleme -->
-              <div class="card-preview">
-                <div class="card-preview-label">KART BİLGİLERİ</div>
-                <div id="preview-number" class="card-preview-number">•••• •••• •••• ••••</div>
-                <div class="card-preview-row">
-                  <div>
-                    <div class="field-label">Kart Sahibi</div>
-                    <div id="preview-name" class="field-value">KART SAHİBİ</div>
-                  </div>
-                  <div class="align-right">
-                    <div class="field-label">Son Tarih</div>
-                    <div id="preview-expiry" class="field-value">AA/YY</div>
-                  </div>
+              <div class="redirect-hero">
+                <svg class="icon" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                <div class="redirect-hero-title">iyzico güvenli ödeme sayfası</div>
+                <div class="redirect-hero-desc">
+                  Kart bilgileriniz efemiletisim.com'a hiçbir zaman girilmez.
+                  “Ödemeyi Tamamla” dediğinizde iyzico'nun kendi güvenli ödeme
+                  sayfasına yönlendirilirsiniz; kart numaranız ve CVV'niz yalnızca orada,
+                  iyzico sistemlerinde işlenir.
                 </div>
               </div>
 
-              <!-- Kart Formu -->
-              <div class="card-form-grid">
-                <div class="form-group">
-                  <label class="form-label">Kart Numarası <span class="required">*</span></label>
-                  <div class="card-number-wrap">
-                    <input type="text" class="form-input" id="card-number"
-                           placeholder="1234 5678 9012 3456" maxlength="19">
-                    <div class="card-type-icons" id="card-type-icons"><svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></div>
-                  </div>
-                  <span class="form-error" id="card-number-error"></span>
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Kart Üzerindeki Ad <span class="required">*</span></label>
-                  <input type="text" class="form-input card-name-input" id="card-name"
-                         placeholder="JOHN DOE">
-                  <span class="form-error" id="card-name-error"></span>
-                </div>
-                <div class="card-form-row">
-                  <div class="form-group">
-                    <label class="form-label">Son Kullanma <span class="required">*</span></label>
-                    <input type="text" class="form-input" id="card-expiry"
-                           placeholder="AA/YY" maxlength="5">
-                    <span class="form-error" id="card-expiry-error"></span>
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">CVV/CVC <span class="required">*</span></label>
-                    <input type="text" class="form-input" id="card-cvc"
-                           placeholder="•••" maxlength="4">
-                    <span class="form-error" id="card-cvc-error"></span>
-                  </div>
-                </div>
+              <ul class="redirect-steps">
+                <li><svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9"/></svg> Kredi kartı, banka kartı ve 3D Secure desteklenir.</li>
+                <li><svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9"/></svg> Ödeme tamamlandığında bu sayfaya geri dönersiniz; sipariş durumunuz doğrulanmış ödeme sonucuna göre belirlenir.</li>
+                <li><svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9"/></svg> Ödeme yarıda kalırsa siparişiniz oluşmaz, kartınızdan çekim yapılmaz.</li>
+              </ul>
+
+              <!-- Sandbox uyarısı (yalnız test ortamında görünür) -->
+              <div id="sandbox-warning" class="sandbox-warning hidden">
+                <svg class="icon icon-sm" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:2px"><path d="M12 3l10 18H2L12 3Z"/><path d="M12 9v5"/><circle cx="12" cy="17.3" r="0.3" fill="currentColor" stroke="none"/></svg>
+                <span><strong>Test ortamı:</strong> ödeme altyapısı şu anda iyzico sandbox modunda çalışıyor. Gerçek kartınızdan çekim yapılmaz.</span>
               </div>
 
-              <!-- İyzico badge -->
+              <!-- Kart ödemesi kapalıysa -->
+              <div id="card-disabled-note" class="eft-warning hidden">
+                <svg class="icon icon-sm" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:2px"><path d="M12 3l10 18H2L12 3Z"/><path d="M12 9v5"/><circle cx="12" cy="17.3" r="0.3" fill="currentColor" stroke="none"/></svg>
+                <span>Kart ile ödeme şu anda kullanıma kapalıdır. Siparişinizi <strong>EFT / Havale</strong> ile tamamlayabilir veya bizimle iletişime geçebilirsiniz.</span>
+              </div>
+
               <div class="iyzico-badge">
                 <span class="lock"><svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
-                Ödemeleriniz İyzico güvencesiyle işlenmektedir &nbsp;·&nbsp; 256-bit SSL
+                Ödemeleriniz <strong>iyzico</strong> altyapısı ile işlenir &nbsp;·&nbsp; 256-bit SSL
               </div>
-
-              <!-- Test kartları bilgisi -->
-              <div id="test-cards-info"></div>
             </div>
 
             <!-- EFT / Havale Paneli -->
@@ -500,15 +496,27 @@
             <label class="form-check">
               <input type="checkbox" id="order-terms">
               <span class="form-check-label">
+                <a href="on-bilgilendirme-formu.html" target="_blank" rel="noopener" style="color:var(--primary)">Ön Bilgilendirme Formu</a>'nu,
                 <a href="mesafeli-satis-sozlesmesi.html" target="_blank" rel="noopener" style="color:var(--primary)">Mesafeli Satış Sözleşmesi</a>'ni ve
                 <a href="iptal-iade.html" target="_blank" rel="noopener" style="color:var(--primary)">İptal/İade Koşulları</a>'nı okudum, kabul ediyorum.
               </span>
             </label>
-            <span id="order-terms-error" style="color:var(--error);font-size:0.875rem;display:none">Devam etmek için sözleşmeyi onaylamalısınız.</span>
+            <span id="order-terms-error" style="color:var(--error);font-size:0.875rem;display:none">Devam etmek için Ön Bilgilendirme Formu ve Mesafeli Satış Sözleşmesi'ni onaylamalısınız.</span>
+
+            <!-- Mesafeli Sözleşmeler Yönetmeliği: sipariş onayından hemen önce
+                 ödeme yükümlülüğü açıkça belirtilir. -->
+            <div class="payment-obligation">
+              Satıcı: <strong data-text="tradeName"></strong> ·
+              Ödenecek tutar: <strong id="obligation-total">-</strong> (tüm vergiler dahil, kargo ücretsiz).
+              <br>
+              <strong>Bu sipariş ödeme yükümlülüğü doğurur.</strong>
+              “Ödemeyi Tamamla” butonuna bastığınızda yukarıdaki tutarı ödemeyi kabul etmiş olursunuz.
+              Cayma hakkınız ve iade koşulları için <a href="iptal-iade.html" target="_blank" rel="noopener" style="color:var(--primary)">İptal/İade Koşulları</a> sayfasına bakabilirsiniz.
+            </div>
 
             <div class="checkout-actions-row">
               <button class="btn btn-primary btn-lg" id="pay-btn" onclick="handlePayment()">
-                <svg class="icon" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Siparişi Tamamla
+                <svg class="icon" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> <span id="pay-btn-label">Ödemeyi Tamamla</span>
               </button>
               <button class="btn btn-ghost" onclick="goToStep1()">← Geri</button>
             </div>
@@ -627,10 +635,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   populateCitySelect('addr-sehir');
   renderCheckoutSummary();
-  initPaymentForm();
-
-  // Test kart bilgisi ekle
-  document.getElementById('test-cards-info').innerHTML = showTestCards();
+  applyPaymentCapabilities();
 
   setStep(1);
 
@@ -644,6 +649,35 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderSavedAddressPicker(user.addresses || []);
   }
 });
+
+/* ─── Ödeme yeteneklerini uygula ───
+   Kart ödemesi ancak sunucu yapılandırması tamamsa açılır. Kapalıysa kart
+   sekmesi devre dışı bırakılır ve müşteri EFT'ye yönlendirilir; hiçbir
+   koşulda "ödeme alındı" taklidi yapılmaz. */
+let paymentReady = { cardEnabled: false, orderApiEnabled: false, mode: null };
+
+async function applyPaymentCapabilities() {
+  paymentReady = await loadPaymentCapabilities();
+
+  const tabKart = document.getElementById('tab-kart');
+  const disabledNote = document.getElementById('card-disabled-note');
+  const sandboxWarning = document.getElementById('sandbox-warning');
+
+  if (paymentReady.cardEnabled) {
+    tabKart.disabled = false;
+    disabledNote.classList.add('hidden');
+    sandboxWarning.classList.toggle('hidden', paymentReady.mode !== 'sandbox');
+    selectPaymentMethod('kart');
+  } else {
+    tabKart.disabled = true;
+    tabKart.title = 'Kart ile ödeme şu anda kullanılamıyor';
+    tabKart.style.opacity = '0.55';
+    tabKart.style.cursor = 'not-allowed';
+    disabledNote.classList.remove('hidden');
+    sandboxWarning.classList.add('hidden');
+    selectPaymentMethod('eft');
+  }
+}
 
 /* ─── Şehir <select>'ini 81 il ile doldur (site-config.js → TURKIYE_ILLERI) ─── */
 function populateCitySelect(selectId, selected) {
@@ -802,6 +836,9 @@ function selectDelivery(mode) {
 
 /* ─── Ödeme yöntemi sekme geçişi ─── */
 function selectPaymentMethod(mode) {
+  // Kart kapalıyken kart sekmesi seçilemez.
+  if (mode === 'kart' && !paymentReady.cardEnabled) return;
+
   paymentMode = mode;
   const isKart = mode === 'kart';
 
@@ -813,9 +850,9 @@ function selectPaymentMethod(mode) {
   document.getElementById('tab-eft').style.border  = !isKart ? '' : '2px solid var(--border)';
   document.getElementById('tab-kart').style.border = isKart  ? '' : '2px solid var(--border)';
 
-  // Buton metnini güncelle
-  document.getElementById('pay-btn').textContent =
-    isKart ? 'Siparişi Tamamla' : 'Siparişi Onayla (EFT ile Öde)';
+  // Yalnız etiket değişir; buton içindeki kilit ikonu korunur.
+  document.getElementById('pay-btn-label').textContent =
+    isKart ? 'Ödemeyi Tamamla' : 'Siparişi Onayla (EFT ile Öde)';
 }
 
 /* ─── IBAN kopyala ─── */
@@ -847,6 +884,10 @@ function renderCheckoutSummary() {
 
   document.getElementById('checkout-subtotal').textContent = formatPrice(subtotal);
   document.getElementById('checkout-total').textContent    = formatPrice(total);
+
+  // Ödeme yükümlülüğü metnindeki tutar da aynı kaynaktan beslenir.
+  const obligationTotal = document.getElementById('obligation-total');
+  if (obligationTotal) obligationTotal.textContent = formatPrice(total);
 }
 
 function setStep(n) {
@@ -920,80 +961,125 @@ function goToStep2() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+/* ─── Sipariş verisini topla ───
+   Fiyat/toplam BİLEREK gönderilmez: tutarı sunucu kendi kataloğundan
+   hesaplar (istemcinin gönderdiği tutar kabul edilmez). */
+function collectOrderInput() {
+  return {
+    buyer: {
+      ad:      addressData.ad,
+      soyad:   addressData.soyad,
+      email:   addressData.email,
+      telefon: addressData.telefon
+    },
+    address: deliveryMode === 'kargo' ? {
+      adres: addressData.adres,
+      sehir: addressData.sehir,
+      ilce:  addressData.ilce,
+      posta: addressData.posta
+    } : null,
+    invoice:  invoiceData,
+    delivery: deliveryMode,
+    agreements: { distanceSales: true, preInfo: true }
+  };
+}
+
+function setPayButtonBusy(busy, label) {
+  const btn = document.getElementById('pay-btn');
+  const lbl = document.getElementById('pay-btn-label');
+  btn.disabled = busy;
+  btn.classList.toggle('loading', busy);
+  if (label) lbl.textContent = label;
+}
+
 async function handlePayment() {
   const termsError = document.getElementById('order-terms-error');
   if (!document.getElementById('order-terms').checked) {
     termsError.style.display = 'block';
     document.getElementById('order-terms').closest('label').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    showToast('Devam etmek için Mesafeli Satış Sözleşmesi onayı gerekli.', 'error');
+    showToast('Devam etmek için Ön Bilgilendirme Formu ve Mesafeli Satış Sözleşmesi onayı gerekli.', 'error');
     return;
   }
   termsError.style.display = 'none';
 
-  const total = getCartTotal();
+  if (getCart().length === 0) {
+    showToast('Sepetiniz boş görünüyor.', 'error');
+    window.location.href = 'sepet.html';
+    return;
+  }
+
+  const orderInput = collectOrderInput();
 
   if (paymentMode === 'eft') {
-    // EFT siparişi
+    await handleEftOrder(orderInput);
+    return;
+  }
+
+  if (!paymentReady.cardEnabled) {
+    showToast('Kart ile ödeme şu anda kullanılamıyor. EFT/havale ile devam edebilirsiniz.', 'error');
+    return;
+  }
+
+  // Kart: iyzico ödeme sayfasına yönlendirme. Sepet BURADA temizlenmez;
+  // ödeme gerçekten tamamlanana kadar müşteri sepetini kaybetmemelidir.
+  setPayButtonBusy(true, 'Güvenli ödeme sayfasına yönlendiriliyorsunuz...');
+  try {
+    await startCardPayment(orderInput);
+  } catch (err) {
+    setPayButtonBusy(false, 'Ödemeyi Tamamla');
+    showToast(err.message || 'Ödeme başlatılamadı. Lütfen tekrar deneyin.', 'error');
+  }
+}
+
+/* ─── EFT/havale siparişi ───
+   Sunucu sipariş API'si açıksa sipariş orada (sunucu fiyatlarıyla)
+   oluşturulur. Henüz yapılandırılmadıysa eski yerel akışa düşülür;
+   böylece site yapılandırma tamamlanana kadar sipariş almaya devam eder. */
+async function handleEftOrder(orderInput) {
+  setPayButtonBusy(true, 'Siparişiniz oluşturuluyor...');
+  const receiptNo = document.getElementById('eft-dekont-no').value.trim() || null;
+
+  try {
+    if (paymentReady.orderApiEnabled) {
+      const result = await createEftOrder({ ...orderInput, eftReceiptNo: receiptNo });
+      finishEftOrder(result.orderId);
+      return;
+    }
+  } catch (err) {
+    if (err.code !== 'order_api_unavailable') {
+      setPayButtonBusy(false, 'Siparişi Onayla (EFT ile Öde)');
+      showToast(err.message || 'Siparişiniz oluşturulamadı.', 'error');
+      return;
+    }
+    console.warn('[checkout] sipariş API kullanılamıyor, yerel akışa dönülüyor.');
+  }
+
+  try {
     const order = await saveOrder({
       items:         getCart(),
-      total:         total,
+      total:         getCartTotal(),
       address:       addressData,
       invoice:       invoiceData,
       delivery:      deliveryMode,
       paymentMethod: 'eft',
       paymentId:     'EFT-PENDING-' + Date.now(),
-      eftReceiptNo:  document.getElementById('eft-dekont-no').value.trim() || null
+      eftReceiptNo:  receiptNo
     });
-    clearCart();
-    document.getElementById('order-id-display').textContent =
-      `Sipariş No: ${order.id} · EFT ile ödeme bekleniyor`;
-    setStep(3);
-    showToast('Siparişiniz oluşturuldu! EFT transferi sonrası onaylanacak.', 'success');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    return;
+    finishEftOrder(order.id);
+  } catch (err) {
+    setPayButtonBusy(false, 'Siparişi Onayla (EFT ile Öde)');
+    showToast('Siparişiniz oluşturulamadı. Lütfen bizimle iletişime geçin.', 'error');
+    console.error('[checkout] EFT siparişi oluşturulamadı:', err);
   }
+}
 
-  // Kredi kartı ödeme
-  const cardData = {
-    number: document.getElementById('card-number')?.value || '',
-    name:   document.getElementById('card-name')?.value   || '',
-    expiry: document.getElementById('card-expiry')?.value || '',
-    cvc:    document.getElementById('card-cvc')?.value    || ''
-  };
-
-  const errors = validatePaymentForm(cardData);
-  if (errors.length > 0) {
-    showFormErrors(errors);
-    showToast('Lütfen kart bilgilerini kontrol edin.', 'error');
-    return;
-  }
-
-  processPayment(cardData, total, async (result) => {
-    if (result.status === 'success') {
-      const order = await saveOrder({
-        items:         getCart(),
-        total:         total,
-        address:       addressData,
-        invoice:       invoiceData,
-        delivery:      deliveryMode,
-        paymentMethod: 'kart',
-        paymentId:     result.paymentId
-      });
-
-      clearCart();
-
-      document.getElementById('order-id-display').textContent = `Sipariş No: ${order.id}`;
-
-      setStep(3);
-      showToast('Siparişiniz başarıyla alındı!', 'success');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      const payBtn = document.getElementById('pay-btn');
-      payBtn.textContent = 'Siparişi Tamamla';
-      payBtn.disabled = false;
-      showToast('Ödeme başarısız: ' + result.errorMessage, 'error');
-    }
-  });
+function finishEftOrder(orderId) {
+  clearCart();
+  document.getElementById('order-id-display').textContent =
+    `Sipariş No: ${orderId} · EFT/havale ile ödeme bekleniyor`;
+  setStep(3);
+  showToast('Siparişiniz oluşturuldu! Transfer sonrası onaylanacak.', 'success');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 </script>
 </body>

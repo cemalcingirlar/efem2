@@ -170,6 +170,21 @@ async function requireAuth({ allowGuest = false, redirectTo = 'hesap.html' } = {
   return false;
 }
 
+/* ─── Firebase ID token ───
+   Ödeme/sipariş API'sine "bu istek gerçekten bu üyeye ait" kanıtı olarak
+   gönderilir; sunucu tokenı Firebase Admin ile doğrular. Üye değilse null
+   döner ve sipariş misafir siparişi olarak açılır. */
+async function getIdToken() {
+  await authReady;
+  if (!session.user) return null;
+  try {
+    return await session.user.getIdToken();
+  } catch (err) {
+    console.error('[auth] ID token alınamadı:', err.message);
+    return null;
+  }
+}
+
 /* ─── Form validasyonu ─── */
 function validateEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -207,6 +222,7 @@ Object.assign(window, {
   isLoggedIn,
   isGuest,
   getCurrentUser,
+  getIdToken,
   continueAsGuest,
   setGuest,
   clearGuest,
@@ -225,6 +241,7 @@ export {
   isLoggedIn,
   isGuest,
   getCurrentUser,
+  getIdToken,
   continueAsGuest,
   setGuest,
   clearGuest,

@@ -67,28 +67,31 @@ Mağaza · Akıllı Saat · Kulaklık · Kargo · İade & Garanti · Yorumlar
 
 ## İlk 9 gönderi (paylaşım sırası, 2 haftaya yayılır — günde birden fazla yükleme yok)
 
-1. Tanıtım — "Biz kimiz" (tek görsel, mağaza vitrini)
+1. Tanıtım — "Biz kimiz" (karusel 2)
 2. Apple Watch Series 11 42mm (karusel 3)
 3. Watch SE 3 vs Series 11 karşılaştırma (karusel 4)
-4. AirPods Pro 3 (reels 15-20 sn, altyazılı)
-5. "Neden bizden?" 5 madde (karusel 5)
-6. JBL PartyBox Club 120 kutu açılışı (reels 20-30 sn)
+4. AirPods Pro 3 (karusel 3)
+5. "Neden bizden?" 5 madde (karusel 6)
+6. JBL PartyBox Club 120 (karusel 3)
 7. Vodafone İş Ortağı + mağaza konumu (konum etiketli)
-8. Huawei Watch GT 6 kampanya (bitiş tarihi görselde)
-9. Sık sorulanlar (karusel 4) — **profilde sabitle**
+8. Huawei Watch GT 6 kampanya (karusel 2)
+9. Sık sorulanlar (karusel 5) — **profilde sabitle**
 
-**Görseller hazır:** `docs/instagram/gorseller/` altında 26 kare (1080×1080 PNG).
+**Görseller hazır:** `docs/instagram/gorseller/` altında 29 kare (1080×1080 PNG).
 Metin + hashtag + alternatif metin: [instagram/GONDERILER.md](instagram/GONDERILER.md).
 Yeniden üretmek için `powershell -ExecutionPolicy Bypass -File docs/instagram/build.ps1`
 (metinler `docs/instagram/spec.json` içinde).
 
-Fotoğraf/video isteyen üç gönderi (01 vitrin, 04 ve 06 reels) için şimdilik tasarım kartı
-konuldu; çekim listesi GONDERILER.md sonunda.
+Hiçbir gönderi fotoğraf ya da video çekimi gerektirmiyor: kapaklar katalog ürün
+görsellerinden kuruldu, reels planlanan iki gönderi karusele çevrildi.
 
 ## Ritim
 
-Pazartesi ürün · Çarşamba reels · Cuma kampanya/yorum · her gün 1-2 hikaye ·
-ayda bir öne çıkanları güncelle.
+Pazartesi ürün karuseli · Çarşamba karşılaştırma veya "nasıl seçilir" karuseli ·
+Cuma kampanya/yorum · her gün 1-2 hikaye · ayda bir öne çıkanları güncelle.
+
+Video çekilemediği sürece reels yok; karusel tek başına yeterli. Erişim düşerse
+telefonla çekilmiş 10 saniyelik tek bir ürün videosu bile açığı kapatır.
 
 ## Kaçınılacaklar
 

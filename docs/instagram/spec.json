@@ -3,10 +3,17 @@
   "photoDir": "assets/images/products",
   "images": [
 
-    { "file": "01-tanitim.png", "tpl": "statement", "theme": "navy",
-      "eyebrow": "ADANA · SEYHAN",
+    { "file": "01-tanitim.png", "tpl": "montage",
+      "eyebrow": "ADANA · SEYHAN · 2015'TEN BERİ",
+      "headline": "Teknoloji\nmağazanız.",
+      "sub": "Akıllı saat · Kulaklık · Aksesuar · Ses sistemleri",
+      "tiles": ["apple-watch-11-42-1.png", "apple-airpods-pro-3-3.png", "apple-crossbody-strap-1.jpg", "jbl-partybox-club120-1.png"],
+      "info": ["M1 AVM · Yeni Mahalle 87071 Sokak No:5 Z32, Seyhan / Adana", "Her gün 10.00 - 22.00  ·  0543 440 25 25"] },
+
+    { "file": "01-2-kunye.png", "tpl": "statement", "theme": "navy",
+      "eyebrow": "HAKKIMIZDA",
       "headline": "2015'ten beri\nAdana'dayız.",
-      "body": "Akıllı saat, kulaklık ve teknoloji aksesuarları. Vodafone İş Ortağıyız; sattığımız her ürün orijinal, faturalı ve Türkiye garantili.",
+      "body": "Vodafone İş Ortağıyız. Sattığımız her ürün orijinal, faturalı ve Türkiye garantili. Artık efemiletisim.com üzerinden Türkiye'nin her yerine gönderiyoruz.",
       "info": ["M1 AVM · Yeni Mahalle 87071 Sokak No:5 Z32, Seyhan / Adana", "Her gün 10.00 - 22.00", "0543 440 25 25"] },
 
     { "file": "02-1-watch-s11.png", "tpl": "product",
@@ -54,7 +61,13 @@
       "title": "AirPods Pro 3",
       "sub": "Aktif gürültü engelleme" },
 
-    { "file": "04-2-anc.png", "tpl": "cover", "theme": "navy",
+    { "file": "04-2-detay.png", "tpl": "product",
+      "eyebrow": "YAKINDAN",
+      "photo": "apple-airpods-pro-3-3.png",
+      "title": "",
+      "sub": "Kulak içi tasarım · aktif gürültü engelleme · kablosuz şarj" },
+
+    { "file": "04-3-anc.png", "tpl": "cover", "theme": "navy",
       "eyebrow": "GÜRÜLTÜ ENGELLEME",
       "headline": "Trafikte,\notobüste,\nofiste.",
       "sub": "Mağazamızda deneyebilir, sitemizden ücretsiz kargoyla sipariş verebilirsiniz." },
@@ -90,7 +103,13 @@
       "title": "JBL PartyBox Club 120",
       "sub": "Işıklı gövde, güçlü bas, taşınabilir kasa" },
 
-    { "file": "06-2-dinle.png", "tpl": "cover", "theme": "blue",
+    { "file": "06-2-detay.png", "tpl": "product",
+      "eyebrow": "YAKINDAN",
+      "photo": "jbl-partybox-club120-2.png",
+      "title": "",
+      "sub": "Işıklı gövde · taşıma kolu · bluetooth bağlantı" },
+
+    { "file": "06-3-dinle.png", "tpl": "cover", "theme": "blue",
       "eyebrow": "MAĞAZADA",
       "headline": "Gelin,\ndinleyin.",
       "sub": "M1 AVM Seyhan / Adana · Her gün 10.00 - 22.00" },

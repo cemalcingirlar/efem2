@@ -293,6 +293,49 @@ function Render-ProductBullets($item) {
   return @($bmp, $g)
 }
 
+# katalog fotograflarindan kurulu kapak -- magaza fotografi cekilemedigi durumda
+function Render-Montage($item) {
+  $c = New-Canvas $NAVY; $bmp = $c[0]; $g = $c[1]
+  Draw-Eyebrow $g $item.eyebrow $ACCENT_L
+
+  $fh = Font 80 'bold'
+  $bw = New-Object System.Drawing.SolidBrush($WHITE)
+  $endY = Draw-Wrapped $g $item.headline $fh $bw ([single]$M) 175 ([single]($W - 2*$M)) 88
+
+  $rb = New-Object System.Drawing.SolidBrush($BLUE)
+  $g.FillRectangle($rb, [single]$M, [single]($endY + 38), [single]150, [single]5)
+
+  $fs = Font 32 'regular'
+  $bs = New-Object System.Drawing.SolidBrush($ONNAVY)
+  Draw-Wrapped $g $item.sub $fs $bs ([single]$M) ([single]($endY + 82)) ([single]($W - 2*$M)) 44 | Out-Null
+
+  # urun karolari: 4 x 210 px, aralarinda 20 px
+  $n = $item.tiles.Count
+  $tw = [single](($W - 2*$M - 20 * ($n - 1)) / $n)
+  $ty = [single]530
+  $bwt = New-Object System.Drawing.SolidBrush($WHITE)
+  for ($i = 0; $i -lt $n; $i++) {
+    $tx = [single]($M + $i * ($tw + 20))
+    $path = RoundRect $tx $ty $tw $tw 18
+    $g.FillPath($bwt, $path)
+    $path.Dispose()
+    Draw-Photo $g $item.tiles[$i] ($tx + 20) ($ty + 20) ($tw - 40) ($tw - 40)
+  }
+
+  $fi = Font 27 'semibold'
+  $bi = New-Object System.Drawing.SolidBrush($WHITE)
+  $iy = $ty + $tw + 62
+  foreach ($line in $item.info) {
+    $iy = Draw-Wrapped $g $line $fi $bi ([single]$M) ([single]$iy) ([single]($W - 2*$M)) 40
+    $iy += 4
+  }
+
+  Draw-Footer $g $true
+  $bw.Dispose(); $rb.Dispose(); $bs.Dispose(); $bwt.Dispose(); $bi.Dispose()
+  $fh.Dispose(); $fs.Dispose(); $fi.Dispose()
+  return @($bmp, $g)
+}
+
 # ---------- calistir ----------
 $made = 0
 foreach ($item in $spec.images) {
@@ -302,6 +345,7 @@ foreach ($item in $spec.images) {
     'qa'             { $r = Render-Qa $item }
     'product'        { $r = Render-Product $item }
     'productbullets' { $r = Render-ProductBullets $item }
+    'montage'        { $r = Render-Montage $item }
     default          { Write-Warning "bilinmeyen sablon: $($item.tpl)"; continue }
   }
   $bmp = $r[0]; $g = $r[1]

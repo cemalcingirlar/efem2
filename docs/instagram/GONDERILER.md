@@ -1,6 +1,6 @@
 # İlk 9 gönderi — yayına hazır paket
 
-Görseller: `docs/instagram/gorseller/` · 26 kare, 1080×1080 PNG
+Görseller: `docs/instagram/gorseller/` · 29 kare, 1080×1080 PNG · **video ya da fotoğraf çekimi gerekmiyor**
 Yeniden üretmek için: `powershell -ExecutionPolicy Bypass -File docs/instagram/build.ps1`
 Metinler `docs/instagram/spec.json` içinde; değiştirip yeniden çalıştırabilirsin.
 
@@ -13,11 +13,11 @@ ayarlar → Alternatif metin); hem erişilebilirlik hem aramada bulunabilirlik i
 
 ---
 
-## 01 · Tanıtım
+## 01 · Tanıtım (karusel, 2 kare)
 
-**Görsel:** `01-tanitim.png`
-**Daha iyisi:** Bu kart yerine mağaza vitrininin gündüz çekilmiş fotoğrafını kullan; kart yedek olarak dursun. Vitrin fotoğrafı bu gönderinin işini kartın iki katı yapar.
-**Alt metin:** Efem İletişim tanıtım görseli: 2015'ten beri Adana'dayız, mağaza adresi ve telefon.
+**Görseller:** `01-tanitim.png` → `01-2-kunye.png`
+**Alt metin:** Efem İletişim tanıtım görseli: akıllı saat, kulaklık, aksesuar ve ses sistemleri; mağaza adresi ve telefon.
+**Not:** Kapak, katalogdaki dört gerçek üründen kuruldu — mağaza fotoğrafı gerekmiyor. İkinci kare künye ve adres.
 
 ```
 2015'ten beri Adana'dayız.
@@ -66,10 +66,9 @@ Apple Watch Series 11 — daha büyük ve her zaman açık ekran, gelişmiş sa�
 #applewatch #applewatchse #akıllısaat #teknoloji #adana #seyhan #efemiletisim
 ```
 
-## 04 · AirPods Pro 3 (karusel, 2 kare)
+## 04 · AirPods Pro 3 (karusel, 3 kare)
 
-**Görseller:** `04-1-airpods.png` → `04-2-anc.png`
-**Daha iyisi:** Bu gönderiyi 15-20 saniyelik reels olarak çek — kutudan çıkarma, kulağa takma, gürültü engellemenin açıldığı an. Altyazı ekle; izleyicilerin çoğu sesi kapalı izliyor. Kartlar reels çekilene kadar yerini tutar.
+**Görseller:** `04-1-airpods.png` → `04-2-detay.png` → `04-3-anc.png`
 **Alt metin:** AirPods Pro 3 kablosuz kulaklık, aktif gürültü engelleme.
 
 ```
@@ -102,10 +101,9 @@ efemiletisim.com
 #güvenlialışveriş #adana #seyhan #m1avm #teknoloji #efemiletisim
 ```
 
-## 06 · JBL PartyBox Club 120 (karusel, 2 kare)
+## 06 · JBL PartyBox Club 120 (karusel, 3 kare)
 
-**Görseller:** `06-1-jbl.png` → `06-2-dinle.png`
-**Daha iyisi:** 20-30 saniyelik kutu açılışı reels. Telifli müzik kullanma — ürünün kendi sesi zaten içerik.
+**Görseller:** `06-1-jbl.png` → `06-2-detay.png` → `06-3-dinle.png`
 **Alt metin:** JBL PartyBox Club 120 ışıklı bluetooth hoparlör.
 
 ```
@@ -122,7 +120,7 @@ Stok ve fiyat için profildeki bağlantı → Ses & Diğer
 
 **Görsel:** `07-vodafone.png`
 **Konum etiketi:** M1 Merkez Adana — bu gönderide etiket şart.
-**Daha iyisi:** Mağaza tabelasının fotoğrafı. Vodafone'un kendi logosunu tasarladığın bir görselin içine koyma; marka kullanım izni gerektirir. Kendi tabelanızın fotoğrafında logo doğal olarak yer alır, sorun olmaz.
+**Not:** Vodafone logosu bilerek kullanılmadı; kendi tasarladığın görselin içine başka markanın logosunu koymak izin gerektirir. "Vodafone İş Ortağıyız" ifadesi yazıyla geçiyor, bu yeterli.
 **Alt metin:** Efem İletişim, Vodafone İş Ortağı — M1 AVM Seyhan Adana mağaza bilgileri.
 
 ```
@@ -173,17 +171,19 @@ Başka sorunuz varsa WhatsApp'tan yazın.
 
 ---
 
-## Çekim listesi (bu üçü fotoğraf/video ister)
+## Hiçbir çekim gerekmiyor
 
-Aşağıdakiler yerine şimdilik tasarım kartı koydum. Çektiğinde değiştir — gerçek mağaza görüntüsü,
-tasarım kartından her zaman daha ikna edici:
+Dokuz gönderinin 29 karesi de katalogdaki ürün fotoğraflarından ve tasarım kartlarından kuruldu.
+Fotoğraf makinesi, video, mağaza çekimi — hiçbiri gerekmiyor. Reels planlanan iki gönderi (04 ve 06)
+çok kareli karusele çevrildi; karusel de Instagram'da hem kaydedilir hem paylaşılır, üstelik
+metin taşıyabildiği için satış anlatmaya daha uygundur.
 
-1. **Mağaza vitrini** — gündüz, karşıdan, tabela net. (Gönderi 01 ve 07)
-2. **AirPods Pro 3 reels** — kutu açılışı, kulağa takma, 15-20 sn, altyazılı. (Gönderi 04)
-3. **JBL kutu açılışı reels** — ışıklar açık, tek ses testi, 20-30 sn. (Gönderi 06)
+**Öne çıkanlar da fotoğrafsız kurulabilir:** Mağaza balonuna 01 ve 07 karelerini, Kargo/İade
+balonlarına 05 serisinin ilgili karelerini, Akıllı Saat ve Kulaklık balonlarına ürün karelerini
+koy. Yorumlar balonu ilk gerçek müşteri mesajları gelene kadar boş kalsın — uydurma yorum koyma.
 
-Ayrıca öne çıkanlar için: paketleme videosu (Kargo), fatura fotoğrafı — bilgiler kapatılmış
-(İade & Garanti), müşteri mesajı ekran görüntüleri — isim ve numara kapatılmış (Yorumlar).
+**İleride bir telefon fotoğrafı çekebilirsen** en yüksek getirili tek kare mağaza vitrinidir;
+o gün 01'in kapağını onunla değiştirirsin. Ama plan buna bağlı değil.
 
 ## Görsel sistemi
 

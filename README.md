@@ -2,7 +2,7 @@
   <img src="assets/logos/logo-full.png" alt="efem iletişim" width="220">
 
   <h1>efemiletisim.com</h1>
-  <p><strong>Akıllı saat, kulaklık ve tablet aksesuar mağazası</strong> — Vanilla JS + Firebase ile inşa edilmiş, statik hosting üzerinde çalışan hızlı bir e-ticaret sitesi.</p>
+  <p><strong>Akıllı saat, kulaklık ve teknoloji aksesuarları mağazası</strong> — Vanilla JS + Firebase ile inşa edilmiş, statik hosting üzerinde çalışan hızlı bir e-ticaret sitesi.</p>
 
   <p>
     <img src="https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?style=flat-square&logo=javascript&logoColor=black" alt="Vanilla JS">
@@ -29,7 +29,7 @@
 
 ## Özellikler
 
-- **Ürün kataloğu** — kategori (saat / kulaklık / tablet) ve marka bazlı filtreleme, fiyat aralığı, minimum puan, sıralama (fiyat/puan/yeni/öne çıkan)
+- **Ürün kataloğu** — kategori (akıllı saat / kulaklık / aksesuar / ses & diğer) ve marka bazlı filtreleme, fiyat aralığı, minimum puan, sıralama (fiyat/puan/yeni/öne çıkan)
 - **Canlı arama** — navbar üzerinden anlık ürün/marka arama dropdown'u
 - **Ürün detay** — galeri, teknik özellik tablosu, ilgili ürünler, stok durumu
 - **Favoriler** — localStorage tabanlı, profil sayfasında listeleniyor
@@ -69,9 +69,16 @@
 │  ├─ payment.js                         → ödeme API istemcisi (kart verisi toplamaz)
 │  ├─ auth.js / firebase-auth.js         → üyelik, Firestore sipariş/favori
 │  └─ main.js                            → navbar, toast, animasyonlar, SEO schema
+├─ api/                                  → Vercel Functions (sunucu tarafı ödeme)
+│  ├─ _lib/                              → iyzico istemcisi, sipariş/fiyat mantığı, Firestore
+│  ├─ payment/                           → config · initialize · callback · webhook
+│  └─ order/                             → eft · status
+├─ scripts/                              → sync-catalog · test-payment-lib · test-payment-flow
 ├─ assets/                               → images, icons, logos
-├─ docs/                                 → RAPOR.md, ARKADAS-YAPILACAKLAR.md, screenshots
+├─ docs/                                 → RAPOR.md, IYZICO-DENETIM-RAPORU.md,
+│                                          IYZICO-ENTEGRASYON.md, ARKADAS-YAPILACAKLAR.md
 ├─ vercel.json / firebase.json           → hosting + güvenlik başlıkları
+├─ .env.example                          → sunucu ortam değişkenleri şablonu
 └─ sitemap.xml / robots.txt
 ```
 

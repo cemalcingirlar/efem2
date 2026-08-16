@@ -208,7 +208,7 @@
 /* Kategori grid */
 .categories-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: var(--space-5);
 }
 
@@ -502,6 +502,77 @@
 }
 
 .stock-dot.out { background: var(--error); }
+
+/* ══════════════════════════════════════
+   VARYANT SEÇİCİ (renk / beden)
+   ══════════════════════════════════════ */
+.variant-picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: var(--space-5) 0;
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-2, var(--surface));
+}
+
+.variant-group { display: flex; flex-direction: column; gap: var(--space-2); }
+
+.variant-label {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+.variant-label strong { color: var(--text-primary); font-weight: 600; }
+
+.variant-options { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+
+.variant-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  min-height: 40px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+
+.variant-chip:hover:not(.disabled):not([aria-disabled="true"]) {
+  border-color: var(--primary);
+}
+
+.variant-chip.selected {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent);
+  font-weight: 600;
+}
+
+/* Bu renkte üretilmeyen beden: tıklanamaz, üstü çizili */
+.variant-chip.disabled {
+  opacity: .4;
+  cursor: not-allowed;
+  text-decoration: line-through;
+  border-style: dashed;
+}
+
+.variant-dot {
+  width: 15px; height: 15px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.variant-note {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  min-height: 1em;
+}
 
 .specs-title {
   display: flex;

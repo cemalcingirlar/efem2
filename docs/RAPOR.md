@@ -57,7 +57,14 @@ Bunlardan biri eksikse mail gönderilmeye devam etmez.
 
 ## 2. Ürün görselleri ve teknik özellikler
 
-### 2.1 Bulduğum önemli sorun
+> **2026-08-16 güncellemesi — bu bölüm artık geçerli değil.**
+> Katalog, gerçek stok listesiyle (`stok bilgisi.xlsx`) baştan kuruldu: 20 demo ürün
+> kaldırıldı, yerine **54 gerçek ürün** geldi; kategoriler `saat / kulaklik / aksesuar / ses`
+> oldu. Görseller yeni bir hatla indirildi (marka resmi sitesiyle kısıtlı arama + zorunlu
+> model kodu eşleşmesi). Güncel durum ve sınırlar için `CHANGELOG.md` → "2026-08-16"
+> kaydına bakın. Aşağıdaki 2.1–2.2 yalnızca geçmiş kaydı olarak duruyor.
+
+### 2.1 Bulduğum önemli sorun (eski katalog)
 
 Katalogdaki 20 ürünün çoğu **2023 modeli** (Apple Watch Series 9, iPad 10. Nesil, iPad Mini 6, Galaxy Buds3 Pro, Galaxy Watch6...). 2026'da bu modellerin çoğu markaların resmi sitelerinden kaldırılmış durumda.
 

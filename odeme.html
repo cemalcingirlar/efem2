@@ -873,6 +873,9 @@ function renderCheckoutSummary() {
     <div class="price-row checkout-summary-row">
       <div>
         <div class="checkout-summary-item-name">${item.name}</div>
+        ${[item.color, item.size].filter(Boolean).length
+          ? `<div class="checkout-summary-item-qty">${[item.color, item.size].filter(Boolean).join(' · ')}</div>`
+          : ''}
         <div class="checkout-summary-item-qty">${item.qty} adet</div>
       </div>
       <span class="checkout-summary-item-price">${formatPrice(item.price * item.qty)}</span>

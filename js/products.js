@@ -14,6 +14,15 @@ function createProductCard(product) {
     <span class="price-original">${formatPrice(product.originalPrice)}</span>
     <span class="price-discount">%${discount}</span>` : '';
 
+  // Kartta renk seçeneklerini göster (en fazla 5 nokta, fazlası "+N")
+  const renkler = getVariantColors(product);
+  const swatchesHTML = renkler.length > 1 ? `
+    <div class="product-swatches" title="${renkler.join(' · ')}">
+      ${renkler.slice(0, 5).map(c => `
+        <span class="product-swatch" style="background:${colorSwatch(c)}"></span>`).join('')}
+      ${renkler.length > 5 ? `<span class="product-swatch-more">+${renkler.length - 5}</span>` : ''}
+    </div>` : '';
+
   const hasGallery = product.images.length > 1;
   const dotsHTML = hasGallery ? `
     <div class="product-img-dots">
@@ -43,19 +52,29 @@ function createProductCard(product) {
       <div class="product-body">
         <div class="product-category">${product.categoryLabel}</div>
         <div class="product-name">${product.name}</div>
+        ${product.reviewCount > 0 ? `
         <div class="product-rating">
           <span class="stars">${'★'.repeat(Math.floor(product.rating))}${'☆'.repeat(5 - Math.floor(product.rating))}</span>
           <span style="font-weight:600;color:var(--text-primary)">${product.rating}</span>
           <span class="rating-count">(${product.reviewCount})</span>
-        </div>
+        </div>` : `
+        <div class="product-rating">
+          <span class="rating-count">Henüz değerlendirilmedi</span>
+        </div>`}
+        ${swatchesHTML}
         <div class="product-price-row">
           <span class="price-current">${formatPrice(product.price)}</span>
           ${originalPriceHTML}
         </div>
+        ${hasVariantChoice(product) ? `
+        <button class="product-add-btn"
+                onclick="event.stopPropagation(); window.location='urun-detay.html?id=${product.id}'">
+          <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/></svg> Seçenekleri Gör
+        </button>` : `
         <button class="product-add-btn"
                 onclick="event.stopPropagation(); handleAddToCart(${product.id}, this)">
           <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg> Sepete Ekle
-        </button>
+        </button>`}
       </div>
     </div>
   `;

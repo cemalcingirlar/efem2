@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <script>(function(){try{var t=localStorage.getItem("efemi_theme");if(!t){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ödeme Sonucu – efemiletisim.com</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/logos/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="assets/logos/favicon-512.png">
+  <link rel="apple-touch-icon" href="assets/logos/favicon-180.png">
+  <meta name="description" content="Sipariş ve ödeme sonucu.">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+  <style>
+    .result-card {
+      max-width: 640px;
+      margin: var(--space-8) auto;
+      padding: var(--space-8) var(--space-6);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      text-align: center;
+    }
+    .result-icon { width: 3rem; height: 3rem; margin-bottom: var(--space-4); }
+    .result-title { font-size: 1.5rem; margin-bottom: var(--space-3); }
+    .result-text { color: var(--text-secondary); line-height: 1.7; margin-bottom: var(--space-4); }
+    .result-meta {
+      display: grid; gap: var(--space-2);
+      margin: var(--space-5) 0;
+      padding: var(--space-4);
+      background: var(--surface-2);
+      border-radius: var(--radius-lg);
+      font-size: 0.9375rem;
+      text-align: left;
+    }
+    .result-meta-row { display: flex; justify-content: space-between; gap: var(--space-4); }
+    .result-meta-row .label { color: var(--text-muted); }
+    .result-meta-row .value { font-weight: 600; }
+    .result-actions { display: flex; gap: var(--space-3); justify-content: center; flex-wrap: wrap; }
+    .result-spinner { color: var(--text-muted); }
+  </style>
+</head>
+<body>
+
+<nav id="navbar">
+  <div class="container">
+    <div class="navbar-inner">
+      <a href="index.html" class="navbar-logo">
+        <div class="logo-icon"><img src="assets/logos/icon-square.png" alt="Efem İletişim" loading="eager"></div>
+        <div class="logo-text">
+          <span class="logo-name">efem</span>
+          <span class="logo-sub">iletişim</span>
+        </div>
+      </a>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:var(--space-3)">
+        <button class="theme-toggle" id="theme-toggle" title="Karanlık / Aydınlık mod">
+          <svg class="icon theme-icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 3v2.2M12 18.8V21M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M3 12h2.2M18.8 12H21M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6"/></svg>
+          <svg class="icon theme-icon-moon" viewBox="0 0 24 24"><path d="M20.5 14.7A8.5 8.5 0 1 1 9.3 3.5a7 7 0 0 0 11.2 11.2Z"/></svg>
+        </button>
+        <a href="urunler.html" class="btn btn-ghost btn-sm">Ürünler</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+    <div class="result-card" id="result-card">
+      <div class="result-spinner">
+        <svg class="icon result-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        <h1 class="result-title">Ödeme sonucu kontrol ediliyor…</h1>
+        <p class="result-text">Bankanızdan gelen sonuç doğrulanıyor. Lütfen bu sayfayı kapatmayın.</p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div id="toast-container"></div>
+
+<script src="js/site-config.js"></script>
+<script src="js/data.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/payment.js"></script>
+<script src="js/main.js"></script>
+<script type="module" src="js/auth.js"></script>
+<script>
+/* =========================================
+   Ödeme sonucu
+   =========================================
+   "Başarılı" bilgisi bu sayfada ÜRETİLMEZ: sipariş durumu sunucudan
+   (/api/order/status) okunur, sunucu da bu durumu yalnızca iyzico'nun
+   doğrulanmış sonucuna göre yazar. */
+
+const STATUS_VIEW = {
+  paid: {
+    icon:  '<svg class="icon result-icon" viewBox="0 0 24 24" style="color:var(--success)"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9"/></svg>',
+    title: 'Ödemeniz alındı, siparişiniz oluşturuldu',
+    text:  'Teşekkür ederiz! Sipariş özetiniz e-posta adresinize gönderildi. Siparişiniz hazırlanmaya başlandı.'
+  },
+  pending_review: {
+    icon:  '<svg class="icon result-icon" viewBox="0 0 24 24" style="color:var(--warning,#d97706)"><circle cx="12" cy="12" r="9"/><path d="M12 7v5"/><circle cx="12" cy="16.3" r="0.4" fill="currentColor" stroke="none"/></svg>',
+    title: 'Ödemeniz kontrol ediliyor',
+    text:  'Ödemeniz alındı ancak doğrulama tamamlanmadı. Ekibimiz siparişinizi inceliyor ve en kısa sürede sizinle iletişime geçecek. Bu aşamada tekrar ödeme yapmayın.'
+  },
+  awaiting_payment: {
+    icon:  '<svg class="icon result-icon" viewBox="0 0 24 24" style="color:var(--warning,#d97706)"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+    title: 'Ödeme tamamlanmadı',
+    text:  'Ödeme işlemi tamamlanmadığı için siparişiniz henüz kesinleşmedi. Kartınızdan çekim yapılmadı; dilerseniz tekrar deneyebilirsiniz.'
+  },
+  awaiting_transfer: {
+    icon:  '<svg class="icon result-icon" viewBox="0 0 24 24" style="color:var(--primary)"><path d="M3 10l9-6 9 6"/><path d="M5 10v9M9 10v9M15 10v9M19 10v9"/><path d="M3 19h18"/></svg>',
+    title: 'Siparişiniz alındı — EFT/havale bekleniyor',
+    text:  'Ödemeniz hesabımıza geçtiğinde siparişiniz hazırlanmaya başlanacak. Açıklama kısmına sipariş numaranızı yazmayı unutmayın.'
+  },
+  failed: {
+    icon:  '<svg class="icon result-icon" viewBox="0 0 24 24" style="color:var(--error)"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>',
+    title: 'Ödeme tamamlanamadı',
+    text:  'İşleminiz banka tarafından tamamlanamadı ve kartınızdan çekim yapılmadı. Farklı bir kartla tekrar deneyebilir veya EFT/havale ile ödeyebilirsiniz.'
+  }
+};
+
+const ERROR_VIEW = {
+  icon:  '<svg class="icon result-icon" viewBox="0 0 24 24" style="color:var(--error)"><circle cx="12" cy="12" r="9"/><path d="M12 7v5"/><circle cx="12" cy="16.3" r="0.4" fill="currentColor" stroke="none"/></svg>',
+  title: 'Sipariş bilgisine ulaşılamadı',
+  text:  'Ödeme sonucunuza şu anda ulaşamıyoruz. Kartınızdan çekim yapıldıysa siparişiniz sistemimizde kayıtlıdır — lütfen bizimle iletişime geçin, işleminizi kontrol edelim.'
+};
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function render(view, order) {
+  const itemsHtml = order && order.items && order.items.length
+    ? order.items.map(i => `
+        <div class="result-meta-row">
+          <span class="label">${escapeHtml(i.name)} × ${i.qty}</span>
+          <span class="value">${escapeHtml(formatPrice(i.totalKurus / 100))}</span>
+        </div>`).join('')
+    : '';
+
+  const metaHtml = order ? `
+    <div class="result-meta">
+      <div class="result-meta-row"><span class="label">Sipariş No</span><span class="value">${escapeHtml(order.id)}</span></div>
+      ${itemsHtml}
+      <div class="result-meta-row"><span class="label">Toplam (KDV dahil)</span><span class="value">${escapeHtml(order.totalText)}</span></div>
+      <div class="result-meta-row"><span class="label">Ödeme yöntemi</span><span class="value">${order.paymentMethod === 'eft' ? 'EFT / Havale' : 'Kredi / Banka Kartı'}</span></div>
+    </div>` : '';
+
+  document.getElementById('result-card').innerHTML = `
+    ${view.icon}
+    <h1 class="result-title">${escapeHtml(view.title)}</h1>
+    <p class="result-text">${escapeHtml(view.text)}</p>
+    ${metaHtml}
+    <div class="result-actions">
+      <a href="profil.html?tab=orders" class="btn btn-primary">Siparişlerim</a>
+      <a href="urunler.html" class="btn btn-ghost">Alışverişe Devam Et</a>
+      <a href="hakkimizda.html#iletisim" class="btn btn-ghost">İletişim</a>
+    </div>`;
+}
+
+/* Ödeme sonrası ilk sorguda durum hâlâ "awaiting_payment" olabilir
+   (webhook/callback yarışı). Kısa aralıklarla birkaç kez tekrar sorulur. */
+async function resolveOrder(orderId, token) {
+  const delays = [0, 1500, 3000, 5000];
+  let order = null;
+
+  for (const wait of delays) {
+    if (wait) await new Promise(r => setTimeout(r, wait));
+    try {
+      order = await fetchOrderStatus(orderId, token);
+    } catch (err) {
+      console.error('[sonuc] durum okunamadı:', err.message);
+      return null;
+    }
+    if (order.status !== 'awaiting_payment') return order;
+  }
+  return order;
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const params = new URLSearchParams(window.location.search);
+  const durum  = params.get('durum');
+
+  let orderId = params.get('order');
+  let token   = params.get('t');
+
+  // Kullanıcı ödeme sayfasından geri dönemediyse (sekme kapandı vb.)
+  // başlatılan sipariş yerel kayıttan bulunur.
+  if (!orderId || !token) {
+    const pending = readPendingOrder();
+    if (pending) { orderId = pending.orderId; token = pending.accessToken; }
+  }
+
+  if (durum === 'hata' && !orderId) { render(ERROR_VIEW, null); return; }
+  if (!orderId || !token)           { render(ERROR_VIEW, null); return; }
+
+  const order = await resolveOrder(orderId, token);
+  if (!order) { render(ERROR_VIEW, null); return; }
+
+  const view = STATUS_VIEW[order.status] || ERROR_VIEW;
+  render(view, order);
+
+  if (order.status === 'paid' || order.status === 'awaiting_transfer') {
+    clearCart();
+    clearPendingOrder();
+    // Aynı tarayıcıdaki admin paneli siparişi görebilsin diye yerel deftere
+    // özet kopya yazılır (asıl kayıt sunucudadır).
+    try {
+      addOrderToLedger({
+        id: order.id,
+        date: order.date,
+        status: order.status === 'paid' ? 'processing' : 'pending',
+        statusLabel: order.statusLabel,
+        items: (order.items || []).map(i => ({ name: i.name, qty: i.qty, price: i.totalKurus / 100 / i.qty })),
+        total: order.totalKurus / 100,
+        paymentMethod: order.paymentMethod,
+        trackingNumber: null
+      }, { source: 'server', userId: null, customerName: null, customerEmail: null });
+    } catch (err) {
+      console.warn('[sonuc] yerel deftere yazılamadı:', err.message);
+    }
+  }
+
+  if (order.status === 'failed') clearPendingOrder();
+});
+</script>
+</body>
+</html>

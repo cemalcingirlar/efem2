@@ -21,6 +21,11 @@
     <priority>0.3</priority>
   </url>
   <url>
+    <loc>https://efemiletisim.com/on-bilgilendirme-formu.html</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
     <loc>https://efemiletisim.com/mesafeli-satis-sozlesmesi.html</loc>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>

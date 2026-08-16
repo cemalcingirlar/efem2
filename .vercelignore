@@ -1,8 +1,14 @@
 .git
 .github
 docs/
+scripts/
 *.md
 .firebase/
+.env
+.env.*
+firestore.rules
+firebase.json
+dev-server.js
 assets/images/*-sketch.png
 assets/images/*-sketch.jpg
 assets/images/category-*.png

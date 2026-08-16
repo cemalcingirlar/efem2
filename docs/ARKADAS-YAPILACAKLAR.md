@@ -72,7 +72,7 @@ Adım 1 ve 2 bitince bana haber ver, `efemiletisim.com` üzerinden ben de kontro
 
 ## Öncelik sırası
 
-1. **Prompt 1 — Gerçek iyzico entegrasyonu (Vercel Functions)** — en kritik, şu an ödeme tamamen sahte.
+1. ~~Prompt 1 — Gerçek iyzico entegrasyonu~~ ✅ **tamamlandı** (2026-08-16). Geriye kalan: Adım 1'deki ortam değişkenleri ve sandbox testleri.
 2. **Prompt 2 — Admin panelini Firestore + Storage'a taşı, gerçek auth**
 3. **Prompt 3 — Sipariş yönetimi (misafir siparişleri dahil)**
 4. **Prompt 4 — Kupon yönetim ekranı**
@@ -84,62 +84,64 @@ Ayrıca aşağıda **senin doldurman gereken veriler** ve **iş kararı bekleyen
 
 ---
 
-## ⚠️ Önce oku: Ödemenin şu anki gerçek durumu
+## ✅ Ödemenin şu anki durumu (2026-08-16 güncellemesi)
 
-`js/payment.js` içindeki ödeme akışı **tamamen sahte/simülasyon**. Kredi kartı formuna girilen
-bilgiler hiçbir yere gönderilmiyor, hiçbir API çağrısı yapılmıyor — `setTimeout` ile 1.5 saniye
-beklenip, girilen kart numarası önceden tanımlı bir test-kartı listesindeyse "başarılı" ya da
-"başarısız" sonucu simüle ediliyor (`simulatePaymentResult()` fonksiyonu). Bilinmeyen her kart
-numarası da otomatik "başarılı" sayılıyor. Yani şu anki haliyle site **hiçbir gerçek ödeme
-alamaz** — bu bilerek bırakılmış bir demo/placeholder, gizlenen bir hata değil.
+Ödeme artık **sahte değil**. Gerçek iyzico **Checkout Form** entegrasyonu yazıldı:
+
+- Kart numarası ve CVV bu sitede hiç toplanmıyor — müşteri iyzico'nun kendi güvenli ödeme
+  sayfasına yönlendiriliyor.
+- Ödenecek tutar sunucuda hesaplanıyor (tarayıcıdaki fiyat kabul edilmiyor).
+- Sipariş "ödendi" bilgisi yalnızca iyzico'ya sorulup imzası doğrulandıktan sonra yazılıyor.
+
+**Ama kart ödemesi şu anda KAPALI** — çünkü aşağıdaki ortam değişkenleri henüz girilmedi.
+Bu haliyle site güvenle yayında kalabilir: checkout kart yerine EFT/havale sunar, hiçbir
+koşulda "ödeme alındı" taklidi yapılmaz.
+
+Kod tarafında yapılacak bir şey kalmadı; sıradaki adımlar **hesap erişimi gerektiren**
+işler. Ayrıntılı rehber: `docs/IYZICO-ENTEGRASYON.md`, denetim raporu:
+`docs/IYZICO-DENETIM-RAPORU.md`.
 
 ---
 
-## Prompt 1 — Gerçek iyzico entegrasyonu (Vercel Functions backend)
+## Adım 1 — Ödemeyi açmak için yapman gerekenler (AI prompt'u değil, senin işin)
+
+### 1.1 iyzico anahtarlarını al
+iyzico Merchant Panel → Ayarlar → API Anahtarları. Sandbox ve production anahtarları farklıdır.
+
+### 1.2 Firebase servis hesabı oluştur
+Firebase Console → ⚙️ Proje Ayarları → Servis Hesapları → **Yeni özel anahtar üret**.
+İnen JSON dosyasını kimseyle paylaşma, repoya koyma.
+
+### 1.3 Vercel'e ortam değişkenlerini gir
+Vercel → Project → Settings → Environment Variables (Production ve Preview için):
 
 ```
-Bu proje bir statik HTML/CSS/JS e-ticaret sitesi (efemiletisim.com), Vercel'de barındırılıyor.
-Şu an ödeme akışı js/payment.js içinde tamamen client-side SİMÜLE EDİLİYOR — gerçek bir iyzico
-API çağrısı yok, kart bilgileri hiçbir yere gönderilmiyor. Bunu gerçek iyzico entegrasyonuna
-çevirmeni istiyorum.
-
-Yapman gerekenler:
-
-1. iyzico secret key'i ASLA client-side koda koyma. /api altında Vercel Functions (Node.js)
-   oluştur, iyzico'nun resmi Node SDK'sını (`iyzipay` npm paketi) kullan. API key/secret key
-   Vercel proje ortam değişkenlerinden (`IYZICO_API_KEY`, `IYZICO_SECRET_KEY`,
-   `IYZICO_BASE_URL`) okunmalı — bunları ben Vercel dashboard'undan gireceğim, sen sadece
-   process.env üzerinden oku, koda gömme.
-
-2. En az şu endpoint'leri oluştur:
-   - POST /api/create-payment — sepet + kart bilgisi + adres alır, iyzico'ya "Ödeme Oluştur"
-     (Payment.create) çağrısı yapar, sonucu döner. Kart numarası/CVV backend'e gelir, iyzico'ya
-     iletilir, hiçbir yerde loglanmaz veya saklanmaz.
-   - POST /api/payment-webhook (opsiyonel ama önerilir) — iyzico'nun callback/webhook'unu
-     karşılar, sipariş durumunu günceller.
-
-3. Sandbox modunda çalışacak şekilde kur (IYZICO_BASE_URL=https://sandbox-api.iyzipay.com),
-   ben gerçek merchant bilgilerimi aldıktan sonra env değişkenini production URL'e çevireceğim.
-
-4. odeme.html / js/payment.js dosyasındaki `processPayment()` ve `simulatePaymentResult()`
-   fonksiyonlarını, gerçek /api/create-payment çağrısı yapacak şekilde güncelle. Kart doğrulama
-   (Luhn, son kullanma tarihi vb.) client-side kalabilir ama gerçek ödeme kararı backend'den
-   dönmeli.
-
-5. Sipariş, ödeme SONUCU başarılı dönünce Firestore'a yazılmalı (js/firebase-auth.js içindeki
-   saveOrderToFirestore ile aynı mantık, ama artık backend'den tetiklenmeli ki client ödeme
-   sonucunu taklit edip sahte "başarılı" siparişi kendi kendine yazamasın).
-
-6. Test kartları sayfası (js/payment.js → showTestCards()) sandbox modunda kalabilir; iyzico'nun
-   kendi resmi sandbox test kartlarını kullan (https://docs.iyzico.com/en/testing).
-
-7. package.json yoksa oluştur, `iyzipay` bağımlılığını ekle. .env.example dosyası oluştur,
-   gerekli env değişkenlerini (değersiz, sadece isimleriyle) listele. .env dosyasını
-   .gitignore'a ekle, gerçek key'leri asla commit etme.
-
-Bitirince: sandbox modunda uçtan uca bir test siparişi ver (gerçek iyzico sandbox API'sine
-gerçekten istek gittiğini network log'unda doğrula), sonucu bana raporla.
+IYZICO_API_KEY=...
+IYZICO_SECRET_KEY=...
+IYZICO_MODE=sandbox
+SITE_BASE_URL=https://efemiletisim.com
+ORDER_TOKEN_SECRET=<rastgele 32+ karakter>
+FIREBASE_SERVICE_ACCOUNT=<servis hesabı JSON'unun tamamı, tek satır>
 ```
+
+Kaydettikten sonra **yeniden deploy et** (Deployments → Redeploy).
+
+### 1.4 Webhook adresini iyzico paneline yaz
+iyzico Merchant Panel → Ayarlar → Webhook:
+`https://efemiletisim.com/api/payment/webhook`
+
+### 1.5 Firestore kurallarını yayınla
+```
+firebase deploy --only firestore:rules
+```
+
+### 1.6 Sandbox testlerini koş
+`docs/IYZICO-ENTEGRASYON.md` → bölüm 4'teki 10 testi sırayla yap. Hepsi geçmeden
+`IYZICO_MODE=production` yapma.
+
+### 1.7 Kontrol
+`https://efemiletisim.com/api/payment/config` adresi `{"cardEnabled":true,...}` dönmeli.
+Dönmüyorsa değişkenlerden biri eksiktir.
 
 ---
 

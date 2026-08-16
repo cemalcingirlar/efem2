@@ -1,9 +1,37 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Kullanicilar sadece kendi verilerini okuyabilir/yazabilir
+    // Kullanicilar sadece kendi verilerini okuyabilir/yazabilir.
+    //
+    // ⚠️ GEÇİCİ: `orders` alanı hâlâ istemciden yazılabiliyor. Bu yalnızca
+    // sunucu sipariş API'si (FIREBASE_SERVICE_ACCOUNT env'i) yapılandırılmadan
+    // önce EFT/havale siparişlerinin kaybolmaması için açık bırakıldı.
+    // Sunucu tarafı yapılandırıldıktan sonra aşağıdaki katı kural
+    // kullanılmalıdır (sipariş yazma yetkisi yalnız Admin SDK'da kalır):
+    //
+    //   allow read: if request.auth != null && request.auth.uid == userId;
+    //   allow write: if request.auth != null && request.auth.uid == userId
+    //                && !request.resource.data.diff(resource.data)
+    //                        .affectedKeys().hasAny(['orders']);
+    //
+    // Bkz. docs/IYZICO-DENETIM-RAPORU.md → bulgu F-06.
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Siparişler: TEK otorite sunucudur. İstemci hiçbir koşulda sipariş
+    // oluşturamaz/güncelleyemez; yalnız üye kendi siparişini okuyabilir.
+    // Yazma işlemleri Firebase Admin SDK ile (kurallardan muaf) yapılır.
+    match /orders/{orderId} {
+      allow read: if request.auth != null
+                  && resource.data.userId == request.auth.uid;
+      allow create, update, delete: if false;
+    }
+
+    // Ödeme olay günlüğü (callback/webhook idempotency + mutabakat):
+    // tamamen sunucuya aittir, istemciye kapalıdır.
+    match /paymentEvents/{eventId} {
+      allow read, write: if false;
     }
 
     // Stok bildirimi talepleri: herkes (misafir dahil) oluşturabilir,

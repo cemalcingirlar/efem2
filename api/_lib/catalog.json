@@ -1,0 +1,167 @@
+{
+  "_comment": "OTOMATİK ÜRETİLDİ — elle düzenlemeyin. Kaynak: js/data.js (npm run sync-catalog).",
+  "currency": "TRY",
+  "vatIncluded": true,
+  "products": [
+    {
+      "id": 1,
+      "name": "Apple Watch SE (2. Nesil) 40mm",
+      "category": "Akıllı Saatler",
+      "brand": "Apple",
+      "priceKurus": 749900,
+      "itemType": "PHYSICAL"
+    },
+    {
+      "id": 2,
+      "name": "Apple Watch Series 9 41mm GPS",
+      "category": "Akıllı Saatler",
+      "brand": "Apple",
+      "priceKurus": 1399900,
+      "itemType": "PHYSICAL"
+    },
+    {
+      "id": 3,
+      "name": "Huawei Watch GT4 46mm",
+      "category": "Akıllı Saatler",
+      "brand": "Huawei",
+      "priceKurus": 499900,
+      "itemType": "PHYSICAL"
+    },
+    {
+      "id": 4,
+      "name": "Huawei Watch Fit 3",
+      "category": "Akıllı Saatler",
+      "brand": "Huawei",
+      "priceKurus": 279900,
+      "itemType": "PHYSICAL"
+    },
+    {
+      "id": 5,
+      "name": "Samsung Galaxy Watch6 Classic 47mm",
+      "category": "Akıllı Saatler",
+      "brand": "Samsung",
+      "priceKurus": 849900,
+      "itemType": "PHYSICAL"
+    },
+    {
+      "id": 6,
+      "name": "Samsung Galaxy Watch FE 40mm",
+      "category": "Akıllı Saatler",
+      "brand": "Samsung",
+      "priceKurus": 429900,
+      "itemType": "PHYSICAL"
+    },
+    {
+      "id": 7,
+      "name": "Apple AirPods Pro (2. Nesil) MagSafe",
+      "category": "Kulaklıklar",
+      "brand": "Apple",
+      "priceKurus": 599900,
+      "itemType": "PHYSICAL"
+    },
+    {
+      "id": 8,
+      "name": "Apple AirPods (3. Nesil) Lightning",
+      "category": "Kulaklıklar",
+      "brand": "Apple",
+      "priceKurus": 329900,
+      "itemType": "PHYSICAL"
+    },
+    {
+      "id": 9,
+      "name": "Samsung Galaxy Buds3 Pro",
+      "category": "Kulaklıklar",
+      "brand": "Samsung",
+      "priceKurus": 449900,
+      "itemType": "PHYSICAL"
+    },
+    {
+      "id": 10,
+      "name": "Samsung Galaxy Buds2 Pro",
+      "category": "Kulaklıklar",
+      "brand": "Samsung",
+      "priceKurus": 299900,
+      "itemType": "PHYSICAL"
+    },
+    {
+      "id": 11,
+      "name": "JBL Tune 770NC Kablosuz Kulaklık",
+      "category": "Kulaklıklar",
+      "brand": "JBL",
+      "priceKurus": 249900,
+      "itemType": "PHYSICAL"
+    },
+    {
+      "id": 12,
+      "name": "JBL Live 660NC Kablosuz Kulaklık",
+      "category": "Kulaklıklar",
+      "brand": "JBL",
+      "priceKurus": 189900,
+      "itemType": "PHYSICAL"
+    },
+    {
+      "id": 13,
+      "name": "Anker Soundcore Q45 ANC Kulaklık",
+      "category": "Kulaklıklar",
+      "brand": "Anker",
+      "priceKurus": 129900,
+      "itemType": "PHYSICAL"
+    },
+    {
+      "id": 14,
+      "name": "Anker Soundcore Liberty 4 NC TWS",
+      "category": "Kulaklıklar",
+      "brand": "Anker",
+      "priceKurus": 159900,
+      "itemType": "PHYSICAL"
+    },
+    {
+      "id": 15,
+      "name": "Casper Via L30 10.1\" 4GB/64GB",
+      "category": "Tabletler",
+      "brand": "Casper",
+      "priceKurus": 349900,
+      "itemType": "PHYSICAL"
+    },
+    {
+      "id": 16,
+      "name": "Casper Via S40 10.4\" 6GB/128GB LTE",
+      "category": "Tabletler",
+      "brand": "Casper",
+      "priceKurus": 529900,
+      "itemType": "PHYSICAL"
+    },
+    {
+      "id": 17,
+      "name": "Apple iPad Mini (6. Nesil) 256GB Wi-Fi",
+      "category": "Tabletler",
+      "brand": "Apple",
+      "priceKurus": 1499900,
+      "itemType": "PHYSICAL"
+    },
+    {
+      "id": 18,
+      "name": "Apple iPad (10. Nesil) 64GB Wi-Fi",
+      "category": "Tabletler",
+      "brand": "Apple",
+      "priceKurus": 1099900,
+      "itemType": "PHYSICAL"
+    },
+    {
+      "id": 19,
+      "name": "Samsung Galaxy Tab A8 10.5\" LTE 4GB/64GB",
+      "category": "Tabletler",
+      "brand": "Samsung",
+      "priceKurus": 599900,
+      "itemType": "PHYSICAL"
+    },
+    {
+      "id": 20,
+      "name": "Samsung Galaxy Tab S9 FE 10.9\" Wi-Fi S Pen",
+      "category": "Tabletler",
+      "brand": "Samsung",
+      "priceKurus": 1199900,
+      "itemType": "PHYSICAL"
+    }
+  ]
+}

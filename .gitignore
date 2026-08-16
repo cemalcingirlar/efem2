@@ -3,3 +3,12 @@
 .DS_Store
 Thumbs.db
 .vercel
+
+# Bağımlılıklar (Vercel Functions için `npm install` ile kurulur)
+node_modules/
+
+# Sırlar — asla commit edilmez (.env.example şablon olarak kalır)
+.env
+.env.*
+!.env.example
+*serviceAccount*.json

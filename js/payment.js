@@ -1,175 +1,164 @@
 /* =========================================
-   efemiletisim.com – Ödeme (İyzico Simülasyon)
-   ========================================= */
+   efemiletisim.com – Ödeme (iyzico Checkout Form)
+   =========================================
+   ÖNEMLİ: Bu dosya kart bilgisi TOPLAMAZ ve ödeme sonucunu ÜRETMEZ.
 
-/* ─── İyzico Test Modu ─── */
-const IYZICO_CONFIG = {
-  mode:        'sandbox',
-  currency:    'TRY',
-  locale:      'tr',
-  apiKey:      'sandbox-TEST_KEY',
-  baseUrl:     'https://sandbox-api.iyzipay.com'
+   Akış:
+     1) /api/payment/config      → kart ödemesi açık mı?
+     2) /api/payment/initialize  → sunucu sepeti kendi fiyatlarıyla
+                                   hesaplar, siparişi açar, iyzico ödeme
+                                   sayfasının adresini döner
+     3) tarayıcı iyzico'nun ödeme sayfasına yönlenir (kart no/CVV yalnız
+        orada girilir — PCI kapsamı bu sitede tutulmaz)
+     4) /api/payment/callback    → sunucu sonucu iyzico'dan sorgular
+     5) odeme-sonuc.html         → sipariş durumu sunucudan okunur
+
+   Daha önce burada bulunan "simüle ödeme" (test kartı → başarılı) tamamen
+   kaldırılmıştır: gerçek tahsilat olmadan sipariş "ödendi" görünemez. */
+
+const PAYMENT_API = {
+  config:     '/api/payment/config',
+  initialize: '/api/payment/initialize',
+  eftOrder:   '/api/order/eft',
+  orderStatus:'/api/order/status'
 };
 
-/* ─── Ödeme durumları ─── */
-const PAYMENT_STATUS = {
-  PENDING:   'pending',
-  SUCCESS:   'success',
-  FAILED:    'failed',
-  CANCELLED: 'cancelled'
-};
+/* ─── Ödeme yetenekleri ───
+   Yapılandırma yoksa kart ödemesi kapalıdır; checkout kart sekmesini
+   göstermez ve müşteriyi EFT/havaleye yönlendirir. */
+let paymentCapabilities = null;
 
-/* ─── Simüle ödeme işlemi ─── */
-function processPayment(cardData, amount, callback) {
-  // Loading göster
-  const btn = document.getElementById('pay-btn');
-  if (btn) {
-    btn.classList.add('loading');
-    btn.disabled = true;
-    btn.textContent = 'İşleniyor...';
-  }
-
-  // 1.5 sn simülasyon gecikmesi
-  setTimeout(() => {
-    const result = simulatePaymentResult(cardData, amount);
-    if (btn) {
-      btn.classList.remove('loading');
-      btn.disabled = false;
-    }
-    callback(result);
-  }, 1500);
-}
-
-/* ─── Ödeme sonucu simüle et ─── */
-function simulatePaymentResult(cardData, amount) {
-  // Test kartları
-  const testCards = {
-    '4111111111111111': 'success',
-    '5526080000000006': 'success',
-    '4000000000000002': 'failed',
-    '4000000000000077': 'failed'
-  };
-
-  const cleanNumber = cardData.number.replace(/\s/g, '');
-  const status = testCards[cleanNumber] || 'success'; // Bilinmeyen kart → başarılı
-
-  if (status === 'success') {
-    return {
-      status: PAYMENT_STATUS.SUCCESS,
-      conversationId: 'EFEMI' + Date.now(),
-      paymentId:      'PAY' + Math.random().toString(36).slice(2, 10).toUpperCase(),
-      amount,
-      currency: 'TRY',
-      paidPrice: amount
+async function loadPaymentCapabilities() {
+  if (paymentCapabilities) return paymentCapabilities;
+  try {
+    const res = await fetch(PAYMENT_API.config, { headers: { 'Accept': 'application/json' } });
+    if (!res.ok) throw new Error(`config HTTP ${res.status}`);
+    const data = await res.json();
+    paymentCapabilities = {
+      cardEnabled:     Boolean(data.cardEnabled),
+      orderApiEnabled: Boolean(data.orderApiEnabled),
+      mode:            data.mode || null,
+      installments:    Array.isArray(data.installments) ? data.installments : [1]
     };
-  } else {
-    return {
-      status: PAYMENT_STATUS.FAILED,
-      errorCode:    '10051',
-      errorMessage: 'Kart limitiniz yetersiz. Lütfen başka bir kart deneyin.'
-    };
+  } catch (err) {
+    console.warn('[payment] ödeme yapılandırması okunamadı, kart ödemesi kapalı kabul edildi:', err.message);
+    paymentCapabilities = { cardEnabled: false, orderApiEnabled: false, mode: null, installments: [] };
   }
+  return paymentCapabilities;
 }
 
-/* ─── Kart numarası formatla (XXXX XXXX XXXX XXXX) ─── */
-function formatCardNumber(value) {
-  return value.replace(/\D/g, '').slice(0, 16).replace(/(\d{4})(?=\d)/g, '$1 ');
+/* ─── Sunucuya gidecek sepet ───
+   Yalnız ürün kimliği ve adet gönderilir. Fiyat/toplam gönderilmez;
+   sunucu kendi kataloğundan hesaplar. */
+function cartForServer() {
+  return getCart().map(item => ({ id: item.id, qty: item.qty }));
 }
 
-/* ─── Son kullanma tarihi formatla (MM/YY) ─── */
-function formatExpiry(value) {
-  return value.replace(/\D/g, '').slice(0, 4).replace(/(\d{2})(?=\d)/, '$1/');
+async function authHeader() {
+  if (typeof window.getIdToken !== 'function') return {};
+  const token = await window.getIdToken();
+  return token ? { 'Authorization': `Bearer ${token}` } : {};
 }
 
-/* ─── Kart tipi algıla ─── */
-function detectCardType(number) {
-  const n = number.replace(/\s/g, '');
-  if (/^4/.test(n)) return 'visa';
-  if (/^5[1-5]/.test(n) || /^2[2-7]/.test(n)) return 'mastercard';
-  if (/^3[47]/.test(n)) return 'amex';
-  return 'unknown';
-}
-
-/* ─── Kart input event dinleyicileri ─── */
-function initPaymentForm() {
-  const cardNumberInput = document.getElementById('card-number');
-  const cardExpiryInput = document.getElementById('card-expiry');
-  const cardCvcInput    = document.getElementById('card-cvc');
-  const cardNameInput   = document.getElementById('card-name');
-
-  if (cardNumberInput) {
-    cardNumberInput.addEventListener('input', (e) => {
-      e.target.value = formatCardNumber(e.target.value);
-      const type = detectCardType(e.target.value);
-      updateCardTypeDisplay(type);
-    });
-  }
-
-  if (cardExpiryInput) {
-    cardExpiryInput.addEventListener('input', (e) => {
-      e.target.value = formatExpiry(e.target.value);
-    });
-  }
-
-  if (cardCvcInput) {
-    cardCvcInput.addEventListener('input', (e) => {
-      e.target.value = e.target.value.replace(/\D/g, '').slice(0, 4);
-    });
-  }
-
-  // Kart önizleme güncelle
-  [cardNumberInput, cardExpiryInput, cardCvcInput, cardNameInput].forEach(input => {
-    if (input) input.addEventListener('input', updateCardPreview);
+async function postJson(url, payload) {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      ...(await authHeader())
+    },
+    body: JSON.stringify(payload)
   });
+
+  let data = null;
+  try { data = await res.json(); } catch { /* gövde JSON değil */ }
+
+  if (!res.ok || !data || data.ok !== true) {
+    const error = new Error((data && data.message) || 'İşlem tamamlanamadı. Lütfen tekrar deneyin.');
+    error.code = (data && data.code) || `http_${res.status}`;
+    error.status = res.status;
+    throw error;
+  }
+  return data;
 }
 
-function updateCardTypeDisplay(type) {
-  const icons = document.getElementById('card-type-icons');
-  if (!icons) return;
-  const cardSvg = '<svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>';
-  const labels  = { visa: 'VISA', mastercard: 'MC', amex: 'AMEX', unknown: '' };
-  icons.innerHTML = `${cardSvg} ${labels[type] || ''}`;
+/* ─── Kart ile ödemeyi başlat ───
+   Başarılıysa bu fonksiyon DÖNMEZ: tarayıcı iyzico ödeme sayfasına gider. */
+async function startCardPayment(orderInput) {
+  const data = await postJson(PAYMENT_API.initialize, {
+    items:      cartForServer(),
+    buyer:      orderInput.buyer,
+    address:    orderInput.address,
+    invoice:    orderInput.invoice,
+    delivery:   orderInput.delivery,
+    agreements: orderInput.agreements
+  });
+
+  // Sipariş numarası ve erişim jetonu, ödeme sayfasından dönülemezse
+  // (sekme kapandı vb.) sonucu tekrar sorgulayabilmek için saklanır.
+  rememberPendingOrder(data.orderId, data.accessToken);
+
+  window.location.href = data.paymentPageUrl;
+  return data;
 }
 
-function updateCardPreview() {
-  const num  = document.getElementById('card-number')?.value  || '';
-  const exp  = document.getElementById('card-expiry')?.value  || '';
-  const name = document.getElementById('card-name')?.value    || '';
-
-  const previewNum  = document.getElementById('preview-number');
-  const previewExp  = document.getElementById('preview-expiry');
-  const previewName = document.getElementById('preview-name');
-
-  if (previewNum)  previewNum.textContent  = num  || '•••• •••• •••• ••••';
-  if (previewExp)  previewExp.textContent  = exp  || 'AA/YY';
-  if (previewName) previewName.textContent = name || 'KART SAHİBİ';
+/* ─── EFT/havale siparişi oluştur ─── */
+async function createEftOrder(orderInput) {
+  const data = await postJson(PAYMENT_API.eftOrder, {
+    items:        cartForServer(),
+    buyer:        orderInput.buyer,
+    address:      orderInput.address,
+    invoice:      orderInput.invoice,
+    delivery:     orderInput.delivery,
+    agreements:   orderInput.agreements,
+    eftReceiptNo: orderInput.eftReceiptNo || null
+  });
+  return data;
 }
 
-/* ─── Ödeme form validasyonu ─── */
-function validatePaymentForm(data) {
-  const errors = [];
+/* ─── Bekleyen sipariş hatırlatıcısı ─── */
+const PENDING_ORDER_KEY = 'efemi_pending_order';
 
-  if (!data.number || data.number.replace(/\s/g, '').length < 16) {
-    errors.push({ field: 'card-number', msg: 'Geçerli bir kart numarası girin.' });
-  }
-
-  if (!data.name || data.name.trim().length < 3) {
-    errors.push({ field: 'card-name', msg: 'Kart üzerindeki adı girin.' });
-  }
-
-  const expParts = (data.expiry || '').split('/');
-  if (expParts.length !== 2 || expParts[0].length !== 2 || expParts[1].length !== 2) {
-    errors.push({ field: 'card-expiry', msg: 'Geçerli bir son kullanma tarihi girin (AA/YY).' });
-  }
-
-  if (!data.cvc || data.cvc.length < 3) {
-    errors.push({ field: 'card-cvc', msg: 'Geçerli bir CVV/CVC girin.' });
-  }
-
-  return errors;
+function rememberPendingOrder(orderId, accessToken) {
+  try {
+    localStorage.setItem(PENDING_ORDER_KEY, JSON.stringify({
+      orderId, accessToken, startedAt: Date.now()
+    }));
+  } catch { /* localStorage kapalı olabilir */ }
 }
 
-/* ─── Adres form validasyonu ─── */
+function readPendingOrder() {
+  try {
+    const raw = localStorage.getItem(PENDING_ORDER_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    // 24 saatten eski kayıt anlamsızdır
+    if (!data.orderId || Date.now() - data.startedAt > 86400000) return null;
+    return data;
+  } catch { return null; }
+}
+
+function clearPendingOrder() {
+  try { localStorage.removeItem(PENDING_ORDER_KEY); } catch { /* yoksay */ }
+}
+
+/* ─── Sipariş durumunu sunucudan oku ─── */
+async function fetchOrderStatus(orderId, accessToken) {
+  const url = `${PAYMENT_API.orderStatus}?order=${encodeURIComponent(orderId)}&t=${encodeURIComponent(accessToken)}`;
+  const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+  const data = await res.json().catch(() => null);
+  if (!res.ok || !data || data.ok !== true) {
+    const error = new Error((data && data.message) || 'Sipariş durumu okunamadı.');
+    error.code = (data && data.code) || `http_${res.status}`;
+    throw error;
+  }
+  return data.order;
+}
+
+/* ─── Adres form validasyonu ───
+   Bu yalnızca kullanıcıya hızlı geri bildirim içindir; gerçek doğrulama
+   sunucuda tekrar yapılır (istemci doğrulaması bir güvenlik kontrolü değildir). */
 const ADDRESS_REQUIRED_FIELDS = ['ad', 'soyad', 'telefon', 'email', 'adres', 'sehir', 'ilce'];
 
 function validateAddressForm(data, required = ADDRESS_REQUIRED_FIELDS) {
@@ -194,7 +183,6 @@ function validateAddressForm(data, required = ADDRESS_REQUIRED_FIELDS) {
 
 /* ─── Hata mesajlarını göster ─── */
 function showFormErrors(errors) {
-  // Önceki hataları temizle
   document.querySelectorAll('.form-error').forEach(el => el.textContent = '');
   document.querySelectorAll('.form-input.error, .form-select.error').forEach(el => el.classList.remove('error'));
 
@@ -204,19 +192,4 @@ function showFormErrors(errors) {
     if (input)   input.classList.add('error');
     if (errorEl) errorEl.textContent = msg;
   });
-}
-
-/* ─── Test kartları göster ─── */
-function showTestCards() {
-  return `
-    <div style="background:var(--surface-2);border-radius:var(--radius-md);padding:var(--space-4);font-size:0.8125rem;margin-top:var(--space-4)">
-      <div style="font-weight:700;margin-bottom:var(--space-2);color:var(--primary)">Test Kartları (Sandbox Modu)</div>
-      <div style="display:grid;gap:var(--space-2)">
-        <div><svg class="icon icon-sm" viewBox="0 0 24 24" style="color:var(--success)"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9"/></svg> <code style="background:var(--surface);padding:2px 6px;border-radius:4px">4111 1111 1111 1111</code> → Başarılı ödeme</div>
-        <div><svg class="icon icon-sm" viewBox="0 0 24 24" style="color:var(--success)"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9"/></svg> <code style="background:var(--surface);padding:2px 6px;border-radius:4px">5526 0800 0000 0006</code> → Başarılı ödeme</div>
-        <div><svg class="icon icon-sm" viewBox="0 0 24 24" style="color:var(--error)"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg> <code style="background:var(--surface);padding:2px 6px;border-radius:4px">4000 0000 0000 0002</code> → Başarısız ödeme</div>
-      </div>
-      <div style="margin-top:var(--space-2);color:var(--text-muted)">Son Tarih: herhangi / CVV: herhangi 3 hane</div>
-    </div>
-  `;
 }

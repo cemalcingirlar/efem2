@@ -54,9 +54,12 @@ https://wa.me/905434402525                                          → WhatsApp
 ```
 Akıllı saat · Kulaklık · Aksesuar
 Orijinal, faturalı, Türkiye garantili
-Ücretsiz kargo · Aynı gün gönderim
-M1 AVM Seyhan / Adana · Her gün 10.00-22.00
+Ücretsiz kargo · 1-3 iş günü teslimat
+M1 AVM Seyhan / Adana · Her gün 10-22
 ```
+
+> "Aynı gün gönderim" yazmıyoruz: sitede kargo süresi 1-3 iş günü olarak tanımlı
+> (`js/site-config.js` → `commerce.shippingDays`). Tutulamayacak söz verilmiyor.
 
 ## Öne çıkanlar (6 balon, ortak kapak: #2563EB zemin + beyaz ikon, yazısız)
 
@@ -74,7 +77,13 @@ Mağaza · Akıllı Saat · Kulaklık · Kargo · İade & Garanti · Yorumlar
 8. Huawei Watch GT 6 kampanya (bitiş tarihi görselde)
 9. Sık sorulanlar (karusel 4) — **profilde sabitle**
 
-Gönderi metinlerinin tamamı sunum bağlantısında hazır.
+**Görseller hazır:** `docs/instagram/gorseller/` altında 26 kare (1080×1080 PNG).
+Metin + hashtag + alternatif metin: [instagram/GONDERILER.md](instagram/GONDERILER.md).
+Yeniden üretmek için `powershell -ExecutionPolicy Bypass -File docs/instagram/build.ps1`
+(metinler `docs/instagram/spec.json` içinde).
+
+Fotoğraf/video isteyen üç gönderi (01 vitrin, 04 ve 06 reels) için şimdilik tasarım kartı
+konuldu; çekim listesi GONDERILER.md sonunda.
 
 ## Ritim
 

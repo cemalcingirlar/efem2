@@ -35,9 +35,9 @@ const SITE = {
 
   /* ─── İletişim ─── */
   contact: {
-    phone:        '0543 440 25 25',
+    phone:        '0542 840 08 88',
     phoneTodo:    false,
-    phoneHref:    '+905434402525',
+    phoneHref:    '+905428400888',
     email:        'info@efemiletisim.com',
     address: {
       line1:    'Yeni Mahalle 87071 Sokak No:5 Z32',
@@ -57,7 +57,7 @@ const SITE = {
 
   /* ─── Sosyal medya & mesajlaşma ─── */
   social: {
-    whatsapp:        '905434402525',
+    whatsapp:        '905428400888',
     whatsappTodo:    false,
     whatsappMessage: 'Merhaba, efemiletisim.com üzerinden yazıyorum.',
     instagram:       'efemelektronik',

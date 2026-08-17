@@ -129,7 +129,7 @@ Vodafone İş Ortağıyız.
 Hat işlemleri, cihaz ve aksesuar için M1 AVM Seyhan'daki mağazamıza bekleriz. Her gün 10.00-22.00 açığız.
 
 Yeni Mahalle 87071 Sokak No:5 Z32, M1 AVM — Seyhan / Adana
-0543 440 25 25
+0542 840 08 88
 
 #vodafone #adana #seyhan #m1avm #adanaesnaf #efemiletisim
 ```

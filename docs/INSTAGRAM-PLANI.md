@@ -35,7 +35,7 @@ gönderi metinlerinin tamamı yukarıdaki bağlantıda.
 | Görünen ad | `Efem İletişim | Adana` |
 | Kullanıcı adı | `@efemelektronik` (korunabilir; değişecekse 85 takipçiyle şimdi en ucuz an) |
 | Profil fotoğrafı | `assets/logos/icon-square.png`, 320×320 üstü, kenarlarda %12 boşluk |
-| Telefon | 0543 440 25 25 |
+| Telefon | 0542 840 08 88 |
 | E-posta | info@efemiletisim.com |
 | Adres | Yeni Mahalle 87071 Sokak No:5 Z32, M1 AVM — Seyhan / Adana |
 
@@ -45,7 +45,7 @@ Bağlantılar (Instagram 5 tanesine izin veriyor), her birine `?utm_source=insta
 https://efemiletisim.com/urunler.html?utm_source=instagram          → Tüm Ürünler
 https://efemiletisim.com/urunler.html?kat=saat&utm_source=instagram → Akıllı Saatler
 https://efemiletisim.com/urunler.html?kat=kulaklik&utm_source=instagram → Kulaklıklar
-https://wa.me/905434402525                                          → WhatsApp
+https://wa.me/905428400888                                          → WhatsApp
 (Google Haritalar mağaza konumu)                                    → Yol Tarifi
 ```
 

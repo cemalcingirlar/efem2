@@ -101,9 +101,9 @@ Görsel kaynaklarını çekerken ürün adlarının/fiyatların **değişmediği
 - ✅ "Bize Ulaşın" kartı eklendi: telefon, WhatsApp, Instagram butonları — hepsi `site-config.js`'ten besleniyor
 - ✅ Şirket Bilgileri kartı artık `site-config.js`'ten geliyor (Ticaret Unvanı/Sicil/Mersis/Vergi No/Adres)
 - ⏳ Ticaret Unvanı hâlâ kısaltılmış ("Efem İletişim") — tam unvan verilmedi, `js/site-config.js` içindeki `legal.tradeName` alanı hâlâ TODO
-- ⏳ Telefon numarası hâlâ eski (0543 440 25 25) — yeni numara verilmedi
-- ⏳ WhatsApp numarası hâlâ telefon numarasıyla aynı placeholder — gerçek WhatsApp iş numarası verilmedi
-- ⏳ Instagram kullanıcı adı varsayım (`efemiletisim`) — doğrulanmadı
+- ✅ Telefon numarası güncellendi: **0542 840 08 88** (17 Ağustos 2026). `js/site-config.js` ve `api/_lib/merchant.js` birlikte değişti
+- ✅ WhatsApp da aynı numaraya taşındı (`social.whatsapp: 905428400888`) — işletme sahibi onayıyla
+- ✅ Instagram kullanıcı adı doğrulandı: `efemelektronik` (hesap açık, 85 takipçi)
 
 **`js/site-config.js` içinde hâlâ TODO işaretli alanlar** (bunlar doldurulmadan doğru görünmeye devam edecek ama içerik yanlış/varsayımsal):
 ```js

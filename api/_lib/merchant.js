@@ -12,7 +12,7 @@ const MERCHANT = {
   brandName: 'efem iletişim',
   email:     'info@efemiletisim.com',
   supportEmail: 'destek@efemiletisim.com',
-  phone:     '0543 440 25 25',
+  phone:     '0542 840 08 88',
   address: {
     line:    'Yeni Mahalle 87071 Sokak No:5 Z32 M1 Avm',
     district:'Seyhan',

@@ -8,13 +8,13 @@
       "headline": "Teknoloji\nmağazanız.",
       "sub": "Akıllı saat · Kulaklık · Aksesuar · Ses sistemleri",
       "tiles": ["apple-watch-11-42-1.png", "apple-airpods-pro-3-3.png", "apple-crossbody-strap-1.jpg", "jbl-partybox-club120-1.png"],
-      "info": ["M1 AVM · Yeni Mahalle 87071 Sokak No:5 Z32, Seyhan / Adana", "Her gün 10.00 - 22.00  ·  0543 440 25 25"] },
+      "info": ["M1 AVM · Yeni Mahalle 87071 Sokak No:5 Z32, Seyhan / Adana", "Her gün 10.00 - 22.00  ·  0542 840 08 88"] },
 
     { "file": "gonderi-01/01-2-kunye.png", "tpl": "statement", "theme": "navy",
       "eyebrow": "HAKKIMIZDA",
       "headline": "2015'ten beri\nAdana'dayız.",
       "body": "Vodafone İş Ortağıyız. Sattığımız her ürün orijinal, faturalı ve Türkiye garantili. Artık efemiletisim.com üzerinden Türkiye'nin her yerine gönderiyoruz.",
-      "info": ["M1 AVM · Yeni Mahalle 87071 Sokak No:5 Z32, Seyhan / Adana", "Her gün 10.00 - 22.00", "0543 440 25 25"] },
+      "info": ["M1 AVM · Yeni Mahalle 87071 Sokak No:5 Z32, Seyhan / Adana", "Her gün 10.00 - 22.00", "0542 840 08 88"] },
 
     { "file": "gonderi-02/02-1-watch-s11.png", "tpl": "product",
       "eyebrow": "AKILLI SAAT",
@@ -53,7 +53,7 @@
     { "file": "gonderi-03/03-4-danis.png", "tpl": "cover", "theme": "blue",
       "eyebrow": "KARARSIZ MISINIZ?",
       "headline": "Yazın,\nönerelim.",
-      "sub": "Kullanımınıza göre hangisinin uygun olduğunu söyleyelim.\nWhatsApp: 0543 440 25 25" },
+      "sub": "Kullanımınıza göre hangisinin uygun olduğunu söyleyelim.\nWhatsApp: 0542 840 08 88" },
 
     { "file": "gonderi-04/04-1-airpods.png", "tpl": "product",
       "eyebrow": "KULAKLIK",
@@ -118,7 +118,7 @@
       "eyebrow": "İŞ ORTAKLIĞI",
       "headline": "Vodafone\nİş Ortağıyız.",
       "body": "Hat işlemleri, cihaz ve aksesuar için M1 AVM Seyhan'daki mağazamıza bekleriz.",
-      "info": ["Yeni Mahalle 87071 Sokak No:5 Z32, M1 AVM", "Seyhan / Adana · Her gün 10.00 - 22.00", "0543 440 25 25"] },
+      "info": ["Yeni Mahalle 87071 Sokak No:5 Z32, M1 AVM", "Seyhan / Adana · Her gün 10.00 - 22.00", "0542 840 08 88"] },
 
     { "file": "gonderi-08/08-1-gt6.png", "tpl": "product",
       "eyebrow": "AKILLI SAAT",

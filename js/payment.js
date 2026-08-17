@@ -95,6 +95,8 @@ async function postJson(url, payload) {
 async function startCardPayment(orderInput) {
   const data = await postJson(PAYMENT_API.initialize, {
     items:      cartForServer(),
+    // Yalnız KOD gider; indirim tutarını sunucu kendi tanımından hesaplar.
+    couponCode: typeof getAppliedCouponCode === 'function' ? getAppliedCouponCode() : '',
     buyer:      orderInput.buyer,
     address:    orderInput.address,
     invoice:    orderInput.invoice,
@@ -119,6 +121,7 @@ async function startCardPayment(orderInput) {
 async function createEftOrder(orderInput) {
   const data = await postJson(PAYMENT_API.eftOrder, {
     items:        cartForServer(),
+    couponCode:   typeof getAppliedCouponCode === 'function' ? getAppliedCouponCode() : '',
     buyer:        orderInput.buyer,
     address:      orderInput.address,
     invoice:      orderInput.invoice,

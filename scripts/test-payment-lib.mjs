@@ -126,36 +126,36 @@ const SKU2 = P2.variants[0].sku;
 
 console.log('\npriceBasket — sunucu otoritesi');
 {
-  const ok = orders.priceBasket([{ id: P1.id, sku: SKU1, qty: 2 }]);
+  const ok = await orders.priceBasket([{ id: P1.id, sku: SKU1, qty: 2 }]);
   check('bilinen ürün fiyatlanır', ok.totalKurus, P1.priceKurus * 2);
 
   // İstemcinin gönderdiği fiyat alanı YOK SAYILIR
-  const tampered = orders.priceBasket([{ id: P1.id, sku: SKU1, qty: 1, price: 1, total: 1 }]);
+  const tampered = await orders.priceBasket([{ id: P1.id, sku: SKU1, qty: 1, price: 1, total: 1 }]);
   check('istemci fiyatı yok sayılır', tampered.totalKurus, P1.priceKurus);
 
-  truthy('bilinmeyen ürün reddedilir', orders.priceBasket([{ id: 999999, sku: SKU1, qty: 1 }]).error);
-  truthy('sıfır adet reddedilir',      orders.priceBasket([{ id: P1.id, sku: SKU1, qty: 0 }]).error);
-  truthy('negatif adet reddedilir',    orders.priceBasket([{ id: P1.id, sku: SKU1, qty: -3 }]).error);
-  truthy('aşırı adet reddedilir',      orders.priceBasket([{ id: P1.id, sku: SKU1, qty: 999 }]).error);
+  truthy('bilinmeyen ürün reddedilir', (await orders.priceBasket([{ id: 999999, sku: SKU1, qty: 1 }])).error);
+  truthy('sıfır adet reddedilir',      (await orders.priceBasket([{ id: P1.id, sku: SKU1, qty: 0 }])).error);
+  truthy('negatif adet reddedilir',    (await orders.priceBasket([{ id: P1.id, sku: SKU1, qty: -3 }])).error);
+  truthy('aşırı adet reddedilir',      (await orders.priceBasket([{ id: P1.id, sku: SKU1, qty: 999 }])).error);
   truthy('aynı varyant iki satırda reddedilir',
-    orders.priceBasket([{ id: P1.id, sku: SKU1, qty: 1 }, { id: P1.id, sku: SKU1, qty: 1 }]).error);
-  truthy('boş sepet reddedilir',       orders.priceBasket([]).error);
+    (await orders.priceBasket([{ id: P1.id, sku: SKU1, qty: 1 }, { id: P1.id, sku: SKU1, qty: 1 }])).error);
+  truthy('boş sepet reddedilir',       (await orders.priceBasket([])).error);
 }
 
 console.log('\nvaryantlar');
 {
-  truthy('sku eksikse reddedilir', orders.priceBasket([{ id: P1.id, qty: 1 }]).error);
-  truthy('sahte sku reddedilir',   orders.priceBasket([{ id: P1.id, sku: 'YOK-123', qty: 1 }]).error);
-  truthy('başka ürünün sku\'su reddedilir', orders.priceBasket([{ id: P1.id, sku: SKU2, qty: 1 }]).error);
+  truthy('sku eksikse reddedilir', (await orders.priceBasket([{ id: P1.id, qty: 1 }])).error);
+  truthy('sahte sku reddedilir',   (await orders.priceBasket([{ id: P1.id, sku: 'YOK-123', qty: 1 }])).error);
+  truthy('başka ürünün sku\'su reddedilir', (await orders.priceBasket([{ id: P1.id, sku: SKU2, qty: 1 }])).error);
 
-  const twoColors = orders.priceBasket([
+  const twoColors = await orders.priceBasket([
     { id: P1.id, sku: SKU1,  qty: 1 },
     { id: P1.id, sku: SKU1B, qty: 2 }
   ]);
   check('iki varyant ayrı satır', twoColors.lines?.length, 2);
   check('toplam doğru', twoColors.totalKurus, P1.priceKurus * 3);
 
-  const spoofed = orders.priceBasket([{ id: P1.id, sku: SKU1, qty: 1, color: 'Altın Sarısı', size: 'XXL' }]);
+  const spoofed = await orders.priceBasket([{ id: P1.id, sku: SKU1, qty: 1, color: 'Altın Sarısı', size: 'XXL' }]);
   check('renk katalogdan', spoofed.lines[0].color, P1.variants[0].color);
   check('beden katalogdan', spoofed.lines[0].size, P1.variants[0].size);
   check('sku kaydedilir', spoofed.lines[0].sku, SKU1);
@@ -165,7 +165,7 @@ console.log('\nvaryantlar');
 
 console.log('\nsepet toplamı = PayTR user_basket toplamı');
 {
-  const basket = orders.priceBasket([{ id: P1.id, sku: SKU1, qty: 2 }, { id: P2.id, sku: SKU2, qty: 1 }]);
+  const basket = await orders.priceBasket([{ id: P1.id, sku: SKU1, qty: 2 }, { id: P2.id, sku: SKU2, qty: 1 }]);
   const encoded = paytr.buildBasket(basket.lines.map(l => ({ name: l.name, unitKurus: l.unitKurus, qty: l.qty })));
   const rows = JSON.parse(Buffer.from(encoded, 'base64').toString('utf8'));
   const sum = rows.reduce((s, [, price, qty]) => s + Math.round(Number(price) * 100) * qty, 0);

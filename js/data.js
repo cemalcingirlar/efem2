@@ -2,7 +2,11 @@
    efemiletisim.com – Ürün Veritabanı
    ========================================= */
 
-/* ─── Admin: localStorage'dan özel ürünleri yükle ─── */
+/* ─── ESKİ admin deposu (yalnız okuma) ───
+   Ürün yönetimi Firestore'a taşındı (bkz. api/admin/products.js). Bu iki
+   anahtar artık YAZILMIYOR; yalnızca eski panelden bu tarayıcıda kalmış
+   kayıtlar kaybolmasın diye okunuyor. Sunucudan gelen katalog bunların
+   üzerine biner. İleride bir sürümde tamamen kaldırılabilir. */
 const ADMIN_PRODUCTS_KEY = 'efemi_admin_products';
 
 function getAdminProducts() {
@@ -10,23 +14,11 @@ function getAdminProducts() {
   catch { return []; }
 }
 
-function saveAdminProducts(products) {
-  localStorage.setItem(ADMIN_PRODUCTS_KEY, JSON.stringify(products));
-}
-
-/* ─── Admin: sabit (BASE_PRODUCTS) ürünler üzerinde yapılan düzenlemeler ───
-   BASE_PRODUCTS kod içinde sabit olduğu için doğrudan değiştirilemez;
-   admin panelinden bir sabit ürün düzenlenince buraya id bazlı bir
-   "override" objesi yazılır, PRODUCTS oluşturulurken üstüne uygulanır. */
 const PRODUCT_OVERRIDES_KEY = 'efemi_product_overrides';
 
 function getProductOverrides() {
   try { return JSON.parse(localStorage.getItem(PRODUCT_OVERRIDES_KEY)) || {}; }
   catch { return {}; }
-}
-
-function saveProductOverrides(overrides) {
-  localStorage.setItem(PRODUCT_OVERRIDES_KEY, JSON.stringify(overrides));
 }
 
 function applyProductOverrides(products) {
@@ -1763,12 +1755,96 @@ const BASE_PRODUCTS = [
   }
 ];
 
+/* ═════════════════════════════════════════
+   SUNUCU KATALOĞU (Firestore → /api/catalog)
+   ═════════════════════════════════════════
+   Admin panelinden eklenen/düzenlenen ürünler artık tarayıcının
+   localStorage'ında değil, Firestore'da durur — böylece tek bir tarayıcıya
+   bağlı kalmaz, her ziyaretçi aynı katalogu görür.
+
+   Katmanlar (soldan sağa öncelik artar):
+     BASE_PRODUCTS  →  localStorage (eski panelden kalan)  →  Firestore
+
+   Ağ yavaşsa/kapalıysa site statik listeyle çalışmaya devam eder; ilk
+   boyamayı hızlandırmak için son başarılı yanıt kısa süre önbelleklenir. */
+
+const CATALOG_API       = '/api/catalog';
+const CATALOG_CACHE_KEY = 'efemi_catalog_cache';
+const CATALOG_CACHE_TTL = 5 * 60 * 1000;
+
+let SERVER_PRODUCTS = readCatalogCache();
+
+function readCatalogCache() {
+  try {
+    const raw = JSON.parse(sessionStorage.getItem(CATALOG_CACHE_KEY));
+    if (!raw || !Array.isArray(raw.products)) return [];
+    if (Date.now() - raw.savedAt > CATALOG_CACHE_TTL) return [];
+    return raw.products;
+  } catch { return []; }
+}
+
+function writeCatalogCache(products) {
+  try {
+    sessionStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify({ savedAt: Date.now(), products }));
+  } catch { /* özel mod / kota: önbellek olmadan da çalışır */ }
+}
+
+function buildProducts() {
+  const merged = new Map();
+  for (const p of applyProductOverrides([...BASE_PRODUCTS, ...getAdminProducts()])) merged.set(p.id, p);
+  for (const p of SERVER_PRODUCTS) {
+    const id = Number(p.id);
+    if (!Number.isInteger(id)) continue;
+    // Firestore kaydı eksiksizdir; statik kaydın üzerine tamamen biner.
+    merged.set(id, { ...merged.get(id), ...p, id });
+  }
+  return [...merged.values()];
+}
+
 /* ─── PRODUCTS: Statik + Admin ürünlerini birleştir, düzenlemeleri uygula ─── */
-let PRODUCTS = applyProductOverrides([...BASE_PRODUCTS, ...getAdminProducts()]);
+let PRODUCTS = buildProducts();
 
 /* ─── PRODUCTS'ı yenile (admin değişikliklerinden sonra) ─── */
 function refreshProducts() {
-  PRODUCTS = applyProductOverrides([...BASE_PRODUCTS, ...getAdminProducts()]);
+  PRODUCTS = buildProducts();
+}
+
+/* Sunucu katalogunu çeker. Hata durumunda sessizce statik listede kalır —
+   katalog servisi düşse bile site gezilebilir olmalı. */
+const productsReady = (async function loadServerCatalog() {
+  if (typeof fetch !== 'function') return PRODUCTS;
+  try {
+    const res  = await fetch(CATALOG_API, { headers: { Accept: 'application/json' } });
+    if (!res.ok) return PRODUCTS;
+    const data = await res.json();
+    if (!data || !Array.isArray(data.products)) return PRODUCTS;
+
+    SERVER_PRODUCTS = data.products;
+    writeCatalogCache(data.products);
+    refreshProducts();
+    document.dispatchEvent(new CustomEvent('products:updated', { detail: { count: data.products.length } }));
+  } catch (err) {
+    console.warn('[katalog] sunucu katalogu okunamadı, statik liste kullanılıyor:', err.message);
+  }
+  return PRODUCTS;
+})();
+
+/* Admin paneli bir ürünü kaydettikten sonra listeyi elindeki taze veriyle
+   günceller; ayrı bir tur atmaya gerek kalmaz. */
+function setServerProducts(list) {
+  SERVER_PRODUCTS = Array.isArray(list) ? list : [];
+  writeCatalogCache(SERVER_PRODUCTS);
+  refreshProducts();
+}
+
+/* Sayfa kodu hem DOM'u hem katalogu bekler.
+   Kullanım:  whenCatalogReady(() => { ...çizim... });                      */
+function whenCatalogReady(fn) {
+  const domReady = document.readyState === 'loading'
+    ? new Promise(resolve => document.addEventListener('DOMContentLoaded', resolve))
+    : Promise.resolve();
+
+  Promise.all([domReady, productsReady]).then(() => fn());
 }
 
 /* ─── Yardımcı: ID ile ürün bul ─── */

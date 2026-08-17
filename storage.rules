@@ -1,0 +1,36 @@
+rules_version = '2';
+
+// =========================================
+// Firebase Storage kuralları — efemiletisim.com
+// =========================================
+// Ürün görselleri buraya yüklenir ve vitrinde <img src> ile gösterilir,
+// bu yüzden OKUMA herkese açıktır.
+//
+// YAZMA hiçbir istemciye açık değildir. Görsel yükleme sunucudan,
+// /api/admin/upload ucu üzerinden Firebase Admin SDK ile yapılır ve
+// Admin SDK bu kurallardan muaftır. Böylece:
+//
+//   - Tarayıcıda "admin" olduğunu iddia eden bir oturumun dosya yükleyebilmesi
+//     için kuralları gevşetmek gerekmez,
+//   - dosya tipi/boyutu ve dosya ADI sunucuda denetlenir (istemciden gelen
+//     ad yol olarak kullanılmaz),
+//   - yetki kontrolü tek yerde (ADMIN_EMAILS + doğrulanmış e-posta) kalır.
+//
+// Deploy:  firebase deploy --only storage
+// (veya Firebase Console → Storage → Rules)
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Ürün görselleri: herkes okur, kimse yazamaz (yazma Admin SDK'da).
+    match /products/{allPaths=**} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Diğer her yol tamamen kapalı.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

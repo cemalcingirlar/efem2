@@ -134,7 +134,10 @@
 let appliedCoupon = null;
 let couponDiscount = 0;
 
-document.addEventListener('DOMContentLoaded', () => {
+whenCatalogReady(() => {
+  const sync = syncCartWithCatalog();
+  if (sync.removed)  showToast(`${sync.removed} ürün artık satışta olmadığı için sepetten çıkarıldı.`, 'warning');
+  if (sync.repriced) showToast('Sepetinizdeki bazı ürünlerin fiyatı güncellendi.', 'info');
   renderCartPage();
 });
 
@@ -208,7 +211,7 @@ function renderCartPage() {
           <div class="cart-coupon-label"><svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="2"/><path d="M9 7v10M15 7v10"/></svg> Kupon Kodu</div>
           <div class="coupon-input-row">
             <input type="text" id="coupon-input" placeholder="Kod girin..." style="text-transform:uppercase">
-            <button class="btn btn-secondary btn-sm" onclick="handleCoupon()">Uygula</button>
+            <button class="btn btn-secondary btn-sm" onclick="handleCoupon(this)">Uygula</button>
           </div>
           <div id="coupon-msg" style="font-size:0.8125rem;margin-top:var(--space-2)"></div>
         </div>
@@ -231,10 +234,22 @@ function renderCartPage() {
   window.renderCartPage = renderCartPage;
 }
 
-function handleCoupon() {
-  const code = document.getElementById('coupon-input')?.value || '';
-  const result = applyCoupon(code);
-  const msgEl  = document.getElementById('coupon-msg');
+/* Kupon sunucuda doğrulanır (js/cart.js → applyCoupon): bu yüzden akış
+   asenkron, buton da istek boyunca kilitli tutulur. */
+async function handleCoupon(btn) {
+  const code  = document.getElementById('coupon-input')?.value || '';
+  const msgEl = document.getElementById('coupon-msg');
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Kontrol ediliyor…'; }
+  msgEl.style.color = 'var(--text-secondary)';
+  msgEl.textContent = 'Kupon kontrol ediliyor…';
+
+  let result;
+  try {
+    result = await applyCoupon(code);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Uygula'; }
+  }
 
   if (result.valid) {
     appliedCoupon  = result;
@@ -244,6 +259,8 @@ function handleCoupon() {
     showToast(result.msg, 'success');
     renderCartPage();
   } else {
+    appliedCoupon  = null;
+    couponDiscount = 0;
     msgEl.style.color = 'var(--error)';
     msgEl.textContent = result.msg;
     showToast(result.msg, 'error');

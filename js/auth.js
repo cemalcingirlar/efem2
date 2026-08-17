@@ -122,16 +122,22 @@ async function deleteAccount(password) {
   return result;
 }
 
-/* ─── Çıkış ─── */
-async function logout() {
+/* ─── Çıkış ───
+   `silent: true` yalnız oturumu kapatır; toast göstermez ve sayfayı
+   değiştirmez (admin paneli gibi kendi yönlendirmesini yapan ekranlar
+   için). */
+async function logout({ silent = false } = {}) {
   const result = await firebaseLogout();
   if (!result.success) {
-    showToast(result.msg, 'error');
-    return;
+    if (!silent) showToast(result.msg, 'error');
+    return result;
   }
   clearGuest();
+  if (silent) return result;
+
   showToast('Başarıyla çıkış yapıldı.', 'success');
   setTimeout(() => { window.location.href = 'index.html'; }, 800);
+  return result;
 }
 
 /* ─── Navbar oturum durumunu güncelle ─── */

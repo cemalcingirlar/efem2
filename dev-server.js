@@ -33,6 +33,33 @@ const MIME_TYPES = {
 /* ─── .env.local ─── */
 loadEnvFile(path.join(__dirname, '.env.local'));
 
+/* ─── vercel.json başlıkları ───
+   Güvenlik başlıkları (özellikle Content-Security-Policy) yerelde de
+   uygulanır; aksi hâlde ödeme sayfasının sıkı CSP'si ancak canlıda ortaya
+   çıkar ve "yerelde çalışıyordu" durumuna düşülür.
+   Vercel'in kural sırası: aynı başlık birden çok kuralda varsa SONUNCU kazanır. */
+const vercelHeaderRules = loadVercelHeaders(path.join(__dirname, 'vercel.json'));
+
+function loadVercelHeaders(file) {
+  try {
+    const config = JSON.parse(fs.readFileSync(file, 'utf8'));
+    return (config.headers || []).map(rule => ({
+      // "/odeme-guvenli(.html)?" gibi Vercel kaynak desenlerini regex'e çevir
+      test: new RegExp('^' + rule.source.replace(/\/$/, '') + '$'),
+      headers: rule.headers || []
+    }));
+  } catch {
+    return [];
+  }
+}
+
+function applyVercelHeaders(res, pathname) {
+  for (const rule of vercelHeaderRules) {
+    if (!rule.test.test(pathname)) continue;
+    for (const h of rule.headers) res.setHeader(h.key, h.value);
+  }
+}
+
 function loadEnvFile(file) {
   if (!fs.existsSync(file)) return;
   for (const line of fs.readFileSync(file, 'utf8').split(/\r?\n/)) {
@@ -45,12 +72,24 @@ function loadEnvFile(file) {
 }
 
 /* ─── /api yönlendirme ─── */
+/* api/ altındaki TÜM modüller her istekte tazelenir.
+   Yalnız handler dosyasının cache'i düşürülseydi, `api/_lib/*` içindeki
+   değişiklikler sunucu yeniden başlatılana kadar görünmez olurdu — ve
+   eski kodla test edip "hata var" sanmaya yol açardı. */
+const API_DIR = path.join(__dirname, 'api');
+
+function clearApiCache() {
+  for (const id of Object.keys(require.cache)) {
+    if (id.startsWith(API_DIR)) delete require.cache[id];
+  }
+}
+
 function resolveApiHandler(pathname) {
   const rel = pathname.replace(/^\/api\//, '').replace(/\/+$/, '');
   if (!rel || rel.includes('..')) return null;
   const file = path.join(__dirname, 'api', `${rel}.js`);
   if (!fs.existsSync(file)) return null;
-  delete require.cache[require.resolve(file)];   // her istekte tazele
+  clearApiCache();
   return require(file);
 }
 
@@ -145,7 +184,9 @@ const server = http.createServer(async (req, res) => {
       res.end('500 Sunucu Hatası');
       return;
     }
-    res.writeHead(200, { 'Content-Type': contentType });
+    applyVercelHeaders(res, reqPath);
+    res.setHeader('Content-Type', contentType);
+    res.writeHead(200);
     res.end(data);
   });
 });

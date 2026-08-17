@@ -28,6 +28,28 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
+    // Ürün kataloğu: admin panelinden yönetilen ürünler.
+    // Okuma herkese kapalı DEĞİL ama site katalogu kendi API'sinden
+    // (/api/catalog) okuduğu için istemcinin buraya doğrudan erişmesi
+    // gerekmez; yine de ileride Firebase SDK ile okunmak istenirse diye
+    // okuma açık bırakıldı.
+    //
+    // Yazma tamamen kapalıdır: ürün fiyatı sipariş tutarını belirlediği
+    // için katalog yalnız /api/admin/products üzerinden, sunucuda
+    // doğrulanmış yönetici yetkisiyle (Admin SDK, kurallardan muaf)
+    // değiştirilebilir.
+    match /products/{productId} {
+      allow read: if true;
+      allow create, update, delete: if false;
+    }
+
+    // İndirim kuponları: tanım da fiyat kadar hassastır (tutarı değiştirir).
+    // İstemci kupon listesini GÖREMEZ — sepette girilen kod sunucuda
+    // (/api/coupon/validate) doğrulanır. Yazma yalnız Admin SDK ile.
+    match /coupons/{couponCode} {
+      allow read, write: if false;
+    }
+
     // Ödeme olay günlüğü (callback/webhook idempotency + mutabakat):
     // tamamen sunucuya aittir, istemciye kapalıdır.
     match /paymentEvents/{eventId} {

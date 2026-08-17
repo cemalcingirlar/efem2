@@ -57,4 +57,32 @@ async function requireAdmin(req) {
   return { ok: true, admin: { uid: session.uid, email } };
 }
 
-module.exports = { requireAdmin, isAdminConfigured, adminEmails };
+/* Yetki hatasının HTTP karşılığı. 401 "kim olduğunu bilmiyorum",
+   403 "biliyorum ama yetkin yok", 503 "sunucu yapılandırılmamış". */
+function authStatus(code) {
+  if (code === 'unauthenticated')     return 401;
+  if (code === 'admin_not_configured') return 503;
+  return 403;
+}
+
+/* Uçların ortak kapısı: yetki yoksa yanıtı kendisi yazar ve null döner.
+   Kullanım:  const admin = await adminGate(req, res); if (!admin) return; */
+async function adminGate(req, res) {
+  const { fail } = require('./http');
+  const store = require('./store');
+
+  if (!store.isStoreConfigured()) {
+    fail(res, 503, 'store_unavailable',
+      'Sunucu veritabanı yapılandırılmamış. Sunucuda FIREBASE_SERVICE_ACCOUNT tanımlanmalı.');
+    return null;
+  }
+
+  const auth = await requireAdmin(req);
+  if (!auth.ok) {
+    fail(res, authStatus(auth.code), auth.code, auth.message);
+    return null;
+  }
+  return auth.admin;
+}
+
+module.exports = { requireAdmin, adminGate, authStatus, isAdminConfigured, adminEmails };

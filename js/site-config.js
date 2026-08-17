@@ -20,7 +20,7 @@ const SITE = {
     foundedYear: 2015
   },
 
-  /* ─── Yasal künye (Mesafeli Satış Sözleşmesi ve iyzico başvurusu için zorunlu) ─── */
+  /* ─── Yasal künye (Mesafeli Satış Sözleşmesi ve PayTR başvurusu için zorunlu) ─── */
   legal: {
     tradeName:      'EFEM İLETİŞİM SİNEMA VE TELEVİZYON PROGRAMCILIĞI PRODÜKSİYON ELEKTRONİK BİLİŞİM TİCARET LTD. ŞTİ.',
     tradeNameTodo:  false,

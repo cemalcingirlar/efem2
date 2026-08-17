@@ -1,16 +1,19 @@
 #!/usr/bin/env node
 /* =========================================
-   Ödeme akışı entegrasyon testi (sahte iyzico + sahte sipariş defteri)
+   Ödeme akışı entegrasyon testi (sahte PayTR + sahte sipariş defteri)
    =========================================
-   Gerçek iyzico'ya İSTEK ATMAZ. Yerelde iyzico gibi davranan küçük bir HTTP
-   sunucusu ve bellekte bir sipariş defteri kullanarak şunları doğrular:
+   Gerçek PayTR'ye İSTEK ATMAZ. Yerelde PayTR gibi davranan bir HTTP sunucusu
+   ve bellekte bir sipariş defteri kullanarak şunları doğrular:
 
-     1) initialize: tutarı sunucu hesaplar, siparişi açar, imzayı doğrular
-     2) callback  : sonucu retrieve ile sorgular, siparişi `paid` yapar
-     3) replay    : aynı callback tekrar gelince ikinci kez işlenmez
-     4) tutar oynaması: iyzico farklı tutar döndürürse sipariş `pending_review`
-     5) imza hatası : yanlış imzada sipariş `paid` olmaz
-     6) başarısız ödeme: `failed`, yan etki yok
+     1) initialize: tutarı sunucu hesaplar, siparişi açar, PayTR'nin beklediği
+        alanları ve paytr_token imzasını doğru üretir
+     2) bildirim (notify): imzalı başarılı bildirim siparişi `paid` yapar ve
+        gövdesi TAM OLARAK "OK" döner
+     3) tekrar bildirim: ikinci kez işlenmez (yan etki tekrarlanmaz)
+     4) tutar uyuşmazlığı: `pending_review`, sevkiyat yok
+     5) bozuk imza: 401, hiçbir durum değişmez
+     6) status=failed: sipariş `failed`, mail gitmez
+     7) doğrulama kapıları ve hız sınırı
 
    Çalıştırma: node scripts/test-payment-flow.mjs                            */
 
@@ -20,8 +23,9 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 
-const API_KEY    = 'sandbox-api-key';
-const SECRET_KEY = 'sandbox-secret-key';
+const MERCHANT_ID   = '123456';
+const MERCHANT_KEY  = 'flow-merchant-key';
+const MERCHANT_SALT = 'flow-merchant-salt';
 
 let passed = 0, failed = 0;
 function check(name, actual, expected) {
@@ -30,101 +34,50 @@ function check(name, actual, expected) {
   else    { failed++; console.error(`  FAIL ${name}\n       beklenen: ${JSON.stringify(expected)}\n       gelen   : ${JSON.stringify(actual)}`); }
 }
 
-/* ─── Sahte iyzico ─── */
-const fakeIyzico = {
-  paidPriceOverride: null,
-  paymentStatus: 'SUCCESS',
-  breakSignature: false,       // retrieve yanıtının imzasını boz
-  breakInitSignature: false,   // initialize yanıtının imzasını boz
-  lastInitializeBody: null
+/* ─── Sahte PayTR ─── */
+const fakePaytr = {
+  lastRequest: null,
+  respondFailure: false,
+  tokenSignatureValid: null   // gelen paytr_token'ı bağımsız doğrular
 };
-
-function sign(params) {
-  return crypto.createHmac('sha256', SECRET_KEY).update(params.join(':')).digest('hex');
-}
 
 const gateway = http.createServer((req, res) => {
   let body = '';
   req.on('data', c => { body += c; });
   req.on('end', () => {
-    const payload = JSON.parse(body || '{}');
+    const fields = Object.fromEntries(new URLSearchParams(body));
+    fakePaytr.lastRequest = fields;
+
+    // paytr_token'ı PayTR dokümanındaki formülle bağımsız olarak yeniden hesapla
+    const expected = crypto.createHmac('sha256', MERCHANT_KEY).update(
+      fields.merchant_id + fields.user_ip + fields.merchant_oid + fields.email +
+      fields.payment_amount + fields.user_basket + fields.no_installment +
+      fields.max_installment + fields.currency + fields.test_mode + MERCHANT_SALT
+    ).digest('base64');
+    fakePaytr.tokenSignatureValid = expected === fields.paytr_token;
+
     res.setHeader('Content-Type', 'application/json');
-
-    // IYZWSv2 başlığı gerçekten üretiliyor mu?
-    const auth = String(req.headers.authorization || '');
-    if (!auth.startsWith('IYZWSv2 ') || !req.headers['x-iyzi-rnd']) {
-      res.statusCode = 401;
-      res.end(JSON.stringify({ status: 'failure', errorCode: 'auth' }));
+    if (!fakePaytr.tokenSignatureValid) {
+      res.end(JSON.stringify({ status: 'failed', reason: 'paytr_token gecersiz' }));
       return;
     }
-    const decoded = Buffer.from(auth.slice(8), 'base64').toString('utf8');
-    const rnd = req.headers['x-iyzi-rnd'];
-    const expected = crypto.createHmac('sha256', SECRET_KEY)
-      .update(rnd + req.url + body).digest('hex');
-    if (!decoded.includes(`apiKey:${API_KEY}`) || !decoded.includes(`signature:${expected}`)) {
-      res.statusCode = 401;
-      res.end(JSON.stringify({ status: 'failure', errorCode: 'bad_signature' }));
+    if (fakePaytr.respondFailure) {
+      res.end(JSON.stringify({ status: 'failed', reason: 'Zorunlu alan degeri gecersiz: test' }));
       return;
     }
-
-    if (req.url.includes('checkoutform/initialize')) {
-      fakeIyzico.lastInitializeBody = payload;
-      const token = 'tok-' + payload.conversationId;
-      res.end(JSON.stringify({
-        status: 'success',
-        conversationId: payload.conversationId,
-        token,
-        tokenExpireTime: 1800,
-        paymentPageUrl: `https://sandbox-cpp.iyzipay.com/${token}`,
-        signature: fakeIyzico.breakInitSignature ? 'f'.repeat(64) : sign([payload.conversationId, token])
-      }));
-      return;
-    }
-
-    if (req.url.includes('checkoutform/auth/ecom/detail')) {
-      const conversationId = payload.token.replace(/^tok-/, '');
-      const price = fakeIyzico.paidPriceOverride ?? EXPECTED_PRICE;
-      const fields = {
-        paymentStatus: fakeIyzico.paymentStatus,
-        paymentId: '99887766',
-        currency: 'TRY',
-        basketId: conversationId,
-        conversationId,
-        paidPrice: price,
-        price,
-        token: payload.token
-      };
-      const signature = fakeIyzico.breakSignature
-        ? 'f'.repeat(64)
-        : sign(Object.values(fields));
-      res.end(JSON.stringify({
-        status: 'success',
-        ...fields,
-        fraudStatus: 1,
-        installment: 1,
-        cardAssociation: 'MASTER_CARD',
-        binNumber: '552879',
-        lastFourDigits: '0008',
-        itemTransactions: [{ paymentTransactionId: '12345', price: 1, paidPrice: 1 }],
-        signature
-      }));
-      return;
-    }
-
-    res.statusCode = 404;
-    res.end(JSON.stringify({ status: 'failure', errorCode: 'unknown_path' }));
+    res.end(JSON.stringify({ status: 'success', token: 'tok' + crypto.randomBytes(12).toString('hex') }));
   });
 });
 
 await new Promise(resolve => gateway.listen(0, resolve));
 const gatewayUrl = `http://127.0.0.1:${gateway.address().port}`;
 
-process.env.IYZICO_API_KEY     = API_KEY;
-process.env.IYZICO_SECRET_KEY  = SECRET_KEY;
-process.env.IYZICO_MODE        = 'sandbox';
-process.env.IYZICO_BASE_URL    = gatewayUrl;
-process.env.SITE_BASE_URL      = 'https://example.test';
-process.env.ORDER_TOKEN_SECRET = 'flow-test-secret';
+process.env.PAYTR_MERCHANT_ID   = MERCHANT_ID;
+process.env.PAYTR_MERCHANT_KEY  = MERCHANT_KEY;
+process.env.PAYTR_MERCHANT_SALT = MERCHANT_SALT;
+process.env.PAYTR_TEST_MODE     = '1';
+process.env.SITE_BASE_URL       = 'https://example.test';
+process.env.ORDER_TOKEN_SECRET  = 'flow-test-secret';
 process.env.FIREBASE_SERVICE_ACCOUNT = JSON.stringify({
   project_id: 'test', client_email: 'test@test.iam.gserviceaccount.com', private_key: 'x'
 });
@@ -143,8 +96,6 @@ const fakeStore = {
     db.set(id, { ...data });
   },
   getOrder: async (id) => (db.has(id) ? { ...db.get(id) } : null),
-  findOrderByCheckoutToken: async (token) =>
-    [...db.values()].find(o => o.checkoutToken === token) || null,
   updateOrder: async (id, data) => { db.set(id, { ...db.get(id), ...data }); },
   transitionOrder: async (id, decide) => {
     const current = db.get(id);
@@ -166,34 +117,39 @@ require.cache[require.resolve('../api/_lib/store.js')] = {
   exports: fakeStore
 };
 
-const initialize = require('../api/_lib/../payment/initialize.js');
-const callback   = require('../api/payment/callback.js');
+/* PayTR istek adresini test sunucusuna çevir */
+const env = require('../api/_lib/env.js');
+const realConfig = env.paytrConfig;
+env.paytrConfig = () => {
+  const cfg = realConfig();
+  return cfg ? { ...cfg, tokenUrl: `${gatewayUrl}/odeme/api/get-token` } : cfg;
+};
+
+const initialize = require('../api/payment/initialize.js');
+const notify     = require('../api/payment/notify.js');
 const { priceBasket } = require('../api/_lib/orders.js');
 const catalog = require('../api/_lib/catalog.json');
 const P1 = catalog.products[0];
 const SKU1 = P1.variants[0].sku;
 const SKU1B = P1.variants[1].sku;
 
-const EXPECTED_TOTAL_KURUS = priceBasket([{ id: P1.id, sku: SKU1, qty: 2 }, { id: P1.id, sku: SKU1B, qty: 1 }]).totalKurus;
-const EXPECTED_PRICE = Number((EXPECTED_TOTAL_KURUS / 100).toFixed(2));
+const EXPECTED_TOTAL_KURUS = priceBasket([
+  { id: P1.id, sku: SKU1, qty: 2 },
+  { id: P1.id, sku: SKU1B, qty: 1 }
+]).totalKurus;
 
 /* ─── Handler çağırma yardımcıları ─── */
 function makeRes() {
-  const res = {
+  return {
     statusCode: 200, headers: {}, body: null, ended: false,
     setHeader(k, v) { this.headers[k.toLowerCase()] = v; },
     status(code) { this.statusCode = code; return this; },
     send(payload) { this.body = payload; this.ended = true; return this; },
     end(payload) { if (payload !== undefined) this.body = payload; this.ended = true; return this; }
   };
-  return res;
 }
 
-/* Her çağrı varsayılan olarak FARKLI bir IP'den gelir: initialize'daki hız
-   sınırı (5 dakikada 8 deneme) testleri kilitlemesin. Hız sınırının kendisi
-   ayrıca test ediliyor (bölüm 8). */
 let ipCounter = 0;
-
 async function call(handler, { method = 'POST', body = {}, query = {}, headers = {}, ip = null } = {}) {
   const clientIp = ip || `10.0.0.${++ipCounter % 250}`;
   headers = { 'x-forwarded-for': clientIp, ...headers };
@@ -201,15 +157,34 @@ async function call(handler, { method = 'POST', body = {}, query = {}, headers =
   const res = makeRes();
   await handler(req, res);
   let json = null;
-  try { json = JSON.parse(res.body); } catch { /* yönlendirme gövdesizdir */ }
+  try { json = JSON.parse(res.body); } catch { /* düz metin olabilir ("OK") */ }
   return { res, json };
+}
+
+/* PayTR'nin göndereceği imzalı bildirimi üretir */
+function notification(orderId, { status = 'success', totalKurus = EXPECTED_TOTAL_KURUS, paymentType = 'card', badHash = false } = {}) {
+  const total = String(totalKurus);
+  const hash = crypto.createHmac('sha256', MERCHANT_KEY)
+    .update(orderId + MERCHANT_SALT + status + total)
+    .digest('base64');
+  return {
+    merchant_oid: orderId,
+    status,
+    total_amount: total,
+    payment_amount: String(EXPECTED_TOTAL_KURUS),
+    payment_type: paymentType,
+    currency: 'TL',
+    installment_count: '0',
+    test_mode: '1',
+    hash: badHash ? hash.replace(/.$/, 'X') : hash
+  };
 }
 
 const ORDER_INPUT = {
   // price ve color BİLEREK yanlış gönderiliyor: sunucu ikisini de yok saymalı
   items: [
     { id: P1.id, sku: SKU1,  qty: 2, price: 1 },
-    { id: P1.id, sku: SKU1B, qty: 1, color: "Altın Sarısı" }
+    { id: P1.id, sku: SKU1B, qty: 1, color: 'Altın Sarısı' }
   ],
   buyer: { ad: 'Ali', soyad: 'Veli', email: 'ali@example.com', telefon: '05001112233' },
   address: { adres: 'Yeni Mahalle 87071 Sokak No:5', sehir: 'Adana', ilce: 'Seyhan', posta: '01150' },
@@ -218,91 +193,103 @@ const ORDER_INPUT = {
   agreements: { distanceSales: true, preInfo: true }
 };
 
-console.log('\n1) initialize');
+console.log('\n1) initialize — PayTR token isteği');
 const init = await call(initialize, { body: ORDER_INPUT });
 check('HTTP 200', init.res.statusCode, 200);
-check('sipariş numarası döndü', /^EFM\d{6}-[0-9A-F]{6}$/.test(init.json?.orderId || ''), true);
+check('sipariş numarası alfanumerik', /^EFM\d{6}[0-9A-F]{6}$/.test(init.json?.orderId || ''), true);
 check('tutar sunucudan', init.json?.totalKurus, EXPECTED_TOTAL_KURUS);
-check('iyzico\'ya giden fiyat', fakeIyzico.lastInitializeBody?.paidPrice, String(EXPECTED_PRICE) + (String(EXPECTED_PRICE).includes('.') ? '' : '.0'));
-check('basket item sayısı (iki varyant = iki satır)', fakeIyzico.lastInitializeBody?.basketItems?.length, 2);
-check('basket item kimliği sku', fakeIyzico.lastInitializeBody?.basketItems?.[0]?.id, SKU1);
-check('basket item adında varyant var',
-  fakeIyzico.lastInitializeBody?.basketItems?.[0]?.name.includes(P1.variants[0].color), true);
-check('istemcinin uydurduğu renk kullanılmadı',
-  fakeIyzico.lastInitializeBody?.basketItems?.[1]?.name.includes('Altın Sarısı'), false);
-check('basket item toplamı = paidPrice',
-  fakeIyzico.lastInitializeBody?.basketItems?.reduce((s, i) => s + Math.round(Number(i.price) * 100), 0),
-  EXPECTED_TOTAL_KURUS);
-check('siparişte sku saklandı', db.get(init.json.orderId)?.items?.[0]?.sku, SKU1);
-check('gsm normalize', fakeIyzico.lastInitializeBody?.buyer?.gsmNumber, '+905001112233');
-check('callback adresi', fakeIyzico.lastInitializeBody?.callbackUrl, 'https://example.test/api/payment/callback');
+check('paytr_token imzası geçerli', fakePaytr.tokenSignatureValid, true);
+check('PayTR\'ye giden tutar kuruş', fakePaytr.lastRequest?.payment_amount, String(EXPECTED_TOTAL_KURUS));
+check('para birimi TL', fakePaytr.lastRequest?.currency, 'TL');
+check('test modu gönderildi', fakePaytr.lastRequest?.test_mode, '1');
+check('taksit kapalı (varsayılan)', fakePaytr.lastRequest?.no_installment, '1');
+check('merchant_oid = sipariş no', fakePaytr.lastRequest?.merchant_oid, init.json.orderId);
+{
+  const rows = JSON.parse(Buffer.from(fakePaytr.lastRequest.user_basket, 'base64').toString('utf8'));
+  check('sepet iki satır (iki varyant)', rows.length, 2);
+  check('sepet satırında varyant adı var', rows[0][0].includes(P1.variants[0].color), true);
+  check('istemcinin uydurduğu renk kullanılmadı', rows[1][0].includes('Altın Sarısı'), false);
+  const sum = rows.reduce((s, [, price, qty]) => s + Math.round(Number(price) * 100) * qty, 0);
+  check('sepet toplamı = payment_amount', sum, EXPECTED_TOTAL_KURUS);
+}
+check('dönüş adresi sipariş sonucuna gidiyor',
+  fakePaytr.lastRequest?.merchant_ok_url.startsWith('https://example.test/odeme-sonuc.html?order=' + init.json.orderId), true);
 check('sipariş awaiting_payment', db.get(init.json.orderId)?.status, 'awaiting_payment');
 check('sözleşme onayı kaydedildi', db.get(init.json.orderId)?.agreements?.distanceSales, true);
+check('ödeme sağlayıcısı kaydedildi', db.get(init.json.orderId)?.paymentProvider, 'paytr');
 
 const orderId = init.json.orderId;
-const token = `tok-${orderId}`;
 
-console.log('\n2) callback — başarılı ödeme');
-const cb1 = await call(callback, { body: { token }, query: { order: orderId } });
-check('303 yönlendirme', cb1.res.statusCode, 303);
-check('sonuç sayfasına gidiyor', cb1.res.headers.location.startsWith('https://example.test/odeme-sonuc.html?order=' + orderId), true);
+console.log('\n2) bildirim — başarılı ödeme');
+const ok1 = await call(notify, { body: notification(orderId) });
+check('HTTP 200', ok1.res.statusCode, 200);
+check('gövde TAM OLARAK "OK"', ok1.res.body, 'OK');
 check('sipariş paid', db.get(orderId).status, 'paid');
-check('paymentId yazıldı', db.get(orderId).paymentId, '99887766');
 check('doğrulama sorunu yok', db.get(orderId).payment.problems, []);
+check('ödeme tipi kaydedildi', db.get(orderId).payment.paymentType, 'card');
 check('sipariş maili kuyruğa girdi', sideEffects.mails.length, 1);
 
-console.log('\n3) callback replay — ikinci kez işlenmemeli');
-await call(callback, { body: { token }, query: { order: orderId } });
-await call(callback, { body: { token }, query: { order: orderId } });
+console.log('\n3) bildirim tekrarı — ikinci kez işlenmemeli');
+await call(notify, { body: notification(orderId) });
+await call(notify, { body: notification(orderId) });
 check('durum hâlâ paid', db.get(orderId).status, 'paid');
 check('ikinci mail gönderilmedi', sideEffects.mails.length, 1);
 
 console.log('\n4) tutar uyuşmazlığı → pending_review');
-fakeIyzico.paidPriceOverride = 1;
 const init2 = await call(initialize, { body: ORDER_INPUT });
-await call(callback, { body: { token: `tok-${init2.json.orderId}` }, query: { order: init2.json.orderId } });
+await call(notify, { body: notification(init2.json.orderId, { totalKurus: 100 }) });
 check('sipariş paid DEĞİL', db.get(init2.json.orderId).status, 'pending_review');
 check('sorun kaydedildi', db.get(init2.json.orderId).payment.problems, ['amount_mismatch']);
 check('mail gönderilmedi', sideEffects.mails.length, 1);
-fakeIyzico.paidPriceOverride = null;
 
-console.log('\n5) yanıt imzası geçersiz');
-fakeIyzico.breakInitSignature = true;
+console.log('\n4b) ortam/para birimi uyuşmazlığı → pending_review');
+{
+  // Sipariş test modunda açıldı; bildirim "canlı işlem" diyor → otomatik onay yok
+  const initEnv = await call(initialize, { body: ORDER_INPUT });
+  const payload = notification(initEnv.json.orderId);
+  await call(notify, { body: { ...payload, test_mode: '0' } });
+  check('ortam uyuşmazlığı paid yapmaz', db.get(initEnv.json.orderId).status, 'pending_review');
+  check('sorun kaydedildi', db.get(initEnv.json.orderId).payment.problems, ['environment_mismatch']);
+
+  const initCur = await call(initialize, { body: ORDER_INPUT });
+  await call(notify, { body: { ...notification(initCur.json.orderId), currency: 'USD' } });
+  check('para birimi uyuşmazlığı paid yapmaz', db.get(initCur.json.orderId).status, 'pending_review');
+  check('sorun kaydedildi', db.get(initCur.json.orderId).payment.problems, ['currency_mismatch']);
+}
+
+console.log('\n5) bozuk imza — hiçbir şey değişmemeli');
 const init3 = await call(initialize, { body: ORDER_INPUT });
-check('initialize imzası bozuksa ödeme sayfası açılmaz', init3.res.statusCode, 502);
-check('kullanıcıya sağlayıcı detayı sızmaz', init3.json.message.includes('çekim yapılmadı'), true);
-fakeIyzico.breakInitSignature = false;
-
-fakeIyzico.breakSignature = true;
-const init3b = await call(initialize, { body: ORDER_INPUT });
-await call(callback, { body: { token: `tok-${init3b.json.orderId}` }, query: { order: init3b.json.orderId } });
-check('retrieve imzası bozuksa paid olmaz', db.get(init3b.json.orderId).status, 'pending_review');
-check('sorun kaydedildi', db.get(init3b.json.orderId).payment.problems, ['signature_invalid']);
-fakeIyzico.breakSignature = false;
+const bad = await call(notify, { body: notification(init3.json.orderId, { badHash: true }) });
+check('HTTP 401', bad.res.statusCode, 401);
+check('OK dönmedi', bad.res.body === 'OK', false);
+check('sipariş hâlâ awaiting_payment', db.get(init3.json.orderId).status, 'awaiting_payment');
 
 console.log('\n6) başarısız ödeme → failed');
-fakeIyzico.paymentStatus = 'FAILURE';
 const init4 = await call(initialize, { body: ORDER_INPUT });
-await call(callback, { body: { token: `tok-${init4.json.orderId}` }, query: { order: init4.json.orderId } });
+await call(notify, { body: notification(init4.json.orderId, { status: 'failed' }) });
 check('sipariş failed', db.get(init4.json.orderId).status, 'failed');
 check('mail gönderilmedi', sideEffects.mails.length, 1);
-fakeIyzico.paymentStatus = 'SUCCESS';
 
-console.log('\n7) doğrulama kapıları');
+console.log('\n7) PayTR token vermezse ödeme başlatılmaz');
+fakePaytr.respondFailure = true;
+const init5 = await call(initialize, { body: ORDER_INPUT });
+check('HTTP 502', init5.res.statusCode, 502);
+check('kullanıcıya sağlayıcı detayı sızmaz', init5.json.message.includes('çekim yapılmadı'), true);
+fakePaytr.respondFailure = false;
+
+console.log('\n8) doğrulama kapıları');
 const noAgreement = await call(initialize, { body: { ...ORDER_INPUT, agreements: {} } });
 check('sözleşme onayı yoksa 400', noAgreement.res.statusCode, 400);
 const badItem = await call(initialize, { body: { ...ORDER_INPUT, items: [{ id: 999999, sku: SKU1, qty: 1 }] } });
 check('olmayan ürün 400', badItem.res.statusCode, 400);
 const noSku = await call(initialize, { body: { ...ORDER_INPUT, items: [{ id: P1.id, qty: 1 }] } });
 check('varyant seçimi eksikse 400', noSku.res.statusCode, 400);
-const fakeSku = await call(initialize, { body: { ...ORDER_INPUT, items: [{ id: P1.id, sku: 'YOK-1', qty: 1 }] } });
-check('sahte sku 400', fakeSku.res.statusCode, 400);
 const badBuyer = await call(initialize, { body: { ...ORDER_INPUT, buyer: { ad: 'A', soyad: 'B', email: 'x', telefon: '1' } } });
 check('geçersiz alıcı 400', badBuyer.res.statusCode, 400);
-const noToken = await call(callback, { body: {} });
-check('token\'sız callback hata sayfasına gider', noToken.res.headers.location.includes('durum=hata'), true);
+const wrongMethod = await call(notify, { method: 'GET', body: {} });
+check('bildirim GET kabul etmiyor', wrongMethod.res.statusCode, 405);
 
-console.log('\n8) hız sınırı (kart deneme freni)');
+console.log('\n9) hız sınırı (kart deneme freni)');
 {
   const attacker = '203.0.113.77';
   let lastStatus = 0;

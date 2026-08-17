@@ -45,14 +45,14 @@ function clientIp(req) {
   const forwarded = String(req.headers['x-forwarded-for'] || '');
   const first = forwarded.split(',')[0].trim();
   const ip = first || req.socket?.remoteAddress || '';
-  // iyzico buyer.ip alanı IPv4/IPv6 bekler; boşsa güvenli bir varsayılan verilir.
+  // PayTR user_ip alanı geçerli bir IP bekler; boşsa güvenli bir varsayılan verilir.
   return /^[0-9a-fA-F:.]{3,45}$/.test(ip) ? ip : '85.34.78.112';
 }
 
 /* ─── Basit hız sınırı (kart deneme/enumeration frenleme) ───
    Serverless'ta bellek örnek başına olduğu için bu tam bir koruma değil,
    ucuz bir ilk frendir; kalıcı koruma için WAF/rate-limit servisi önerilir
-   (bkz. docs/IYZICO-DENETIM-RAPORU.md → Fraud). */
+   (bkz. docs/PAYTR-ENTEGRASYON.md → Fraud/hız sınırı). */
 const buckets = new Map();
 
 function rateLimit(key, { limit = 10, windowMs = 60000 } = {}) {

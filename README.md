@@ -8,7 +8,7 @@
     <img src="https://img.shields.io/badge/JavaScript-Vanilla-F7DF1E?style=flat-square&logo=javascript&logoColor=black" alt="Vanilla JS">
     <img src="https://img.shields.io/badge/Firebase-Auth%20%2B%20Firestore-FFCA28?style=flat-square&logo=firebase&logoColor=black" alt="Firebase">
     <img src="https://img.shields.io/badge/Hosting-Vercel-000000?style=flat-square&logo=vercel" alt="Vercel">
-    <img src="https://img.shields.io/badge/Payment-iyzico%20Checkout%20Form-2563EB?style=flat-square" alt="iyzico Checkout Form">
+    <img src="https://img.shields.io/badge/Payment-PayTR-1B3C87?style=flat-square" alt="PayTR">
     <img src="https://img.shields.io/badge/license-Proprietary-lightgrey?style=flat-square" alt="License">
   </p>
 </div>
@@ -34,7 +34,7 @@
 - **Ürün detay** — galeri, teknik özellik tablosu, ilgili ürünler, stok durumu
 - **Favoriler** — localStorage tabanlı, profil sayfasında listeleniyor
 - **Sepet** — miktar güncelleme, kupon kodu desteği (altyapı hazır, kampanya aktif edilmeyi bekliyor)
-- **Ödeme akışı** — adres/fatura formu + iyzico Checkout Form yönlendirmesi; kart bilgisi sitede toplanmaz, tutar sunucuda hesaplanır, sonuç iyzico'dan doğrulanır (`api/`)
+- **Ödeme akışı** — adres/fatura formu + PayTR iFrame ödeme formu; kart bilgisi sitede toplanmaz, tutar sunucuda hesaplanır, sonuç PayTR'nin imzalı bildiriminden yazılır (`api/`)
 - **Üyelik** — Firebase Authentication (e-posta doğrulama dahil), Firestore'da sipariş/favori geçmişi
 - **Hesap paneli** — sipariş geçmişi, favoriler, adres ve profil yönetimi
 - **Admin paneli** (`admin.html`) — ürün/sipariş yönetimi arayüzü
@@ -50,7 +50,7 @@
 |---|---|
 | Frontend | Vanilla HTML5 / CSS3 / JavaScript (framework yok, build adımı yok) |
 | Kimlik doğrulama & veri | Firebase Authentication + Firestore |
-| Ödeme | iyzico **Checkout Form** (hosted) — Vercel Functions (`api/`), Node.js, bağımlılıksız IYZWSv2 imzalama |
+| Ödeme | **PayTR iFrame API** — Vercel Functions (`api/`), Node.js, bağımlılıksız HMAC-SHA256 imzalama |
 | Hosting | Vercel (`vercel.json`) + Firebase Hosting yapılandırması (`firebase.json`) |
 | Diğer | localStorage (sepet/favoriler), schema.org JSON-LD, CSP güvenlik başlıkları |
 
@@ -70,13 +70,13 @@
 │  ├─ auth.js / firebase-auth.js         → üyelik, Firestore sipariş/favori
 │  └─ main.js                            → navbar, toast, animasyonlar, SEO schema
 ├─ api/                                  → Vercel Functions (sunucu tarafı ödeme)
-│  ├─ _lib/                              → iyzico istemcisi, sipariş/fiyat mantığı, Firestore
-│  ├─ payment/                           → config · initialize · callback · webhook
+│  ├─ _lib/                              → PayTR istemcisi, sipariş/fiyat mantığı, Firestore
+│  ├─ payment/                           → config · initialize · notify
 │  └─ order/                             → eft · status
 ├─ scripts/                              → sync-catalog · test-payment-lib · test-payment-flow
 ├─ assets/                               → images, icons, logos
 ├─ docs/                                 → RAPOR.md, IYZICO-DENETIM-RAPORU.md,
-│                                          IYZICO-ENTEGRASYON.md, ARKADAS-YAPILACAKLAR.md
+│                                          PAYTR-ENTEGRASYON.md, ARKADAS-YAPILACAKLAR.md
 ├─ vercel.json / firebase.json           → hosting + güvenlik başlıkları
 ├─ .env.example                          → sunucu ortam değişkenleri şablonu
 └─ sitemap.xml / robots.txt
@@ -100,11 +100,11 @@ Firebase bağlantısı için `js/firebase-config.js` içindeki proje anahtarlar�
 
 ## Durum
 
-Gerçek iyzico **Checkout Form** entegrasyonu yazıldı: tutar sunucuda hesaplanır, sipariş sunucuda açılır, ödeme sonucu iyzico'dan sorgulanıp imzası doğrulanarak yazılır; kart numarası/CVV bu projenin hiçbir katmanına girmez.
+Gerçek **PayTR iFrame API** entegrasyonu yazıldı: tutar sunucuda hesaplanır, sipariş sunucuda açılır, ödeme sonucu PayTR'nin imzalı bildiriminden yazılır; kart numarası/CVV bu projenin hiçbir katmanına girmez.
 
 Ortam değişkenleri (`.env.example`) girilene kadar kart ödemesi **kapalıdır** — checkout bu durumda EFT/havale sunar ve hiçbir koşulda "ödeme başarılı" taklidi yapılmaz.
 
-Canlıya çıkış adımları: `docs/IYZICO-ENTEGRASYON.md` · Denetim bulguları: `docs/IYZICO-DENETIM-RAPORU.md`
+Canlıya çıkış adımları: `docs/PAYTR-ENTEGRASYON.md` · Denetim bulguları: `docs/IYZICO-DENETIM-RAPORU.md`
 
 ---
 

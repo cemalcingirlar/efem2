@@ -10,16 +10,18 @@ Detaylı ilerleme raporu: `docs/RAPOR.md`. Değişiklik günlüğü: `CHANGELOG.
 
 ## Ödeme — değiştirmeden önce oku
 
-Ödeme **iyzico Checkout Form** (hosted, yönlendirmeli) ile çalışır. Kurulum ve canlıya çıkış: `docs/IYZICO-ENTEGRASYON.md`. Denetim bulguları: `docs/IYZICO-DENETIM-RAPORU.md`.
+Ödeme **PayTR iFrame API** ile çalışır (kart formu PayTR tarafında, iframe içinde). Kurulum ve canlıya çıkış: `docs/PAYTR-ENTEGRASYON.md`. Denetim bulguları: `docs/IYZICO-DENETIM-RAPORU.md` (sağlayıcıdan bağımsız mevzuat/güvenlik bulguları hâlâ geçerlidir).
 
 Bozulmaması gereken kurallar:
 
 - Bu projede **kart numarası/CVV toplanmaz, taşınmaz, saklanmaz.** Checkout'a kart alanı geri eklenmez.
 - **Tutar istemciden alınmaz.** Sunucu, sepeti `api/_lib/catalog.json` üzerinden yeniden fiyatlar; istemciden yalnız `{id, sku, qty}` kabul edilir; renk/beden bilgisi de katalogdan okunur, istemciden gelen metin kullanılmaz. Katalog (fiyat/varyant) değişirse `npm run sync-catalog`.
-- **Ödeme sonucu tarayıcıdan gelen veriye göre belirlenmez.** Callback/webhook yalnız tetikleyicidir; sonuç iyzico retrieve yanıtından okunur ve imzası doğrulanır (`api/_lib/settle.js`).
-- İmza/tutar/`conversationId` uyuşmazlığında sipariş `pending_review` olur — `failed` veya `paid` yapılmaz, sevkiyat başlamaz.
-- Sırlar (`IYZICO_SECRET_KEY`, service account) yalnız sunucu ortam değişkeninde durur; repoya, istemci koduna veya loga girmez.
+- **Ödeme sonucu tarayıcıdan gelen veriye göre belirlenmez.** Sonucun tek kaynağı PayTR'nin Bildirim URL'sine (`/api/payment/notify`) gönderdiği, `hash`'i doğrulanmış POST'tur; işlendiğinde PayTR'ye gövdesi tam olarak `OK` olan yanıt dönülür (`api/_lib/settle.js`).
+- Tahsil edilen tutar sipariş tutarıyla uyuşmazsa sipariş `pending_review` olur — `paid` yapılmaz, sevkiyat başlamaz. `hash` doğrulanamayan bildirim hiçbir durumu değiştirmez.
+- Sırlar (`PAYTR_MERCHANT_KEY`, `PAYTR_MERCHANT_SALT`, service account) yalnız sunucu ortam değişkeninde durur; repoya, istemci koduna veya loga girmez.
 - Yapılandırma eksikse kart ödemesi kapalı kalır ve checkout EFT'ye düşer ("fail closed"); sahte başarı üretilmez.
+
+- Sipariş numarası (`merchant_oid`) **alfanumerik** olmak zorundadır (PayTR kuralı); `newOrderId()` bunu garanti eder.
 
 Ödeme kütüphanesini değiştirdikten sonra `npm run test:payment` çalıştırılmalı.
 

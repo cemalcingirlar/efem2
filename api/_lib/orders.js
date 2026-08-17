@@ -18,7 +18,7 @@ const MAX_ORDER_KURUS    = 50000000; // 500.000 ₺ üzeri sipariş manuel incel
 const PRODUCTS = new Map(catalog.products.map(p => [p.id, p]));
 
 /* ─── Metin temizleme ───
-   iyzico'ya ve Firestore'a giden tüm serbest metinler kırpılır: kontrol
+   PayTR'ye ve Firestore'a giden tüm serbest metinler kırpılır: kontrol
    karakterleri ayıklanır, uzunluk sınırlanır. */
 function clean(value, maxLength = 120) {
   if (value === null || value === undefined) return '';
@@ -40,7 +40,7 @@ function variantLabel(line) {
   return [line.color, line.size].filter(Boolean).join(' · ');
 }
 
-/* Sipariş satırının müşteriye ve iyzico'ya gösterilen tam adı. */
+/* Sipariş satırının müşteriye ve PayTR sepetine gösterilen tam adı. */
 function lineTitle(line) {
   const label = variantLabel(line);
   return label ? `${line.name} (${label})` : line.name;
@@ -136,14 +136,6 @@ function validateBuyer(raw) {
   return { buyer };
 }
 
-/* iyzico `gsmNumber` alanını +90XXXXXXXXXX biçiminde bekler. */
-function toGsmNumber(phone) {
-  let digits = String(phone || '').replace(/\D/g, '');
-  if (digits.startsWith('90')) digits = digits.slice(2);
-  if (digits.startsWith('0'))  digits = digits.slice(1);
-  return `+90${digits}`;
-}
-
 function validateAddress(raw, delivery) {
   if (delivery === 'magaza') return { address: null };
 
@@ -172,7 +164,10 @@ function normalizeInvoice(raw, buyer, address) {
   };
 }
 
-/* ─── Kimlikler ─── */
+/* ─── Kimlikler ───
+   PayTR `merchant_oid` alanını EN FAZLA 64 karakter ve ALFANUMERİK olarak
+   şart koşar (tire/boşluk kabul edilmez). Bu yüzden sipariş numarası
+   EFM + yymmdd + 6 hex biçiminde, ayraçsız üretilir: EFM260817A5973E */
 function newOrderId() {
   const now = new Date();
   const stamp = [
@@ -181,7 +176,7 @@ function newOrderId() {
     String(now.getUTCDate()).padStart(2, '0')
   ].join('');
   const rand = crypto.randomBytes(4).toString('hex').toUpperCase().slice(0, 6);
-  return `EFM${stamp}-${rand}`;
+  return `EFM${stamp}${rand}`;
 }
 
 /* Misafir siparişinin sonuç sayfasını okuyabilmesi için kısa ömürlü
@@ -199,9 +194,13 @@ function verifyOrderAccessToken(orderId, token) {
   return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(token));
 }
 
-const ORDER_ID_RE = /^EFM\d{6}-[0-9A-F]{6}$/;
+/* Yeni (PayTR uyumlu, ayraçsız) ve eski (tireli, iyzico döneminden kalan)
+   biçim birlikte kabul edilir; eski siparişlerin durumu da okunabilsin. */
+const ORDER_ID_RE        = /^EFM\d{6}[0-9A-F]{6}$/;
+const LEGACY_ORDER_ID_RE = /^EFM\d{6}-[0-9A-F]{6}$/;
+
 function isValidOrderId(value) {
-  return typeof value === 'string' && ORDER_ID_RE.test(value);
+  return typeof value === 'string' && (ORDER_ID_RE.test(value) || LEGACY_ORDER_ID_RE.test(value));
 }
 
 /* ─── İstemciye dönen sipariş görünümü ───
@@ -257,7 +256,6 @@ module.exports = {
   lineTitle,
   priceBasket,
   validateBuyer,
-  toGsmNumber,
   validateAddress,
   normalizeInvoice,
   newOrderId,

@@ -1,20 +1,21 @@
 /* =========================================
-   efemiletisim.com – Ödeme (iyzico Checkout Form)
+   efemiletisim.com – Ödeme (PayTR iFrame API)
    =========================================
    ÖNEMLİ: Bu dosya kart bilgisi TOPLAMAZ ve ödeme sonucunu ÜRETMEZ.
 
    Akış:
      1) /api/payment/config      → kart ödemesi açık mı?
      2) /api/payment/initialize  → sunucu sepeti kendi fiyatlarıyla
-                                   hesaplar, siparişi açar, iyzico ödeme
-                                   sayfasının adresini döner
-     3) tarayıcı iyzico'nun ödeme sayfasına yönlenir (kart no/CVV yalnız
-        orada girilir — PCI kapsamı bu sitede tutulmaz)
-     4) /api/payment/callback    → sunucu sonucu iyzico'dan sorgular
+                                   hesaplar, siparişi açar ve PayTR'den
+                                   ödeme token'ı alır
+     3) odeme-guvenli.html       → PayTR ödeme formu iframe içinde açılır
+                                   (kart no/CVV yalnız PayTR'ye gider,
+                                   PCI kapsamı bu sitede tutulmaz)
+     4) /api/payment/notify      → PayTR sonucu sunucuya bildirir (imzalı)
      5) odeme-sonuc.html         → sipariş durumu sunucudan okunur
 
-   Daha önce burada bulunan "simüle ödeme" (test kartı → başarılı) tamamen
-   kaldırılmıştır: gerçek tahsilat olmadan sipariş "ödendi" görünemez. */
+   PayTR akışı ASENKRONDUR: müşterinin döndüğü sayfa "ödeme başarılı"
+   kanıtı değildir; sonuç yalnız bildirim ile yazılır. */
 
 const PAYMENT_API = {
   config:     '/api/payment/config',
@@ -35,14 +36,19 @@ async function loadPaymentCapabilities() {
     if (!res.ok) throw new Error(`config HTTP ${res.status}`);
     const data = await res.json();
     paymentCapabilities = {
-      cardEnabled:     Boolean(data.cardEnabled),
-      orderApiEnabled: Boolean(data.orderApiEnabled),
-      mode:            data.mode || null,
-      installments:    Array.isArray(data.installments) ? data.installments : [1]
+      cardEnabled:         Boolean(data.cardEnabled),
+      orderApiEnabled:     Boolean(data.orderApiEnabled),
+      mode:                data.mode || null,          // 'test' | 'production'
+      installmentsEnabled: Boolean(data.installmentsEnabled),
+      maxInstallment:      Number(data.maxInstallment) || 0,
+      provider:            data.provider || 'paytr'
     };
   } catch (err) {
     console.warn('[payment] ödeme yapılandırması okunamadı, kart ödemesi kapalı kabul edildi:', err.message);
-    paymentCapabilities = { cardEnabled: false, orderApiEnabled: false, mode: null, installments: [] };
+    paymentCapabilities = {
+      cardEnabled: false, orderApiEnabled: false, mode: null,
+      installmentsEnabled: false, maxInstallment: 0, provider: 'paytr'
+    };
   }
   return paymentCapabilities;
 }
@@ -84,7 +90,8 @@ async function postJson(url, payload) {
 }
 
 /* ─── Kart ile ödemeyi başlat ───
-   Başarılıysa bu fonksiyon DÖNMEZ: tarayıcı iyzico ödeme sayfasına gider. */
+   Başarılıysa bu fonksiyon DÖNMEZ: tarayıcı güvenli ödeme sayfasına gider.
+   PayTR ödeme formu orada iframe içinde açılır. */
 async function startCardPayment(orderInput) {
   const data = await postJson(PAYMENT_API.initialize, {
     items:      cartForServer(),
@@ -99,7 +106,12 @@ async function startCardPayment(orderInput) {
   // (sekme kapandı vb.) sonucu tekrar sorgulayabilmek için saklanır.
   rememberPendingOrder(data.orderId, data.accessToken);
 
-  window.location.href = data.paymentPageUrl;
+  const params = new URLSearchParams({
+    token: data.paymentToken,
+    order: data.orderId,
+    t:     data.accessToken
+  });
+  window.location.href = 'odeme-guvenli.html?' + params.toString();
   return data;
 }
 

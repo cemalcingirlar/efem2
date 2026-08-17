@@ -2,7 +2,7 @@
 
 Bu dosya, kendi Vercel ve Firebase hesabına bağlı bir AI kod asistanına (Claude Code, Cursor vb.)
 doğrudan yapıştırabileceğin hazır prompt'lar içerir. Bu işleri ben (proje sahibinin AI asistanı)
-yapmadım çünkü hesap erişimi (Vercel deploy, Firebase Console ayarları, gerçek iyzico merchant
+yapmadım çünkü hesap erişimi (Vercel deploy, Firebase Console ayarları, gerçek PayTR mağaza
 bilgileri) gerektiriyor — bunlar senin kendi hesabında, senin onayınla ilerlemeli.
 
 Proje zaten bir Firebase projesine bağlı: `js/firebase-config.js` → project ID `efemiletisim`.
@@ -60,10 +60,10 @@ ya da açılsa bile giriş/kayıt (Firebase Auth) çalışmaz. Sırayla yap, atl
 Şu an ödeme tamamen simülasyon (yukarıdaki "Ödemenin şu anki gerçek durumu" bölümüne bak), bu
 adımın aciliyeti yok, Prompt 1 bittiğinde hatırla:
 
-1. iyzico Merchant panelinde (gerçek/production hesabına geçtiğinde) entegrasyon/domain ayarı
+1. PayTR Mağaza panelinde (canlı hesaba geçtiğinde) alan adı ve Bildirim URL ayarı
    varsa `https://efemiletisim.com` olarak gir.
-2. Sandbox'tan production'a geçerken `IYZICO_API_KEY` / `IYZICO_SECRET_KEY` /
-   `IYZICO_BASE_URL` ortam değişkenlerini Vercel Dashboard → Project → Settings →
+2. Test modundan canlıya geçerken `PAYTR_TEST_MODE=0` ve gerekiyorsa
+   `PAYTR_*` ortam değişkenlerini Vercel Dashboard → Project → Settings →
    Environment Variables üzerinden gerçek (production) değerlerle güncelle.
 
 Adım 1 ve 2 bitince bana haber ver, `efemiletisim.com` üzerinden ben de kontrol ederim.
@@ -72,7 +72,7 @@ Adım 1 ve 2 bitince bana haber ver, `efemiletisim.com` üzerinden ben de kontro
 
 ## Öncelik sırası
 
-1. ~~Prompt 1 — Gerçek iyzico entegrasyonu~~ ✅ **tamamlandı** (2026-08-16). Geriye kalan: Adım 1'deki ortam değişkenleri ve sandbox testleri.
+1. ~~Prompt 1 — Gerçek ödeme entegrasyonu~~ ✅ **tamamlandı**; 2026-08-17'de sağlayıcı **PayTR**'ye taşındı. Geriye kalan: Adım 1'deki ortam değişkenleri, Bildirim URL ve test işlemleri.
 2. **Prompt 2 — Admin panelini Firestore + Storage'a taşı, gerçek auth**
 3. **Prompt 3 — Sipariş yönetimi (misafir siparişleri dahil)**
 4. **Prompt 4 — Kupon yönetim ekranı**
@@ -86,27 +86,31 @@ Ayrıca aşağıda **senin doldurman gereken veriler** ve **iş kararı bekleyen
 
 ## ✅ Ödemenin şu anki durumu (2026-08-16 güncellemesi)
 
-Ödeme artık **sahte değil**. Gerçek iyzico **Checkout Form** entegrasyonu yazıldı:
+Ödeme artık **sahte değil**. Gerçek **PayTR iFrame API** entegrasyonu yazıldı:
 
-- Kart numarası ve CVV bu sitede hiç toplanmıyor — müşteri iyzico'nun kendi güvenli ödeme
+- Kart numarası ve CVV bu sitede hiç toplanmıyor — müşteri PayTR'nin kendi güvenli ödeme
   sayfasına yönlendiriliyor.
 - Ödenecek tutar sunucuda hesaplanıyor (tarayıcıdaki fiyat kabul edilmiyor).
-- Sipariş "ödendi" bilgisi yalnızca iyzico'ya sorulup imzası doğrulandıktan sonra yazılıyor.
+- Sipariş "ödendi" bilgisi yalnızca PayTR'nin imzalı bildirimi doğrulandıktan sonra yazılıyor.
 
 **Ama kart ödemesi şu anda KAPALI** — çünkü aşağıdaki ortam değişkenleri henüz girilmedi.
 Bu haliyle site güvenle yayında kalabilir: checkout kart yerine EFT/havale sunar, hiçbir
 koşulda "ödeme alındı" taklidi yapılmaz.
 
 Kod tarafında yapılacak bir şey kalmadı; sıradaki adımlar **hesap erişimi gerektiren**
-işler. Ayrıntılı rehber: `docs/IYZICO-ENTEGRASYON.md`, denetim raporu:
+işler. Ayrıntılı rehber: `docs/PAYTR-ENTEGRASYON.md`, denetim raporu:
 `docs/IYZICO-DENETIM-RAPORU.md`.
 
 ---
 
 ## Adım 1 — Ödemeyi açmak için yapman gerekenler (AI prompt'u değil, senin işin)
 
-### 1.1 iyzico anahtarlarını al
-iyzico Merchant Panel → Ayarlar → API Anahtarları. Sandbox ve production anahtarları farklıdır.
+> **2026-08-17: Ödeme sağlayıcısı PayTR oldu.** Aşağıdaki adımlar iyzico için değil,
+> PayTR içindir. Ayrıntılı rehber: `docs/PAYTR-ENTEGRASYON.md`.
+
+### 1.1 PayTR mağaza bilgilerini al
+PayTR Mağaza Paneli → **Bilgi → API Entegrasyon Bilgileri**: `merchant_id`,
+`merchant_key`, `merchant_salt`. Bu üçü sırdır; kimseyle paylaşma, repoya koyma.
 
 ### 1.2 Firebase servis hesabı oluştur
 Firebase Console → ⚙️ Proje Ayarları → Servis Hesapları → **Yeni özel anahtar üret**.
@@ -116,9 +120,10 @@ Firebase Console → ⚙️ Proje Ayarları → Servis Hesapları → **Yeni öz
 Vercel → Project → Settings → Environment Variables (Production ve Preview için):
 
 ```
-IYZICO_API_KEY=...
-IYZICO_SECRET_KEY=...
-IYZICO_MODE=sandbox
+PAYTR_MERCHANT_ID=...
+PAYTR_MERCHANT_KEY=...
+PAYTR_MERCHANT_SALT=...
+PAYTR_TEST_MODE=1
 SITE_BASE_URL=https://efemiletisim.com
 ORDER_TOKEN_SECRET=<rastgele 32+ karakter>
 FIREBASE_SERVICE_ACCOUNT=<servis hesabı JSON'unun tamamı, tek satır>
@@ -126,22 +131,24 @@ FIREBASE_SERVICE_ACCOUNT=<servis hesabı JSON'unun tamamı, tek satır>
 
 Kaydettikten sonra **yeniden deploy et** (Deployments → Redeploy).
 
-### 1.4 Webhook adresini iyzico paneline yaz
-iyzico Merchant Panel → Ayarlar → Webhook:
-`https://efemiletisim.com/api/payment/webhook`
+### 1.4 Bildirim URL'sini PayTR paneline yaz  ← ATLAMA
+PayTR Mağaza Paneli → **Ayarlar → Bildirim URL**:
+`https://efemiletisim.com/api/payment/notify`
+
+Bu adım atlanırsa para tahsil edilir ama siparişler "ödeme bekleniyor" durumunda kalır.
 
 ### 1.5 Firestore kurallarını yayınla
 ```
 firebase deploy --only firestore:rules
 ```
 
-### 1.6 Sandbox testlerini koş
-`docs/IYZICO-ENTEGRASYON.md` → bölüm 4'teki 10 testi sırayla yap. Hepsi geçmeden
-`IYZICO_MODE=production` yapma.
+### 1.6 Test işlemlerini koş
+`docs/PAYTR-ENTEGRASYON.md` → bölüm 4'teki 10 testi sırayla yap. Hepsi geçmeden
+`PAYTR_TEST_MODE=0` yapma.
 
 ### 1.7 Kontrol
-`https://efemiletisim.com/api/payment/config` adresi `{"cardEnabled":true,...}` dönmeli.
-Dönmüyorsa değişkenlerden biri eksiktir.
+`https://efemiletisim.com/api/payment/config` adresi `{"cardEnabled":true,"mode":"test",...}`
+dönmeli. Dönmüyorsa değişkenlerden biri eksiktir. Canlıya geçince `mode` `production` olur.
 
 ---
 
@@ -317,6 +324,7 @@ Bu büyük bir refactor, acil değil — sadece "tam puan" bir güvenlik denetim
 - **Katalog güncelliği**: ürünlerin çoğu 2023 model (Apple Watch Series 9, iPad 10. Nesil vb.),
   bu modeller markaların resmi sitelerinde artık satışta değil. Kısa vadede sorun değil ama
   orta vadede güncel modellere geçiş düşünülmeli.
-- **iyzico merchant başvurusu**: Prompt 1 tamamlandıktan sonra gerçek (production) iyzico
-  hesabı için başvuru yaparken şirket künyesi (MERSİS, vergi no, vergi dairesi) ve muhtemelen
-  distribütörlük/bayilik belgesi istenebilir — bkz. RAPOR.md bölüm 4, "Replika şüphesi" notu.
+- **PayTR üye işyeri başvurusu**: Canlı mağaza için başvuruda ticaret sicil gazetesi, vergi
+  levhası, imza sirküleri, ortakların kimlik görüntüleri ve IBAN/banka teyit belgesi istenir.
+  Şirket künyesi (MERSİS, vergi no, vergi dairesi) ve muhtemelen distribütörlük/bayilik belgesi
+  de sorulabilir — bkz. RAPOR.md bölüm 4, "Replika şüphesi" notu.

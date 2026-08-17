@@ -2,12 +2,11 @@
 /* =========================================
    Ödeme kütüphanesi birim testleri (bağımlılıksız)
    =========================================
-   Ağ/gerçek iyzico çağrısı yapmaz. Doğruladıkları:
-   - IYZWSv2 imza üretimi ve yanıt imzası hesabı (iyzico SDK'sının
-     dokümante ettiği algoritmayla birebir)
-   - JSON kök seviye ham değer okuyucu (imza doğrulaması buna dayanır)
-   - Fiyat biçimi ve sunucu tarafı sepet fiyatlaması (fiyat manipülasyonu)
-   - Webhook X-IYZ-SIGNATURE-V3 doğrulaması
+   Ağ/gerçek PayTR çağrısı yapmaz. Doğruladıkları:
+   - PayTR token imzası (paytr_token) ve bildirim imzası (hash)
+   - Tutarın kuruşa çevrimi ve sepet (user_basket) biçimi
+   - merchant_oid kuralı: alfanumerik, en fazla 64 karakter
+   - Sunucu tarafı sepet fiyatlaması ve varyant (sku) doğrulaması
    - Sipariş erişim jetonu
 
    Çalıştırma: npm run test:payment                                        */
@@ -17,12 +16,14 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 
-process.env.IYZICO_API_KEY    ||= 'sandbox-test-api-key';
-process.env.IYZICO_SECRET_KEY ||= 'sandbox-test-secret-key';
-process.env.ORDER_TOKEN_SECRET ||= 'unit-test-order-secret';
+process.env.PAYTR_MERCHANT_ID   ||= '123456';
+process.env.PAYTR_MERCHANT_KEY  ||= 'test-merchant-key';
+process.env.PAYTR_MERCHANT_SALT ||= 'test-merchant-salt';
+process.env.ORDER_TOKEN_SECRET  ||= 'unit-test-order-secret';
 
-const iyzico = require('../api/_lib/iyzico.js');
+const paytr  = require('../api/_lib/paytr.js');
 const orders = require('../api/_lib/orders.js');
+const { paytrConfig } = require('../api/_lib/env.js');
 
 let passed = 0;
 let failed = 0;
@@ -37,56 +38,82 @@ function truthy(name, value) {
   check(name, Boolean(value), true);
 }
 
-console.log('\nformatPriceFromKurus');
-check('7499,00 ₺', iyzico.formatPriceFromKurus(749900), '7499.0');
-check('12,50 ₺',   iyzico.formatPriceFromKurus(1250),   '12.5');
-check('10,00 ₺',   iyzico.formatPriceFromKurus(1000),   '10.0');
-check('0,05 ₺',    iyzico.formatPriceFromKurus(5),      '0.05');
+const cfg = paytrConfig();
 
-console.log('\ntopLevelRawScalars — iç içe alanlar imzayı bozmamalı');
+console.log('\ntutar ve sepet biçimi');
+check('7.499,00 ₺ → kuruş', paytr.amountFromKurus(749900), '749900');
+check('12,50 ₺ → kuruş',    paytr.amountFromKurus(1250),   '1250');
+check('birim fiyat metni',  paytr.priceText(749900),       '7499.00');
+check('birim fiyat metni (kuruşlu)', paytr.priceText(1250), '12.50');
 {
-  const body = JSON.stringify({
-    status: 'success', paymentStatus: 'SUCCESS', paymentId: '21234567', currency: 'TRY'
-  }).replace('"paymentId":"21234567"', '"paymentId":"21234567","price":7499.0,"paidPrice":7499.0')
-    + '';
-  const withNested = body.slice(0, -1) + ',"itemTransactions":[{"price":100.0,"paidPrice":100.0}]}';
-  const raw = iyzico.topLevelRawScalars(withNested);
-  check('kök price', raw.price, '7499.0');
-  check('kök paidPrice', raw.paidPrice, '7499.0');
-  check('kök paymentStatus', raw.paymentStatus, 'SUCCESS');
+  const basket = paytr.buildBasket([
+    { name: 'Örnek Ürün (Jet Siyah · S/M)', unitKurus: 1800, qty: 1 },
+    { name: 'İkinci Ürün', unitKurus: 3325, qty: 2 }
+  ]);
+  const decoded = JSON.parse(Buffer.from(basket, 'base64').toString('utf8'));
+  check('sepet PayTR biçiminde', decoded, [
+    ['Örnek Ürün (Jet Siyah · S/M)', '18.00', 1],
+    ['İkinci Ürün', '33.25', 2]
+  ]);
 }
 
-console.log('\ncalculateSignature — SDK ile aynı sonuç');
-{
-  const secret = 'secret';
-  const params = ['SUCCESS', '123', 'TRY', 'B1', 'C1', '1.2', '1.2', 'tok'];
-  const expected = crypto.createHmac('sha256', secret).update(params.join(':')).digest('hex');
-  check('imza', iyzico.calculateSignature(params, secret), expected);
-}
+console.log('\nmerchant_oid kuralı (PayTR: alfanumerik, ≤64)');
+truthy('üretilen sipariş no geçerli', paytr.isValidMerchantOid(orders.newOrderId()));
+check('tireli id reddedilir',    paytr.isValidMerchantOid('EFM260817-A5973E'), false);
+check('boşluklu id reddedilir',  paytr.isValidMerchantOid('EFM 260817'), false);
+check('alt çizgi reddedilir',    paytr.isValidMerchantOid('EFM_260817'), false);
+check('65 karakter reddedilir',  paytr.isValidMerchantOid('A'.repeat(65)), false);
+check('64 karakter kabul',       paytr.isValidMerchantOid('A'.repeat(64)), true);
+truthy('eski tireli id hâlâ okunabiliyor', orders.isValidOrderId('EFM260817-A5973E'));
+truthy('yeni id geçerli', orders.isValidOrderId(orders.newOrderId()));
 
-console.log('\nwebhook X-IYZ-SIGNATURE-V3');
+console.log('\npaytr_token (1. adım imzası)');
 {
-  const secret = 's3cr3t';
-  const payload = {
-    iyziEventType: 'CHECKOUTFORM_AUTH',
-    iyziPaymentId: '9988776',
-    token: 'tok123',
-    paymentConversationId: 'EFM260816-ABCDEF',
-    status: 'SUCCESS'
+  const fields = {
+    user_ip: '85.34.78.112',
+    merchant_oid: 'EFM260817A5973E',
+    email: 'ali@example.com',
+    payment_amount: '749900',
+    user_basket: paytr.buildBasket([{ name: 'Ürün', unitKurus: 749900, qty: 1 }]),
+    no_installment: '1',
+    max_installment: '0',
+    currency: 'TL',
+    test_mode: '1'
   };
-  const hpp = crypto.createHmac('sha256', secret)
-    .update(`${secret}${payload.iyziEventType}${payload.iyziPaymentId}${payload.token}${payload.paymentConversationId}${payload.status}`)
-    .digest('hex');
-  truthy('geçerli HPP imzası kabul edilir', iyzico.verifyWebhookSignatureV3(payload, hpp, secret));
-  check('bozuk imza reddedilir', iyzico.verifyWebhookSignatureV3(payload, hpp.replace(/.$/, '0'), secret), false);
-  check('boş imza reddedilir', iyzico.verifyWebhookSignatureV3(payload, '', secret), false);
 
-  const direct = { ...payload, token: '' };
-  const directSig = crypto.createHmac('sha256', secret)
-    .update(`${secret}${direct.iyziEventType}${direct.iyziPaymentId}${direct.paymentConversationId}${direct.status}`)
-    .digest('hex');
-  truthy('doğrudan biçim imzası kabul edilir', iyzico.verifyWebhookSignatureV3(direct, directSig, secret));
+  // PayTR dokümanındaki formülün bağımsız uygulaması
+  const expected = crypto.createHmac('sha256', cfg.merchantKey).update(
+    cfg.merchantId + fields.user_ip + fields.merchant_oid + fields.email +
+    fields.payment_amount + fields.user_basket + fields.no_installment +
+    fields.max_installment + fields.currency + fields.test_mode + cfg.merchantSalt
+  ).digest('base64');
+
+  check('token imzası dokümandaki formülle aynı', paytr.tokenHash(fields, cfg), expected);
+
+  const tampered = { ...fields, payment_amount: '1' };
+  truthy('tutar değişince imza değişir', paytr.tokenHash(tampered, cfg) !== expected);
 }
+
+console.log('\nbildirim imzası (2. adım)');
+{
+  const payload = { merchant_oid: 'EFM260817A5973E', status: 'success', total_amount: '749900' };
+  const valid = crypto.createHmac('sha256', cfg.merchantKey)
+    .update(payload.merchant_oid + cfg.merchantSalt + payload.status + payload.total_amount)
+    .digest('base64');
+
+  check('hash dokümandaki formülle aynı', paytr.notificationHash(payload, cfg), valid);
+  truthy('geçerli imza kabul edilir', paytr.verifyNotification({ ...payload, hash: valid }, cfg));
+  check('bozuk imza reddedilir', paytr.verifyNotification({ ...payload, hash: valid.replace(/.$/, 'X') }, cfg), false);
+  check('imzasız bildirim reddedilir', paytr.verifyNotification(payload, cfg), false);
+  check('tutar değiştirilirse imza tutmaz',
+    paytr.verifyNotification({ ...payload, total_amount: '1', hash: valid }, cfg), false);
+  check('durum değiştirilirse imza tutmaz',
+    paytr.verifyNotification({ ...payload, status: 'failed', hash: valid }, cfg), false);
+}
+
+console.log('\nPayTR alan temizleme');
+check('e-postada Türkçe karakter sadeleşir', paytr.asciiSafe('çğıöşü@örnek.com', 100), 'cgiosu@ornek.com');
+check('uzunluk sınırlanır', paytr.asciiSafe('x'.repeat(500), 10).length, 10);
 
 /* Katalog js/data.js'ten üretildiği için test verisi de oradan alınır;
    fiyat/sku değiştiğinde testler kendiliğinden uyum sağlar. */
@@ -102,7 +129,7 @@ console.log('\npriceBasket — sunucu otoritesi');
   const ok = orders.priceBasket([{ id: P1.id, sku: SKU1, qty: 2 }]);
   check('bilinen ürün fiyatlanır', ok.totalKurus, P1.priceKurus * 2);
 
-  // İstemcinin gönderdiği fiyat alanı YOK SAYILIR (TC-PRICE-TAMPER)
+  // İstemcinin gönderdiği fiyat alanı YOK SAYILIR
   const tampered = orders.priceBasket([{ id: P1.id, sku: SKU1, qty: 1, price: 1, total: 1 }]);
   check('istemci fiyatı yok sayılır', tampered.totalKurus, P1.priceKurus);
 
@@ -121,7 +148,6 @@ console.log('\nvaryantlar');
   truthy('sahte sku reddedilir',   orders.priceBasket([{ id: P1.id, sku: 'YOK-123', qty: 1 }]).error);
   truthy('başka ürünün sku\'su reddedilir', orders.priceBasket([{ id: P1.id, sku: SKU2, qty: 1 }]).error);
 
-  // Aynı ürünün iki farklı rengi AYRI satırdır (js/cart.js ile aynı davranış)
   const twoColors = orders.priceBasket([
     { id: P1.id, sku: SKU1,  qty: 1 },
     { id: P1.id, sku: SKU1B, qty: 2 }
@@ -129,7 +155,6 @@ console.log('\nvaryantlar');
   check('iki varyant ayrı satır', twoColors.lines?.length, 2);
   check('toplam doğru', twoColors.totalKurus, P1.priceKurus * 3);
 
-  // Renk/beden istemciden değil katalogdan okunur
   const spoofed = orders.priceBasket([{ id: P1.id, sku: SKU1, qty: 1, color: 'Altın Sarısı', size: 'XXL' }]);
   check('renk katalogdan', spoofed.lines[0].color, P1.variants[0].color);
   check('beden katalogdan', spoofed.lines[0].size, P1.variants[0].size);
@@ -138,11 +163,14 @@ console.log('\nvaryantlar');
     `${P1.name} (${[P1.variants[0].color, P1.variants[0].size].filter(Boolean).join(' · ')})`);
 }
 
-console.log('\nsepet toplamı = iyzico basketItems toplamı');
+console.log('\nsepet toplamı = PayTR user_basket toplamı');
 {
   const basket = orders.priceBasket([{ id: P1.id, sku: SKU1, qty: 2 }, { id: P2.id, sku: SKU2, qty: 1 }]);
-  const itemsSum = basket.lines.reduce((sum, l) => sum + Number(iyzico.formatPriceFromKurus(l.totalKurus)) * 100, 0);
-  check('toplamlar eşit', Math.round(itemsSum), basket.subtotalKurus);
+  const encoded = paytr.buildBasket(basket.lines.map(l => ({ name: l.name, unitKurus: l.unitKurus, qty: l.qty })));
+  const rows = JSON.parse(Buffer.from(encoded, 'base64').toString('utf8'));
+  const sum = rows.reduce((s, [, price, qty]) => s + Math.round(Number(price) * 100) * qty, 0);
+  check('sepet satırları toplamı = sipariş toplamı', sum, basket.totalKurus);
+  check('gönderilecek payment_amount', paytr.amountFromKurus(basket.totalKurus), String(basket.totalKurus));
 }
 
 console.log('\nalıcı doğrulama');
@@ -150,9 +178,6 @@ console.log('\nalıcı doğrulama');
   truthy('geçersiz e-posta reddedilir', orders.validateBuyer({ ad: 'Ali', soyad: 'Veli', email: 'ali@', telefon: '05001112233' }).error);
   truthy('geçersiz telefon reddedilir', orders.validateBuyer({ ad: 'Ali', soyad: 'Veli', email: 'a@b.com', telefon: '1234' }).error);
   check('geçerli alıcı', orders.validateBuyer({ ad: 'Ali', soyad: 'Veli', email: 'A@B.com', telefon: '0500 111 22 33' }).buyer.email, 'a@b.com');
-  check('gsm normalizasyonu (0 ile)',   orders.toGsmNumber('05434402525'),   '+905434402525');
-  check('gsm normalizasyonu (90 ile)',  orders.toGsmNumber('905434402525'),  '+905434402525');
-  check('gsm normalizasyonu (+90 ile)', orders.toGsmNumber('+90 543 440 25 25'), '+905434402525');
 }
 
 console.log('\nsipariş kimliği ve erişim jetonu');
@@ -168,7 +193,7 @@ console.log('\nsipariş kimliği ve erişim jetonu');
 
 console.log('\nmetin temizleme');
 {
-  check('kontrol karakterleri ayıklanır', orders.clean('a\u0000b\u001fc'), 'a b c');
+  check('kontrol karakterleri ayıklanır', orders.clean('a bc'), 'a b c');
   check('uzunluk sınırlanır', orders.clean('x'.repeat(500), 10).length, 10);
 }
 

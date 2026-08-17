@@ -3,66 +3,62 @@
 /* =========================================
    Ortam yapılandırması (sunucu tarafı)
    =========================================
-   Hiçbir sır (secretKey, service account) client bundle'ına GİRMEZ.
+   Hiçbir sır (merchant key/salt, service account) client bundle'ına GİRMEZ.
    Tüm değerler Vercel → Project → Settings → Environment Variables
-   üzerinden gelir (bkz. .env.example ve docs/IYZICO-ENTEGRASYON.md).
+   üzerinden gelir (bkz. .env.example ve docs/PAYTR-ENTEGRASYON.md).
 
    Tasarım kararı: yapılandırma eksikse kart ödemesi KAPALI kalır
    ("fail closed"). Site çalışmaya devam eder, checkout kart yerine
    EFT/havale sunar; hiçbir koşulda "ödeme başarılı" taklidi yapılmaz. */
 
-const SANDBOX_URI    = 'https://sandbox-api.iyzipay.com';
-const PRODUCTION_URI = 'https://api.iyzipay.com';
+const PAYTR_TOKEN_URL = 'https://www.paytr.com/odeme/api/get-token';
+const PAYTR_IFRAME_URL = 'https://www.paytr.com/odeme/guvenli';
 
 function str(name) {
   const v = process.env[name];
   return typeof v === 'string' && v.trim() ? v.trim() : null;
 }
 
-/* ─── iyzico ─── */
-function iyzicoMode() {
-  return str('IYZICO_MODE') === 'production' ? 'production' : 'sandbox';
+/* ─── PayTR ───
+   merchant_id / merchant_key / merchant_salt üçü de PayTR mağaza panelinden
+   alınır. Üçü birden yoksa kart ödemesi açılmaz. */
+function paytrConfig() {
+  const merchantId   = str('PAYTR_MERCHANT_ID');
+  const merchantKey  = str('PAYTR_MERCHANT_KEY');
+  const merchantSalt = str('PAYTR_MERCHANT_SALT');
+  if (!merchantId || !merchantKey || !merchantSalt) return null;
+
+  return {
+    merchantId,
+    merchantKey,
+    merchantSalt,
+    tokenUrl:  PAYTR_TOKEN_URL,
+    iframeUrl: PAYTR_IFRAME_URL,
+    testMode:  isTestMode(),
+    debugOn:   str('PAYTR_DEBUG_ON') === '1'
+  };
 }
 
-function iyzicoBaseUrl() {
-  const explicit = str('IYZICO_BASE_URL');
-  if (explicit) return explicit.replace(/\/+$/, '');
-  return iyzicoMode() === 'production' ? PRODUCTION_URI : SANDBOX_URI;
+/* PayTR'de "test modu" mağaza canlıyken bile işlem başına gönderilebilir.
+   Varsayılan: TEST (1). Canlıya geçerken PAYTR_TEST_MODE=0 yapılır —
+   yani yanlışlıkla gerçek para çekmek değil, test kalmak varsayılandır. */
+function isTestMode() {
+  return str('PAYTR_TEST_MODE') === '0' ? false : true;
 }
 
-function iyzicoConfig() {
-  const apiKey    = str('IYZICO_API_KEY');
-  const secretKey = str('IYZICO_SECRET_KEY');
-  if (!apiKey || !secretKey) return null;
-  return { apiKey, secretKey, baseUrl: iyzicoBaseUrl(), mode: iyzicoMode() };
-}
-
-/* ─── Ortam tutarlılık kapısı (rapor: TC-ENV) ───
-   production modda sandbox base URL'i (veya tersi) kullanılırsa
-   ödeme başlatma reddedilir; yanlış ortama trafik gitmez. */
-function environmentMismatch() {
-  const cfg = iyzicoConfig();
-  if (!cfg) return null;
-  if (cfg.mode === 'production' && cfg.baseUrl.includes('sandbox')) {
-    return 'IYZICO_MODE=production ancak IYZICO_BASE_URL sandbox adresini gösteriyor.';
-  }
-  if (cfg.mode === 'sandbox' && cfg.baseUrl === PRODUCTION_URI) {
-    return 'IYZICO_MODE=sandbox ancak IYZICO_BASE_URL production adresini gösteriyor.';
-  }
-  return null;
+function paytrMode() {
+  return isTestMode() ? 'test' : 'production';
 }
 
 /* ─── Taksit ───
-   Varsayılan: tek çekim. Taksit açılacaksa hem merchant hesabında tanımlı
-   hem de BDDK'nın ürün kategorisi için izin verdiği plan olmalıdır
-   (bkz. docs/IYZICO-DENETIM-RAPORU.md → BDDK taksit uygunluğu). */
-function enabledInstallments() {
-  const raw = str('IYZICO_ENABLED_INSTALLMENTS');
-  if (!raw) return [1];
-  const list = raw.split(',')
-    .map(n => parseInt(n.trim(), 10))
-    .filter(n => Number.isInteger(n) && n >= 1 && n <= 12);
-  return list.length ? [...new Set(list)] : [1];
+   Varsayılan: taksit kapalı (no_installment = 1). Elektronik/telekomünikasyon
+   ürünlerinde BDDK taksit kısıtları vardır; taksit açılacaksa hem PayTR
+   panelinde tanımlı hem de kategori için mevzuata uygun olmalıdır. */
+function installmentSettings() {
+  const noInstallment = str('PAYTR_NO_INSTALLMENT') === '0' ? 0 : 1;
+  const raw = parseInt(str('PAYTR_MAX_INSTALLMENT') || '0', 10);
+  const maxInstallment = Number.isInteger(raw) && raw >= 0 && raw <= 12 ? raw : 0;
+  return { noInstallment, maxInstallment };
 }
 
 /* ─── Site ─── */
@@ -75,13 +71,13 @@ function siteBaseUrl() {
 }
 
 /* ─── Misafir siparişi erişim jetonu için HMAC anahtarı ───
-   Ayrı bir sır tanımlanmadıysa iyzico secretKey'inden türetilir;
+   Ayrı bir sır tanımlanmadıysa PayTR merchant key'inden türetilir;
    böylece jeton üretimi hiçbir zaman zayıf/sabit bir anahtara düşmez. */
 function orderTokenSecret() {
   const explicit = str('ORDER_TOKEN_SECRET');
   if (explicit) return explicit;
-  const cfg = iyzicoConfig();
-  return cfg ? `derived:${cfg.secretKey}` : null;
+  const cfg = paytrConfig();
+  return cfg ? `derived:${cfg.merchantKey}` : null;
 }
 
 /* ─── Firebase Admin (sipariş defteri) ───
@@ -108,28 +104,26 @@ function serviceAccount() {
 /* ─── Genel durum ─── */
 function paymentStatusReport() {
   return {
-    iyzico:   Boolean(iyzicoConfig()),
-    store:    Boolean(serviceAccount()),
-    mismatch: environmentMismatch(),
-    mode:     iyzicoMode()
+    paytr: Boolean(paytrConfig()),
+    store: Boolean(serviceAccount()),
+    mode:  paytrMode()
   };
 }
 
-/* Kart ödemesi ancak hem iyzico kimlik bilgileri hem de sipariş defteri
+/* Kart ödemesi ancak hem PayTR kimlik bilgileri hem de sipariş defteri
    hazırsa açılır: sipariş kaydı olmadan idempotency/mutabakat yapılamaz. */
 function isCardPaymentEnabled() {
   const s = paymentStatusReport();
-  return s.iyzico && s.store && !s.mismatch;
+  return s.paytr && s.store;
 }
 
 module.exports = {
-  SANDBOX_URI,
-  PRODUCTION_URI,
-  iyzicoMode,
-  iyzicoBaseUrl,
-  iyzicoConfig,
-  environmentMismatch,
-  enabledInstallments,
+  PAYTR_TOKEN_URL,
+  PAYTR_IFRAME_URL,
+  paytrConfig,
+  paytrMode,
+  isTestMode,
+  installmentSettings,
   siteBaseUrl,
   orderTokenSecret,
   serviceAccount,

@@ -3,6 +3,40 @@
 Bu dosya projede yapılan her ekleme, değişiklik ve kaldırmayı kayıt altına alır.
 En yeni kayıtlar en üstte.
 
+## 2026-08-18 (devam)
+
+### Sipariş yönetimi: admin paneli artık TÜM siparişleri sunucudan görüyor
+Talep: `docs/ARKADAS-YAPILACAKLAR.md` → Prompt 3. Talebin ilk iki maddesi (top-level
+`orders` koleksiyonu + misafir siparişlerinin sunucu tarafında kaydı) PayTR/iyzico
+çalışmasıyla birlikte zaten yapılmıştı; eksik olan panel tarafı tamamlandı.
+
+**Tespit edilen eksik:** `admin.html` sipariş ekranı `getAllOrders()` ile
+`localStorage` okuyordu — yani yalnızca O TARAYICIDA verilmiş siparişleri gösteriyordu.
+Firestore'daki gerçek siparişler (üye + misafir) panelde hiç görünmüyordu; durum
+değiştirmek de yalnız yerel deftere yazıyor, müşterinin profiline yansımıyordu.
+
+- Add: `api/admin/orders.js` — `GET` tüm siparişleri listeler (üye + misafir),
+  `POST` sipariş durumunu değiştirir. Yalnız sevkiyat durumları atanabilir
+  (Hazırlanıyor / Kargoda / Teslim Edildi / İptal); ödeme durumları (`paid` vb.) elle
+  değiştirilemez, onları yalnız ödeme bildirimi yazar.
+- Add: `api/_lib/admin-auth.js` — yetki SUNUCUDA doğrulanıyor: Firebase ID token +
+  doğrulanmış e-posta + `ADMIN_EMAILS` listesi. Panelin istemci tarafı şifresi bir
+  yetki kontrolü değildir; bu uç ondan bağımsız korunur.
+- Add: `store.listOrders()`, `store.setOrderStatus()`, `store.syncUserOrderStatus()`.
+  Sonuncusu üye siparişlerinde `users/{uid}.orders` dizisindeki kopyayı transaction
+  içinde günceller — müşteri `profil.html` sayfasında güncel durumu görür.
+- Change: `admin.html` sipariş ekranı sunucudan besleniyor; sunucu yapılandırılmamışsa
+  eski yerel deftere düşüyor ve bunu ekranda **uyarı şeridiyle** açıkça söylüyor
+  (hangi ortam değişkeninin eksik olduğu dahil).
+- Change: `api/_lib/settle.js` → terminal durumlara `processing/shipped/delivered` eklendi;
+  geç gelen bir ödeme bildirimi kargoya verilmiş siparişi geri alamaz.
+- Add: `npm run test:admin` — 29 test (yetkisiz erişim 401/403/503, üye+misafir listesi,
+  geçersiz durum reddi, profil senkronu, geç bildirim koruması). `npm test` hepsini koşar.
+
+**Kalan:** `admin.html` hâlâ istemci tarafı bir şifre ekranı gösteriyor. Bu ekran güvenlik
+değildir (kaynak kodda görünür), yalnızca paneli kazara açmayı önler — gerçek sipariş verisi
+sunucu yetkisiyle korunuyor. Panelin tamamının Firebase girişine bağlanması Prompt 2'nin işi.
+
 ## 2026-08-18
 
 ### Sipariş e-postası gitmiyordu — teşhis ve düzeltme

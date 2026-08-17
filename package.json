@@ -11,7 +11,9 @@
     "check-catalog": "node scripts/sync-catalog.mjs --check",
     "test:payment": "node scripts/test-payment-lib.mjs && node scripts/test-payment-flow.mjs",
     "test:payment:lib": "node scripts/test-payment-lib.mjs",
-    "test:payment:flow": "node scripts/test-payment-flow.mjs"
+    "test:payment:flow": "node scripts/test-payment-flow.mjs",
+    "test:admin": "node scripts/test-admin-orders.mjs",
+    "test": "npm run test:payment && npm run test:admin"
   },
   "dependencies": {
     "firebase-admin": "^12.7.0"

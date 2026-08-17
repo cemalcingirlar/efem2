@@ -56,7 +56,11 @@ async function verifyIdToken(authorizationHeader) {
 
   try {
     const decoded = await store.auth.verifyIdToken(match[1]);
-    return { uid: decoded.uid, email: decoded.email || null };
+    return {
+      uid: decoded.uid,
+      email: decoded.email || null,
+      emailVerified: Boolean(decoded.email_verified)
+    };
   } catch {
     return null;
   }
@@ -112,6 +116,84 @@ async function transitionOrder(orderId, decide) {
   });
 }
 
+/* ─── Yönetici: tüm siparişler (üye + misafir) ───
+   Admin paneli bu listeyi okur; istemcinin Firestore'a doğrudan erişimi yok. */
+async function listOrders({ limit = 200, status = null } = {}) {
+  const store = getStore();
+  if (!store) throw new Error('store_not_configured');
+
+  let query = store.db.collection('orders');
+  if (status) query = query.where('status', '==', status);
+
+  const snap = await query.orderBy('createdAt', 'desc').limit(Math.min(limit, 500)).get();
+  return snap.docs.map(d => d.data());
+}
+
+/* ─── Yönetici: sipariş durumunu değiştir ───
+   Ödeme durumunun üzerine yazmamak için yalnız sevkiyat durumlarına geçilir;
+   çağıran (api/admin/orders.js) izin verilen durumu doğrular. */
+async function setOrderStatus(orderId, status, statusLabel, actorEmail) {
+  const store = getStore();
+  if (!store) throw new Error('store_not_configured');
+  const ref = store.db.collection('orders').doc(orderId);
+
+  return store.db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists) return { applied: false, reason: 'not_found', order: null };
+
+    const order = snap.data();
+    if (order.status === status) return { applied: false, reason: 'no_change', order };
+
+    tx.update(ref, {
+      status,
+      statusLabel,
+      fulfillment: {
+        updatedAt: new Date().toISOString(),
+        updatedBy: actorEmail || null,
+        previousStatus: order.status
+      },
+      updatedAt: store.FieldValue.serverTimestamp()
+    });
+
+    return { applied: true, order: { ...order, status, statusLabel } };
+  });
+}
+
+/* ─── Üye profilindeki sipariş kopyasını da güncelle ───
+   profil.html users/{uid}.orders dizisini okuyor; admin durumu değiştirince
+   müşteri de güncel durumu görsün diye dizideki ilgili kayıt güncellenir.
+   Dizi elemanı güncellemek için tüm dizi okunup yeniden yazılır (Firestore'da
+   dizi içi alan güncellemesi yok), bu yüzden transaction içinde yapılır. */
+async function syncUserOrderStatus(uid, orderId, status, statusLabel) {
+  const store = getStore();
+  if (!store || !uid) return { applied: false, reason: 'no_user' };
+  const ref = store.db.collection('users').doc(uid);
+
+  try {
+    return await store.db.runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      if (!snap.exists) return { applied: false, reason: 'user_not_found' };
+
+      const data = snap.data() || {};
+      const orders = Array.isArray(data.orders) ? data.orders : [];
+      let found = false;
+
+      const next = orders.map(o => {
+        if (o && o.id === orderId) { found = true; return { ...o, status, statusLabel }; }
+        return o;
+      });
+
+      if (!found) return { applied: false, reason: 'order_not_in_profile' };
+
+      tx.update(ref, { orders: next });
+      return { applied: true };
+    });
+  } catch (err) {
+    console.error('[store] users/%s.orders durumu güncellenemedi: %s', uid, err.message);
+    return { applied: false, reason: 'error' };
+  }
+}
+
 /* ─── Olay günlüğü (idempotency anahtarı) ───
    Aynı eventId ikinci kez gelirse `false` döner; işleyici erken çıkar. */
 async function recordEventOnce(eventId, data) {
@@ -164,6 +246,9 @@ module.exports = {
   getOrder,
   updateOrder,
   transitionOrder,
+  listOrders,
+  setOrderStatus,
+  syncUserOrderStatus,
   recordEventOnce,
   appendOrderToUserProfile,
   queueMail

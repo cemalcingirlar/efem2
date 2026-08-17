@@ -24,7 +24,14 @@ const { formatTry, legacyOrderSummary, lineTitle } = require('./orders');
 const { buildMerchantMail } = require('./notify-merchant');
 const { logPaymentEvent } = require('./http');
 
-const TERMINAL = new Set(['paid', 'refunded', 'cancelled']);
+/* Bu durumlardaki sipariş, sonradan gelen bir bildirimle GERİ ALINMAZ.
+   Ödeme sonuçlananlar (paid/refunded/cancelled) ve yöneticinin elle geçirdiği
+   sevkiyat durumları burada: kargoya verilmiş bir sipariş, geç gelen bir
+   bildirim yüzünden "hazırlanıyor"a dönmemeli. */
+const TERMINAL = new Set([
+  'paid', 'refunded', 'cancelled',
+  'processing', 'shipped', 'delivered'
+]);
 
 const CUSTOMER_MESSAGES = {
   failure:        'Ödeme işleminiz banka tarafından tamamlanamadı. Tutar kartınızdan çekilmedi.',

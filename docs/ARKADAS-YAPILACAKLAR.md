@@ -201,41 +201,40 @@ göründüğünü doğrula, sonucu raporla.
 
 ---
 
-## Prompt 3 — Sipariş yönetimi (misafir siparişleri dahil)
+## ~~Prompt 3 — Sipariş yönetimi (misafir siparişleri dahil)~~ ✅ tamamlandı (2026-08-18)
 
-```
-efemiletisim.com projesinde şu an sipariş yönetim ekranı yok — kullanıcılar kendi siparişlerini
-profil.html'de görüyor (Firestore users/{uid}.orders array'inden), ama admin tarafında SİPARİŞLERİ
-GÖRECEK/durumu güncelleyecek hiçbir ekran yok. Ayrıca misafir (üye olmadan) verilen siparişler
-HİÇBİR YERE kaydedilmiyor (bkz. odeme.html → window.saveOrder, isLoggedIn() false ise sipariş
-sadece client-side bir obje olarak dönüyor, Firestore'a hiç yazılmıyor) — bu ciddi bir eksik,
-misafir siparişi veren birinin siparişi işletme tarafında hiçbir yerde görünmüyor.
+Bu iş bitti; aşağıdakiler artık kodda var:
 
-Yapman gerekenler:
+- **Top-level `orders` koleksiyonu** — üye ve misafir tüm siparişler burada.
+- **Misafir siparişleri kaydediliyor** (`guest: true`, `userId: null`). Yazma işini yalnız
+  sunucu (Vercel Function + Firebase Admin SDK) yapar; istemci `orders` koleksiyonuna
+  yazamaz (`firestore.rules`). Prompt'ta önerilen "daha güvenli" seçenek buydu.
+- **Admin paneli sipariş ekranı sunucudan besleniyor**: `/api/admin/orders` → üye + misafir
+  siparişleri tek listede; durum değiştirme (Hazırlanıyor → Kargoda → Teslim Edildi → İptal)
+  API üzerinden yazılıyor.
+- **Üye siparişinde `users/{uid}.orders` kopyası da güncelleniyor** — müşteri `profil.html`
+  sayfasında güncel durumu görüyor.
+- **Yetki sunucuda**: Firebase ID token + doğrulanmış e-posta + `ADMIN_EMAILS` listesi.
+  Panelin eski istemci tarafı şifresi bir yetki kontrolü değildir; gerçek koruma sunucudadır.
+- Testler: `npm run test:admin` (29 test) — yetkisiz erişim, liste, durum güncelleme,
+  profil senkronu, geç gelen ödeme bildiriminin sevkiyatı geri almaması.
 
-1. Firestore'da top-level bir `orders` koleksiyonu oluştur (üye siparişleri hem users/{uid}.orders
-   içinde hem de bu top-level koleksiyonda tutulabilir, ya da tamamen bu koleksiyona taşınabilir —
-   sen karar ver, ama admin'in TÜM siparişleri (üye + misafir) tek yerden görebilmesi şart).
+### Senin yapman gerekenler (hesap erişimi gerektiriyor)
 
-2. Misafir siparişleri de bu `orders` koleksiyonuna yazılsın (userId alanı null/guest:true
-   olarak işaretlenmiş şekilde). Firestore Security Rules: misafir yazması gerektiği için bu
-   koleksiyona kimliksiz (unauthenticated) YAZMA izni gerekebilir — bunu dikkatli tasarla (ör.
-   sadece Vercel Function üzerinden, Firebase Admin SDK ile server-side yazılsın, client
-   doğrudan yazmasın — daha güvenli).
+1. **Vercel → Environment Variables**:
+   `ADMIN_EMAILS=destek@efemiletisim.com` (birden fazlaysa virgülle ayır)
+   ve `FIREBASE_SERVICE_ACCOUNT` (bkz. Adım 1.2). İkisi de yoksa panel eski yerel
+   deftere düşer ve bunu ekranda uyarı şeridiyle söyler.
+2. **Panele girerken siteye de Firebase hesabınla giriş yapmış ol** (`hesap.html`).
+   Sipariş listesi bu oturumun kimliğiyle çekiliyor.
+3. Doğrulama: bir üye siparişi + bir misafir siparişi ver, panelde ikisinin de
+   göründüğünü ve durumu "Kargoda" yapınca müşterinin `profil.html` ekranında
+   değiştiğini kontrol et.
 
-3. admin.html'e yeni bir "Siparişler" sekmesi ekle: tüm siparişleri listele (tarih, müşteri,
-   tutar, durum), sipariş durumunu güncelleme (Hazırlanıyor → Kargoda → Teslim Edildi → İptal)
-   dropdown'ı ekle. Durum güncellenince, eğer üye siparişiyse users/{uid}.orders içindeki karşılık
-   gelen kaydı da güncelle (senkron kalsın, kullanıcı profil.html'de güncel durumu görsün).
-
-4. Bu Faz 2'de yapılan admin auth (Prompt 2) tamamlanmış olmalı — sipariş yönetimi de aynı
-   admin-only korumadan geçsin.
-
-Bitirince: bir üye siparişi + bir misafir siparişi ver, admin panelinden ikisinin de göründüğünü
-ve durum güncellemenin kullanıcı tarafına yansıdığını doğrula.
-```
-
----
+> Kalan eksik: `admin.html` hâlâ istemci tarafı bir kullanıcı adı/şifre ekranı gösteriyor.
+> Bu ekran **güvenlik değildir** (kaynak kodda görünür); yalnızca paneli kazara açmayı önler.
+> Gerçek sipariş verisi sunucu yetkisiyle korunuyor. Panelin tamamını Firebase girişine
+> bağlamak Prompt 2'nin işi.
 
 ## Prompt 4 — Kupon yönetim ekranı
 

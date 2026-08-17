@@ -679,7 +679,7 @@
           <div id="recent-orders">
             <div class="admin-empty-state">
               <svg class="icon" viewBox="0 0 24 24"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
-              <div>Henüz bu tarayıcıdan verilmiş bir sipariş yok.</div>
+              <div>${serverOrders !== null ? 'Henüz sipariş yok.' : 'Henüz bu tarayıcıdan verilmiş bir sipariş yok.'}</div>
             </div>
           </div>
         </div>
@@ -1141,7 +1141,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-function initAdmin() {
+async function initAdmin() {
   refreshProducts();
   updateStats();
   renderDashboard();
@@ -1150,6 +1150,9 @@ function initAdmin() {
   document.getElementById('admin-greeting').textContent =
     `Hoş geldiniz, Admin! — ${new Date().toLocaleDateString('tr-TR', { weekday:'long', day:'numeric', month:'long' })}`;
   document.getElementById('nav-product-count').textContent = PRODUCTS.length;
+
+  // Sunucu siparişlerini çek (yetki/yapılandırma yoksa yerel deftere düşer)
+  await refreshOrders();
 }
 
 /* ════════════════════════════
@@ -1178,7 +1181,7 @@ function renderDashboard() {
   const recentEl    = document.getElementById('recent-admin-products');
 
   // Sipariş özeti
-  const allOrders = getAllOrders();
+  const allOrders = getOrdersForAdmin();
   document.getElementById('stat-order-count').textContent   = allOrders.length;
   document.getElementById('stat-order-revenue').textContent = formatPrice(allOrders.reduce((s, o) => s + o.total, 0));
 
@@ -1383,6 +1386,114 @@ function filterTable() {
 /* ════════════════════════════
    SİPARİŞLER
 ════════════════════════════ */
+/* ════════════════════════════
+   SUNUCU SİPARİŞLERİ (üye + misafir)
+   ════════════════════════════
+   Siparişlerin tek doğruluk kaynağı Firestore `orders` koleksiyonudur ve
+   oraya yalnız sunucu (Firebase Admin SDK) yazar. Bu panel siparişleri
+   /api/admin/orders üzerinden okur; yetki sunucuda doğrulanır
+   (Firebase ID token + ADMIN_EMAILS listesi).
+
+   Sunucu yapılandırılmamışsa (FIREBASE_SERVICE_ACCOUNT/ADMIN_EMAILS yok)
+   panel eski yerel deftere düşer — o defter yalnız BU tarayıcıda verilen
+   siparişleri içerir; durum bir uyarı şeridiyle açıkça belirtilir. */
+const ADMIN_ORDERS_API = '/api/admin/orders';
+
+let serverOrders     = null;   // dizi = sunucudan geldi, null = kullanılamıyor
+let serverOrdersError = null;
+
+async function adminAuthHeaders() {
+  if (typeof window.getIdToken !== 'function') return {};
+  const token = await window.getIdToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+/* Sunucu kaydını panelin beklediği biçime çevirir (tutarlar kuruş → TL). */
+function normalizeServerOrder(o) {
+  return {
+    id:            o.id,
+    date:          o.date,
+    status:        o.status,
+    statusLabel:   o.statusLabel,
+    customerName:  o.buyer ? [o.buyer.ad, o.buyer.soyad].filter(Boolean).join(' ') : null,
+    customerEmail: o.buyer ? o.buyer.email : null,
+    total:         o.totalKurus / 100,
+    items: (o.items || []).map(i => ({
+      id: i.id, name: i.name, sku: i.sku, color: i.color, size: i.size,
+      qty: i.qty, price: i.unitKurus / 100
+    })),
+    address:       o.address,
+    invoice:       o.invoice,
+    delivery:      o.delivery,
+    paymentMethod: o.paymentMethod,
+    eftReceiptNo:  o.eftReceiptNo,
+    trackingNumber: null,
+    source:        o.guest ? 'guest' : 'member',
+    userId:        o.userId,
+    payment:       o.payment,
+    environment:   o.environment,
+    fromServer:    true
+  };
+}
+
+async function loadServerOrders() {
+  try {
+    const res = await fetch(ADMIN_ORDERS_API, {
+      headers: { Accept: 'application/json', ...(await adminAuthHeaders()) }
+    });
+    const data = await res.json().catch(() => null);
+
+    if (!res.ok || !data || data.ok !== true) {
+      serverOrders = null;
+      serverOrdersError = (data && data.message) || `Sunucu siparişleri okunamadı (HTTP ${res.status}).`;
+      return;
+    }
+
+    serverOrders = data.orders.map(normalizeServerOrder);
+    serverOrdersError = null;
+  } catch (err) {
+    serverOrders = null;
+    serverOrdersError = 'Sunucuya ulaşılamadı: ' + err.message;
+  }
+}
+
+/* Panelin her yerinde sipariş kaynağı burasıdır. */
+function getOrdersForAdmin() {
+  return serverOrders !== null ? serverOrders : getAllOrders();
+}
+
+function renderOrdersSourceNote() {
+  const host = document.getElementById('orders-subtitle');
+  if (!host) return;
+  let note = document.getElementById('orders-source-note');
+  if (!note) {
+    note = document.createElement('div');
+    note.id = 'orders-source-note';
+    note.style.cssText = 'margin-top:8px;font-size:0.8125rem;line-height:1.6';
+    host.parentNode.appendChild(note);
+  }
+
+  if (serverOrders !== null) {
+    note.style.color = '#059669';
+    note.innerHTML = 'Kaynak: <strong>sunucu</strong> — üye ve misafir siparişlerinin tamamı listeleniyor.';
+  } else {
+    note.style.color = '#d97706';
+    note.innerHTML = '⚠️ Kaynak: <strong>yalnızca bu tarayıcı</strong> (yerel defter). ' +
+      'Sunucu sipariş listesi kullanılamıyor' + (serverOrdersError ? ': ' + serverOrdersError : '.') +
+      '<br>Tüm siparişleri görebilmek için sunucuda <code>FIREBASE_SERVICE_ACCOUNT</code> ve ' +
+      '<code>ADMIN_EMAILS</code> tanımlanmalı; panele bu e-postayla giriş yapılmış olmalı ' +
+      '(bkz. docs/ARKADAS-YAPILACAKLAR.md).';
+  }
+}
+
+/* Siparişleri sunucudan tazeleyip ekranı yeniler. */
+async function refreshOrders() {
+  await loadServerOrders();
+  renderOrdersSourceNote();
+  filterOrdersTable();
+  renderDashboard();
+}
+
 const ORDER_STATUS_LABELS = {
   processing: 'Hazırlanıyor',
   shipped:    'Kargoda',
@@ -1397,9 +1508,9 @@ const ORDER_STATUS_DOT = {
 };
 
 function renderOrdersTable(orders) {
-  const list = orders || getAllOrders();
+  const list = orders || getOrdersForAdmin();
   document.getElementById('orders-subtitle').textContent = `${list.length} sipariş listeleniyor`;
-  document.getElementById('nav-order-count').textContent = getAllOrders().length;
+  document.getElementById('nav-order-count').textContent = getOrdersForAdmin().length;
 
   const body = document.getElementById('orders-table-body');
 
@@ -1451,7 +1562,7 @@ function filterOrdersTable() {
   const status = document.getElementById('order-status-filter')?.value || 'all';
   const source = document.getElementById('order-source-filter')?.value || 'all';
 
-  const filtered = getAllOrders().filter(o => {
+  const filtered = getOrdersForAdmin().filter(o => {
     const matchQ = !q ||
       o.id.toLowerCase().includes(q) ||
       (o.customerName || '').toLowerCase().includes(q) ||
@@ -1464,15 +1575,46 @@ function filterOrdersTable() {
   renderOrdersTable(filtered);
 }
 
-function changeOrderStatus(orderId, status) {
+async function changeOrderStatus(orderId, status) {
+  const order = getOrdersForAdmin().find(o => o.id === orderId);
+
+  /* Sunucudan gelen sipariş: durumu API üzerinden değiştir. API ayrıca üye
+     siparişlerinde users/{uid}.orders kopyasını da günceller, böylece müşteri
+     profil sayfasında güncel durumu görür. */
+  if (order && order.fromServer) {
+    try {
+      const res = await fetch(ADMIN_ORDERS_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(await adminAuthHeaders()) },
+        body: JSON.stringify({ orderId, status })
+      });
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data || data.ok !== true) {
+        showToast((data && data.message) || 'Sipariş durumu güncellenemedi.', 'error');
+        await refreshOrders();
+        return;
+      }
+
+      await refreshOrders();
+      showToast(data.profileSynced
+        ? 'Durum güncellendi, müşteri profiline de yansıdı.'
+        : 'Sipariş durumu güncellendi.', 'success');
+    } catch (err) {
+      showToast('Sunucuya ulaşılamadı: ' + err.message, 'error');
+    }
+    return;
+  }
+
+  /* Yerel defterdeki (eski/yedek akış) sipariş */
   updateOrderStatus(orderId, status, ORDER_STATUS_LABELS[status]);
   filterOrdersTable();
   renderDashboard();
-  showToast('Sipariş durumu güncellendi.', 'success');
+  showToast('Sipariş durumu güncellendi (yalnız bu tarayıcıda).', 'warning');
 }
 
 function openOrderModal(orderId) {
-  const order = getAllOrders().find(o => o.id === orderId);
+  const order = getOrdersForAdmin().find(o => o.id === orderId);
   if (!order) return;
 
   const itemsHTML = (order.items || []).map(i => {

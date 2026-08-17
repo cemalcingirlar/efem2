@@ -3,6 +3,35 @@
 Bu dosya projede yapılan her ekleme, değişiklik ve kaldırmayı kayıt altına alır.
 En yeni kayıtlar en üstte.
 
+## 2026-08-18
+
+### Sipariş e-postası gitmiyordu — teşhis ve düzeltme
+Misafir olarak verilen bir siparişte ne müşteriye ne işletmeye mail ulaştı.
+Üç ayrı eksik tespit edildi:
+
+1. **Misafir siparişlerinde hiç mail gönderilmiyordu.** `odeme.html` içindeki yerel
+   (sunucusuz) sipariş akışı yalnızca ÜYE siparişlerinde `sendOrderConfirmationMail()`
+   çağırıyordu; misafir dalında hiçbir mail çağrısı yoktu.
+2. **İşletmeye sipariş bildirimi hiç yoktu.** Hiçbir kod yolu yeni siparişi işletmeye
+   haber vermiyordu (`sendSupportNotificationMail` yalnız ürün sorusu formunda kullanılıyordu).
+3. Canlıda `orderApiEnabled: false` — `FIREBASE_SERVICE_ACCOUNT` girilmediği için sunucu
+   sipariş API'si kapalı; sipariş yalnızca müşterinin tarayıcısındaki yerel deftere yazıldı.
+
+- Add: `api/_lib/notify-merchant.js` — işletme bildirim maili (sipariş no, durum, ödeme
+  tipi, tutar, müşteri iletişim bilgisi, teslimat adresi, fatura bilgisi, SKU'lu ürün tablosu).
+- Change: `api/order/eft.js` ve `api/_lib/settle.js` — sipariş oluşunca / ödeme
+  onaylanınca işletmeye de bildirim kuyruğa giriyor (müşteri onayına ek olarak).
+- Change: `odeme.html` — sunucu API'si kapalıyken bile işletmeye sipariş bildirimi
+  gönderiliyor (üye/misafir fark etmeksizin). Firestore kuralları `destek@` adresine
+  yazmaya izin verdiği için bu yol misafirlerde de çalışıyor.
+- Change: `docs/EMAIL-KURULUMU.md` — hangi mailin hangi koşulda gittiği netleştirildi;
+  müşteri onay mailinin neden sunucu tarafı gerektirdiği (Firestore kuralları) açıklandı.
+- Change: Akış testlerine işletme bildirimi kontrolü eklendi (`52 + 47` test).
+
+**Not:** Bu düzeltmeler mailin ÜRETİLMESİNİ sağlar; gerçekten gönderilmesi için Firebase
+"Trigger Email from Firestore" extension'ının kurulu olması şart (bkz. `docs/EMAIL-KURULUMU.md`).
+Müşteriye onay maili için ayrıca `FIREBASE_SERVICE_ACCOUNT` ortam değişkeni gerekir.
+
 ## 2026-08-17 (devam)
 
 ### Ödeme sağlayıcısı değişti: iyzico → PayTR (iFrame API)

@@ -14,6 +14,7 @@
 const { methodNotAllowed, json, fail, parseBody, clientIp, rateLimit, logPaymentEvent } = require('../_lib/http');
 const { isStoreConfigured, verifyIdToken, createOrder, appendOrderToUserProfile, queueMail } = require('../_lib/store');
 const { MERCHANT } = require('../_lib/merchant');
+const { buildMerchantMail } = require('../_lib/notify-merchant');
 const {
   priceBasket, validateBuyer, validateAddress, normalizeInvoice,
   newOrderId, orderAccessToken, clean, formatTry, legacyOrderSummary, publicOrderView
@@ -102,6 +103,10 @@ module.exports = async (req, res) => {
      Açıklama kısmına sipariş numaranızı (<strong>${orderId}</strong>) yazmayı unutmayın.</p>
      <p>Sorularınız için: ${MERCHANT.supportEmail}<br>${escapeHtml(MERCHANT.brandName)}</p>`
   );
+
+  /* İşletmeye bildirim: sipariş geldiğinden haberdar olmalı. */
+  const merchantMail = buildMerchantMail(order);
+  await queueMail(merchantMail.to, merchantMail.subject, merchantMail.html);
 
   logPaymentEvent({
     event: 'eft_order_created',

@@ -21,6 +21,7 @@ const store  = require('./store');
 const { paytrMode } = require('./env');
 const { MERCHANT } = require('./merchant');
 const { formatTry, legacyOrderSummary, lineTitle } = require('./orders');
+const { buildMerchantMail } = require('./notify-merchant');
 const { logPaymentEvent } = require('./http');
 
 const TERMINAL = new Set(['paid', 'refunded', 'cancelled']);
@@ -159,11 +160,17 @@ async function runPaidSideEffects(order) {
     if (order.userId) {
       await store.appendOrderToUserProfile(order.userId, legacyOrderSummary(order));
     }
+
+    // Müşteriye sipariş onayı
     await store.queueMail(
       order.buyer.email,
       `Siparişiniz alındı – ${order.id}`,
       orderMailHtml(order)
     );
+
+    // İşletmeye sipariş bildirimi
+    const merchantMail = buildMerchantMail(order);
+    await store.queueMail(merchantMail.to, merchantMail.subject, merchantMail.html);
   } catch (err) {
     console.error('[settle] yan etkiler tamamlanamadı (%s): %s', order.id, err.message);
   }

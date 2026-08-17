@@ -227,20 +227,22 @@ check('gövde TAM OLARAK "OK"', ok1.res.body, 'OK');
 check('sipariş paid', db.get(orderId).status, 'paid');
 check('doğrulama sorunu yok', db.get(orderId).payment.problems, []);
 check('ödeme tipi kaydedildi', db.get(orderId).payment.paymentType, 'card');
-check('sipariş maili kuyruğa girdi', sideEffects.mails.length, 1);
+check('müşteriye sipariş maili kuyruğa girdi', sideEffects.mails.filter(m => m.to === 'ali@example.com').length, 1);
+check('işletmeye bildirim kuyruğa girdi', sideEffects.mails.filter(m => m.to === 'destek@efemiletisim.com').length, 1);
+check('işletme bildiriminde tutar var', sideEffects.mails.some(m => m.to === 'destek@efemiletisim.com' && m.subject.includes('EFM')), true);
 
 console.log('\n3) bildirim tekrarı — ikinci kez işlenmemeli');
 await call(notify, { body: notification(orderId) });
 await call(notify, { body: notification(orderId) });
 check('durum hâlâ paid', db.get(orderId).status, 'paid');
-check('ikinci mail gönderilmedi', sideEffects.mails.length, 1);
+check('mailler tekrarlanmadı', sideEffects.mails.length, 2);
 
 console.log('\n4) tutar uyuşmazlığı → pending_review');
 const init2 = await call(initialize, { body: ORDER_INPUT });
 await call(notify, { body: notification(init2.json.orderId, { totalKurus: 100 }) });
 check('sipariş paid DEĞİL', db.get(init2.json.orderId).status, 'pending_review');
 check('sorun kaydedildi', db.get(init2.json.orderId).payment.problems, ['amount_mismatch']);
-check('mail gönderilmedi', sideEffects.mails.length, 1);
+check('yeni mail gönderilmedi', sideEffects.mails.length, 2);
 
 console.log('\n4b) ortam/para birimi uyuşmazlığı → pending_review');
 {
@@ -268,7 +270,7 @@ console.log('\n6) başarısız ödeme → failed');
 const init4 = await call(initialize, { body: ORDER_INPUT });
 await call(notify, { body: notification(init4.json.orderId, { status: 'failed' }) });
 check('sipariş failed', db.get(init4.json.orderId).status, 'failed');
-check('mail gönderilmedi', sideEffects.mails.length, 1);
+check('yeni mail gönderilmedi', sideEffects.mails.length, 2);
 
 console.log('\n7) PayTR token vermezse ödeme başlatılmaz');
 fakePaytr.respondFailure = true;

@@ -577,7 +577,7 @@
 <script src="js/main.js"></script>
 <script type="module" src="js/auth.js"></script>
 <script type="module">
-import { saveOrderToFirestore, sendOrderConfirmationMail } from './js/firebase-auth.js';
+import { saveOrderToFirestore, sendOrderConfirmationMail, sendSupportNotificationMail } from './js/firebase-auth.js';
 import { authReady, isLoggedIn, getCurrentUser } from './js/auth.js';
 
 /* Ödeme sayfası hem üyelere hem misafirlere açıktır.
@@ -619,8 +619,61 @@ window.saveOrder = async (orderData) => {
   }
 
   addOrderToLedger(order, meta);
+
+  /* İşletmeye bildirim — sunucu sipariş API'si kapalıyken tek kayıt bu.
+     Firestore kuralları destek@ adresine mail yazmaya misafirlere de izin
+     verdiği için bu yol üye/misafir fark etmeksizin çalışır. Müşterinin
+     kendi adresine mail ise istemciden gönderilemez (kural gereği); onun
+     için sunucu tarafı sipariş API'si açık olmalıdır. */
+  sendMerchantOrderNotice(order, meta);
+
   return order;
 };
+
+/* Sipariş özetini işletmenin kutusuna gönderir. Hata sipariş akışını bozmaz. */
+function sendMerchantOrderNotice(order, meta) {
+  try {
+    const esc = (v) => String(v ?? '').replace(/[&<>"']/g, c => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+    const addr = order.address || {};
+    const variant = (i) => [i.color, i.size].filter(Boolean).join(' · ');
+    const rows = (order.items || []).map(i => `
+      <tr>
+        <td style="padding:4px 8px;border-bottom:1px solid #eee">${esc(i.name)}${variant(i) ? ` (${esc(variant(i))})` : ''}</td>
+        <td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:center">${i.qty}</td>
+        <td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right">${esc(formatPrice(i.price * i.qty))}</td>
+        <td style="padding:4px 8px;border-bottom:1px solid #eee;color:#666">${esc(i.sku || '-')}</td>
+      </tr>`).join('');
+
+    sendSupportNotificationMail(
+      `Yeni sipariş (${order.paymentMethod === 'eft' ? 'EFT/havale bekleniyor' : order.statusLabel}) – ${order.id} – ${formatPrice(order.total)}`,
+      `<p><strong>${esc(order.id)}</strong> numaralı yeni sipariş.</p>
+       <table style="border-collapse:collapse;font-size:14px">
+         <tr><td style="padding:2px 8px;color:#666">Durum</td><td style="padding:2px 8px"><strong>${esc(order.statusLabel)}</strong></td></tr>
+         <tr><td style="padding:2px 8px;color:#666">Ödeme</td><td style="padding:2px 8px">${order.paymentMethod === 'eft' ? 'EFT / havale' : 'Kart'}</td></tr>
+         <tr><td style="padding:2px 8px;color:#666">Tutar</td><td style="padding:2px 8px"><strong>${esc(formatPrice(order.total))}</strong> (KDV dahil)</td></tr>
+         <tr><td style="padding:2px 8px;color:#666">Müşteri</td><td style="padding:2px 8px">${esc(meta.customerName || '-')} ${meta.source === 'guest' ? '(misafir)' : '(üye)'}</td></tr>
+         <tr><td style="padding:2px 8px;color:#666">E-posta</td><td style="padding:2px 8px">${esc(meta.customerEmail || '-')}</td></tr>
+         <tr><td style="padding:2px 8px;color:#666">Telefon</td><td style="padding:2px 8px">${esc(addr.telefon || '-')}</td></tr>
+         <tr><td style="padding:2px 8px;color:#666">Teslimat</td><td style="padding:2px 8px">${order.delivery === 'magaza' ? 'Mağazadan teslim' : esc([addr.adres, addr.ilce, addr.sehir, addr.posta].filter(Boolean).join(', '))}</td></tr>
+         ${order.eftReceiptNo ? `<tr><td style="padding:2px 8px;color:#666">Dekont No</td><td style="padding:2px 8px">${esc(order.eftReceiptNo)}</td></tr>` : ''}
+       </table>
+       <h3 style="font-size:14px;margin:16px 0 4px">Ürünler</h3>
+       <table style="border-collapse:collapse;font-size:14px">
+         <tr>
+           <th style="padding:4px 8px;text-align:left;border-bottom:2px solid #ddd">Ürün</th>
+           <th style="padding:4px 8px;border-bottom:2px solid #ddd">Adet</th>
+           <th style="padding:4px 8px;text-align:right;border-bottom:2px solid #ddd">Tutar</th>
+           <th style="padding:4px 8px;text-align:left;border-bottom:2px solid #ddd">SKU</th>
+         </tr>
+         ${rows}
+       </table>`
+    ).catch(err => console.error('[sipariş] işletme bildirimi gönderilemedi:', err));
+  } catch (err) {
+    console.error('[sipariş] işletme bildirimi hazırlanamadı:', err);
+  }
+}
 </script>
 <script>
 let addressData  = null;

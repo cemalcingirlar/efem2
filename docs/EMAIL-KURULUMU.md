@@ -18,7 +18,16 @@ Bu dosya bir AI prompt'u değil, elle Firebase Console'da tıklayacağın adıml
 - `js/firebase-auth.js` içindeki `sendOrderConfirmationMail()` ve `sendSupportNotificationMail()`
   fonksiyonları bu dokümanı otomatik oluşturuyor. Sen hiçbir kod yazmayacaksın.
 - Şu an tetiklenen otomatik mailler:
-  - **Üye sipariş onayı** → siparişi veren üyenin kendi e-postasına.
+  - **Müşteri sipariş onayı** → siparişi veren müşterinin e-postasına.
+    ⚠️ Bu mail **yalnızca sunucu tarafı sipariş API'si açıkken** gönderilir
+    (`FIREBASE_SERVICE_ACCOUNT` ortam değişkeni). Sebebi: Firestore kuralları,
+    istemcinin başkasının adresine mail yazmasını engelliyor — misafir sipariş
+    veren biri kendi adresine bile istemciden mail attıramaz. Sunucu (Admin SDK)
+    kurallardan muaf olduğu için bu maili o gönderir.
+  - **İşletme sipariş bildirimi** → `destek@efemiletisim.com`. Hem sunucu tarafında
+    hem de sunucu kapalıyken istemci tarafında çalışır (kurallar `destek@` adresine
+    yazmaya izin veriyor). İçinde sipariş no, tutar, müşteri iletişim bilgisi,
+    teslimat adresi ve SKU'lu ürün listesi var.
   - **Ürün sorusu bildirimi** (`urun-detay.html` soru formu) → `destek@efemiletisim.com`.
 - `sifre-sifirla.html` sayfası zaten hazır: Firebase şifre sıfırlama linki artık kullanıcıyı
   Firebase'in genel İngilizce sayfası yerine bu Türkçe sayfaya yönlendiriyor, şifre iki kere

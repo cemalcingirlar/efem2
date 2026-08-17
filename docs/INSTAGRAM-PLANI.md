@@ -36,7 +36,7 @@ gönderi metinlerinin tamamı yukarıdaki bağlantıda.
 | Kullanıcı adı | `@efemelektronik` (korunabilir; değişecekse 85 takipçiyle şimdi en ucuz an) |
 | Profil fotoğrafı | `assets/logos/icon-square.png`, 320×320 üstü, kenarlarda %12 boşluk |
 | Telefon | 0542 840 08 88 |
-| E-posta | info@efemiletisim.com |
+| E-posta | destek@efemiletisim.com |
 | Adres | Yeni Mahalle 87071 Sokak No:5 Z32, M1 AVM — Seyhan / Adana |
 
 Bağlantılar (Instagram 5 tanesine izin veriyor), her birine `?utm_source=instagram` ekle:

@@ -3,6 +3,45 @@
 Bu dosya projede yapılan her ekleme, değişiklik ve kaldırmayı kayıt altına alır.
 En yeni kayıtlar en üstte.
 
+## 2026-08-17
+
+### Katalog doğruluk denetimi: teknik özellikler, renk görselleri
+Talep: `docs/visual-fix.md`. Tam rapor: `docs/KATALOG-DENETIM-RAPORU.md`.
+Her değer üreticinin kendi teknik özellik sayfasından doğrulandı; doğrulanamayan
+mevcut iddialar silindi (uydurma yok).
+
+- Fix: **Huawei WiFi Mesh X3 Pro "Wi-Fi 6" olarak satılıyordu; ürün Wi-Fi 7.**
+  Hız, ethernet portu ve model kodu (GAEA2-PLM21) da düzeltildi.
+- Fix: Huawei Watch GT 6 / GT 6 Pro'da **Bluetooth 5.2 → 6.0** (GT 5 Pro ve Fit 4
+  gerçekten 5.2, onlar korundu).
+- Fix: GT 6 pil ömrü "tipik" diye yazılan değerler aslında **maksimum** kullanım
+  değeriymiş (41 mm: maks 14 / tipik 7 gün, 46 mm: maks 21 / tipik 12 gün).
+- Fix: Apple Watch Series 10 titanyumda **var olmayan "Silver" kaplama** iddiası
+  kaldırıldı (Apple: Natural / Gold / Slate).
+- Fix: Apple Watch SE 3'te Apple'ın belirtmediği **IP6X** iddiası kaldırıldı;
+  Wi-Fi'nin yalnız 2,4 GHz olduğu eklendi.
+- Fix: Huawei Watch Fit 4'te doğrulanamayan **SpO2** iddiası kaldırıldı.
+- Fix: Huawei FreeBuds SE 3 **BT 5.3 → 5.4**; "kılıfla uzun kullanım" yerine
+  9 saat + 42 saat; IP54'ün yalnız kulaklıklar için geçerli olduğu notu.
+- Fix: Samsung Galaxy Watch9'da doğrulanamayan **IP68** kaldırıldı (5 ATM +
+  MIL-STD-810H); Galaxy Buds4 Pro **IP54 → IP57**.
+- Fix: AirPods Pro 3 açıklamasından Apple TR sayfasında geçmeyen "köpük katmanlı
+  uçlar" ve "Canlı Çeviri" ifadeleri çıkarıldı.
+- Fix: Xiaomi Redmi Watch 6 ve Redmi Buds 8 ailesindeki ölçüsüz ifadeler
+  ("uzun ömürlü", "kılıfla uzun süreli kullanım") gerçek değerlerle değiştirildi.
+- Add: **Renk seçilince galeri o rengi gösteriyor.** `js/data.js` ürünlerine
+  opsiyonel `colorImages` haritası, `urun-detay.html`'e `showColorImage()` eklendi;
+  renk görselleri galeriye küçük resim olarak da giriyor. Daha önce müşteri
+  "Roze Altın" seçse de ekranda siyah ürün kalıyordu.
+- Add: `scripts/fetch-apple-watch-images.mjs` — Apple'ın kendi CDN'inden
+  1200 × 1200 şeffaf arka planlı **14 renk görseli** indirildi (Series 11 42/46,
+  SE 3 40/44, Series 10 46 alüminyum, Series 9 41).
+- Add: `scripts/catalog-audit.mjs` — katalog sağlık raporu (eksik dosya, düşük
+  çözünürlük, tek görsel, zayıf açıklama, varyant/renk dökümü).
+- Not: Samsung'un renk görselleri ada uymayan renkler döndürdüğü için
+  **kullanılmadı**; JBL (10 ürün) jbl.com otomatik isteklere kapalı olduğu için
+  bu turda doğrulanamadı — ayrıntı ve kalan iş listesi raporda.
+
 ## 2026-08-16 (devam 3)
 
 ### Ödeme sunucusu ürün varyantlarına (renk/beden) uyarlandı

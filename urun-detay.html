@@ -339,9 +339,14 @@ function renderProductDetail(p) {
 
   const variantHTML = buildVariantPicker(p);
 
-  const thumbsHTML = p.images.length > 1
-    ? p.images.map((img, i) => `
-        <div class="gallery-thumb ${i === 0 ? 'active' : ''}" onclick="changeImage('${img}', this)">
+  /* Galeri = ürün görselleri + varyant (renk) görselleri.
+     Renk görselleri de küçük resim olarak eklenir; müşteri hem renk
+     seçicisinden hem galeriden aynı görsele ulaşabilir. */
+  const galleryImages = [...new Set([...p.images, ...Object.values(p.colorImages || {})])];
+
+  const thumbsHTML = galleryImages.length > 1
+    ? galleryImages.map((img, i) => `
+        <div class="gallery-thumb ${i === 0 ? 'active' : ''}" data-src="${img}" onclick="changeImage('${img}', this)">
           <img src="${img}" alt="${p.name}" onerror="this.src='assets/images/products/placeholder-product.svg'">
         </div>`).join('')
     : '';
@@ -467,6 +472,30 @@ function changeImage(src, thumbEl) {
   thumbEl.classList.add('active');
 }
 
+/* ─── Renk seçimi ↔ görsel eşleşmesi ───
+   Ürünün `colorImages` haritasında seçilen rengin görseli varsa ana görsel
+   o renge geçer. Böylece müşteri "Roze Altın" seçtiğinde ekranda siyah ürün
+   kalmaz. Haritada karşılığı olmayan renklerde galeri olduğu gibi bırakılır. */
+function showColorImage(product, color) {
+  const src = product && product.colorImages && product.colorImages[color];
+  const mainImg = document.getElementById('main-img');
+  if (!src || !mainImg) return;
+
+  mainImg.src = src;
+  mainImg.alt = `${product.name} – ${color}`;
+
+  // Renk görseli galeride varsa onun küçük resmini aktif göster.
+  let matched = false;
+  document.querySelectorAll('.gallery-thumb').forEach(thumb => {
+    const isMatch = thumb.dataset.src === src;
+    thumb.classList.toggle('active', isMatch);
+    if (isMatch) matched = true;
+  });
+  if (!matched) {
+    document.querySelectorAll('.gallery-thumb').forEach(t => t.classList.remove('active'));
+  }
+}
+
 /* ═════════════════════════════════════════
    VARYANT SEÇİCİ (renk / beden)
    ═════════════════════════════════════════ */
@@ -533,6 +562,8 @@ function pickColor(color) {
     b.classList.toggle('selected', b.dataset.color === color));
   const t = document.getElementById('selected-color-text');
   if (t) t.textContent = color;
+
+  showColorImage(currentProduct, color);
 
   // Bu renkte olmayan bedeni seçili bırakma. Hiç bedeni yoksa (ör. Series 9
   // "Pembe" tek kordonla geliyor) beden seçimini tamamen kaldır — aksi halde

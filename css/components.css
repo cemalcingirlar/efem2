@@ -1052,7 +1052,7 @@ footer {
 
 .payment-icon.mark-visa       { font-style: italic; font-weight: 800; letter-spacing: -0.02em; color: #1434CB; }
 .payment-icon.mark-troy       { font-weight: 800; letter-spacing: -0.01em; color: #00A651; text-transform: lowercase; }
-.payment-icon.mark-iyzico     { font-weight: 700; letter-spacing: -0.01em; color: #5D3EBC; text-transform: lowercase; }
+.payment-icon.mark-paytr      { font-weight: 800; letter-spacing: -0.01em; color: #1B3C87; }
 .payment-icon.mark-ssl        { color: rgba(15,23,42,0.7); font-weight: 600; }
 .payment-icon.mark-ssl .icon  { width: 13px; height: 13px; color: var(--success); }
 

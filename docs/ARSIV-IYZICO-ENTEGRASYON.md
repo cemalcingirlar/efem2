@@ -1,3 +1,7 @@
+> **ARŞİV — ARTIK GEÇERLİ DEĞİL.** Ödeme sağlayıcısı 2026-08-17 itibarıyla **PayTR**'ye
+> taşındı. Güncel kurulum ve işletim rehberi: `docs/PAYTR-ENTEGRASYON.md`.
+> Bu dosya yalnızca geçmişe dönük referans için tutuluyor.
+
 # iyzico Entegrasyonu — Kurulum, Test ve İşletim Rehberi
 
 Bu dosya, ödeme altyapısının **nasıl çalıştığını** ve **canlıya nasıl alınacağını** anlatır.

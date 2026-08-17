@@ -90,7 +90,7 @@
    Ödeme sonucu
    =========================================
    "Başarılı" bilgisi bu sayfada ÜRETİLMEZ: sipariş durumu sunucudan
-   (/api/order/status) okunur, sunucu da bu durumu yalnızca iyzico'nun
+   (/api/order/status) okunur, sunucu da bu durumu yalnızca PayTR'nin
    doğrulanmış sonucuna göre yazar. */
 
 const STATUS_VIEW = {
@@ -163,8 +163,15 @@ function render(view, order) {
     </div>`;
 }
 
-/* Ödeme sonrası ilk sorguda durum hâlâ "awaiting_payment" olabilir
-   (webhook/callback yarışı). Kısa aralıklarla birkaç kez tekrar sorulur. */
+/* PayTR bildirimi sunucumuza ulaşmadan müşteri buraya dönebilir. Bu yüzden
+   durum kısa aralıklarla birkaç kez tekrar sorulur; hâlâ sonuçlanmadıysa
+   "tamamlanmadı" demek yerine "kontrol ediliyor" gösterilir. */
+const PENDING_VIEW = {
+  icon:  '<svg class="icon result-icon" viewBox="0 0 24 24" style="color:var(--warning,#d97706)"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  title: 'Ödeme sonucunuz kontrol ediliyor',
+  text:  'Bankanızdan gelen sonuç henüz sistemimize ulaşmadı. Bu genelde birkaç saniye sürer. Sayfayı yenileyebilir veya siparişlerinizden durumu takip edebilirsiniz; bu aşamada tekrar ödeme yapmayın.'
+};
+
 async function resolveOrder(orderId, token) {
   const delays = [0, 1500, 3000, 5000];
   let order = null;
@@ -202,7 +209,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   const order = await resolveOrder(orderId, token);
   if (!order) { render(ERROR_VIEW, null); return; }
 
-  const view = STATUS_VIEW[order.status] || ERROR_VIEW;
+  /* Bildirim henüz gelmediyse sipariş hâlâ "awaiting_payment"tır. Bunu
+     "ödeme tamamlanmadı" diye sunmak yanıltıcı olur: PayTR akışı asenkron,
+     sonuç birkaç saniye sonra gelebilir. */
+  const view = order.status === 'awaiting_payment'
+    ? PENDING_VIEW
+    : (STATUS_VIEW[order.status] || ERROR_VIEW);
   render(view, order);
 
   if (order.status === 'paid' || order.status === 'awaiting_transfer') {

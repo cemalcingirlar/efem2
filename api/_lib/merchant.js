@@ -24,11 +24,4 @@ const MERCHANT = {
 
 MERCHANT.address.full = `${MERCHANT.address.line}, ${MERCHANT.address.district} / ${MERCHANT.address.city}`;
 
-/* iyzico `buyer.identityNumber` alanını zorunlu tutar. Standart e-ticaret
-   akışında müşteriden T.C. kimlik numarası TOPLAMIYORUZ (KVKK — veri
-   minimizasyonu); bu yüzden iyzico'nun kabul ettiği dolgu değer gönderilir.
-   Fatura için TCKN/VKN yalnızca müşteri kurumsal/ayrı fatura seçtiğinde
-   ve yalnız fatura kaydında tutulur. */
-const IDENTITY_PLACEHOLDER = '11111111111';
-
-module.exports = { MERCHANT, IDENTITY_PLACEHOLDER };
+module.exports = { MERCHANT };

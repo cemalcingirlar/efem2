@@ -8,21 +8,21 @@
   <link rel="icon" type="image/png" sizes="32x32" href="assets/logos/favicon-32.png">
   <link rel="icon" type="image/png" sizes="512x512" href="assets/logos/favicon-512.png">
   <link rel="apple-touch-icon" href="assets/logos/favicon-180.png">
-  <meta name="description" content="Güvenli ödeme. İyzico altyapısı ile 256-bit SSL şifreleme.">
+  <meta name="description" content="Güvenli ödeme. PayTR altyapısı ile 256-bit SSL şifreleme.">
   <meta name="robots" content="noindex, follow">
   <link rel="canonical" href="https://efemiletisim.com/odeme.html">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="efemiletisim.com">
   <meta property="og:locale" content="tr_TR">
   <meta property="og:title" content="Ödeme – efemiletisim.com">
-  <meta property="og:description" content="Güvenli ödeme. İyzico altyapısı ile 256-bit SSL şifreleme.">
+  <meta property="og:description" content="Güvenli ödeme. PayTR altyapısı ile 256-bit SSL şifreleme.">
   <meta property="og:url" content="https://efemiletisim.com/odeme.html">
   <meta property="og:image" content="https://efemiletisim.com/assets/logos/og-image.jpg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Ödeme – efemiletisim.com">
-  <meta name="twitter:description" content="Güvenli ödeme. İyzico altyapısı ile 256-bit SSL şifreleme.">
+  <meta name="twitter:description" content="Güvenli ödeme. PayTR altyapısı ile 256-bit SSL şifreleme.">
   <meta name="twitter:image" content="https://efemiletisim.com/assets/logos/og-image.jpg">
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/components.css">
@@ -73,8 +73,8 @@
     .checkout-step-actions { margin-top: var(--space-5); }
     .checkout-actions-row { display: grid; grid-template-columns: 1fr auto; gap: var(--space-3); margin-top: var(--space-5); }
 
-    /* Kart bilgisi bu sitede TOPLANMAZ; müşteri iyzico'nun ödeme sayfasına
-       yönlendirilir. Aşağıdaki panel bu yönlendirmeyi anlatır. */
+    /* Kart bilgisi bu sitede TOPLANMAZ; müşteri PayTR'nin güvenli ödeme
+       formuna yönlendirilir. Aşağıdaki panel bu yönlendirmeyi anlatır. */
     .redirect-hero {
       position: relative;
       overflow: hidden;
@@ -421,12 +421,12 @@
             <div id="panel-kart">
               <div class="redirect-hero">
                 <svg class="icon" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-                <div class="redirect-hero-title">iyzico güvenli ödeme sayfası</div>
+                <div class="redirect-hero-title">PayTR güvenli ödeme formu</div>
                 <div class="redirect-hero-desc">
                   Kart bilgileriniz efemiletisim.com'a hiçbir zaman girilmez.
-                  “Ödemeyi Tamamla” dediğinizde iyzico'nun kendi güvenli ödeme
-                  sayfasına yönlendirilirsiniz; kart numaranız ve CVV'niz yalnızca orada,
-                  iyzico sistemlerinde işlenir.
+                  “Ödemeyi Tamamla” dediğinizde PayTR'nin güvenli ödeme formuna
+                  geçersiniz; kart numaranız ve CVV'niz yalnızca orada, PayTR
+                  sistemlerinde işlenir.
                 </div>
               </div>
 
@@ -439,7 +439,7 @@
               <!-- Sandbox uyarısı (yalnız test ortamında görünür) -->
               <div id="sandbox-warning" class="sandbox-warning hidden">
                 <svg class="icon icon-sm" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:2px"><path d="M12 3l10 18H2L12 3Z"/><path d="M12 9v5"/><circle cx="12" cy="17.3" r="0.3" fill="currentColor" stroke="none"/></svg>
-                <span><strong>Test ortamı:</strong> ödeme altyapısı şu anda iyzico sandbox modunda çalışıyor. Gerçek kartınızdan çekim yapılmaz.</span>
+                <span><strong>Test ortamı:</strong> ödeme altyapısı şu anda PayTR test modunda çalışıyor. Gerçek kartınızdan çekim yapılmaz.</span>
               </div>
 
               <!-- Kart ödemesi kapalıysa -->
@@ -448,9 +448,9 @@
                 <span>Kart ile ödeme şu anda kullanıma kapalıdır. Siparişinizi <strong>EFT / Havale</strong> ile tamamlayabilir veya bizimle iletişime geçebilirsiniz.</span>
               </div>
 
-              <div class="iyzico-badge">
+              <div class="provider-badge">
                 <span class="lock"><svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
-                Ödemeleriniz <strong>iyzico</strong> altyapısı ile işlenir &nbsp;·&nbsp; 256-bit SSL
+                Ödemeleriniz <strong>PayTR</strong> altyapısı ile işlenir &nbsp;·&nbsp; 256-bit SSL
               </div>
             </div>
 
@@ -666,7 +666,7 @@ async function applyPaymentCapabilities() {
   if (paymentReady.cardEnabled) {
     tabKart.disabled = false;
     disabledNote.classList.add('hidden');
-    sandboxWarning.classList.toggle('hidden', paymentReady.mode !== 'sandbox');
+    sandboxWarning.classList.toggle('hidden', paymentReady.mode !== 'test');
     selectPaymentMethod('kart');
   } else {
     tabKart.disabled = true;
@@ -1020,7 +1020,7 @@ async function handlePayment() {
     return;
   }
 
-  // Kart: iyzico ödeme sayfasına yönlendirme. Sepet BURADA temizlenmez;
+  // Kart: PayTR güvenli ödeme formuna yönlendirme. Sepet BURADA temizlenmez;
   // ödeme gerçekten tamamlanana kadar müşteri sepetini kaybetmemelidir.
   setPayButtonBusy(true, 'Güvenli ödeme sayfasına yönlendiriliyorsunuz...');
   try {

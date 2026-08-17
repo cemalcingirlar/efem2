@@ -3,24 +3,26 @@
 /* =========================================
    POST /api/payment/initialize
    =========================================
-   iyzico Checkout Form akışını başlatır.
+   PayTR iFrame API'sinin 1. adımını çalıştırır: ödeme token'ı alır.
 
-   - Tutar SUNUCUDA hesaplanır; istemciden yalnız ürün id + adet alınır.
-   - Sipariş, ödeme sayfasına gitmeden önce `awaiting_payment` olarak yazılır;
-     böylece callback/webhook hangi sırada gelirse gelsin eşleştirilebilir.
+   - Tutar SUNUCUDA hesaplanır; istemciden yalnız ürün id + sku + adet alınır.
+   - Sipariş, ödeme formuna gitmeden önce `awaiting_payment` olarak yazılır;
+     böylece PayTR bildirimi hangi anda gelirse gelsin eşleştirilebilir.
    - Kart verisi bu isteğe DAHİL DEĞİLDİR ve hiçbir zaman bu sunucudan geçmez;
-     PAN/CVV yalnız iyzico'nun ödeme sayfasına girilir.
+     kart numarası/CVV yalnız PayTR'nin ödeme formuna girilir.
 */
 
 const { methodNotAllowed, json, fail, parseBody, clientIp, rateLimit, logPaymentEvent } = require('../_lib/http');
-const { isCardPaymentEnabled, iyzicoConfig, siteBaseUrl, enabledInstallments, environmentMismatch } = require('../_lib/env');
-const { MERCHANT, IDENTITY_PLACEHOLDER } = require('../_lib/merchant');
-const iyzico = require('../_lib/iyzico');
-const store  = require('../_lib/store');
+const { isCardPaymentEnabled, paytrConfig, paytrMode, siteBaseUrl, installmentSettings } = require('../_lib/env');
+const { MERCHANT } = require('../_lib/merchant');
+const paytr = require('../_lib/paytr');
+const store = require('../_lib/store');
 const {
   priceBasket, validateBuyer, validateAddress, normalizeInvoice,
-  newOrderId, orderAccessToken, toGsmNumber, lineTitle, clean
+  newOrderId, orderAccessToken, lineTitle, clean
 } = require('../_lib/orders');
+
+const PAYMENT_TIMEOUT_MINUTES = 30;
 
 module.exports = async (req, res) => {
   if (req.method !== 'POST') return methodNotAllowed(res, ['POST']);
@@ -31,11 +33,6 @@ module.exports = async (req, res) => {
     return fail(res, 429, 'rate_limited', 'Çok fazla ödeme denemesi yapıldı. Lütfen birkaç dakika sonra tekrar deneyin.');
   }
 
-  const mismatch = environmentMismatch();
-  if (mismatch) {
-    console.error('[payment] ortam uyuşmazlığı: %s', mismatch);
-    return fail(res, 503, 'payment_unavailable', 'Kart ile ödeme şu anda kullanılamıyor. EFT/havale ile devam edebilir veya bizimle iletişime geçebilirsiniz.');
-  }
   if (!isCardPaymentEnabled()) {
     return fail(res, 503, 'payment_unavailable', 'Kart ile ödeme şu anda kullanılamıyor. EFT/havale ile devam edebilir veya bizimle iletişime geçebilirsiniz.');
   }
@@ -65,8 +62,17 @@ module.exports = async (req, res) => {
 
   const session = await store.verifyIdToken(req.headers.authorization);
   const orderId = newOrderId();
+
+  /* PayTR merchant_oid alfanumerik olmak zorunda; üretici bunu garanti eder
+     ama bir hata olursa ödemeyi başlatmadan durdururuz. */
+  if (!paytr.isValidMerchantOid(orderId)) {
+    console.error('[payment] üretilen sipariş numarası PayTR kuralına uymuyor: %s', orderId);
+    return fail(res, 500, 'order_id_invalid', 'Siparişiniz oluşturulamadı. Lütfen tekrar deneyin.');
+  }
+
   const accessToken = orderAccessToken(orderId);
-  const cfg = iyzicoConfig();
+  const cfg = paytrConfig();
+  const { noInstallment, maxInstallment } = installmentSettings();
 
   /* ─── Siparişi ödeme öncesi yaz ─── */
   const orderRecord = {
@@ -75,6 +81,7 @@ module.exports = async (req, res) => {
     status:        'awaiting_payment',
     statusLabel:   'Ödeme bekleniyor',
     paymentMethod: 'kart',
+    paymentProvider: 'paytr',
     delivery,
     userId:        session ? session.uid : null,
     guest:         !session,
@@ -86,15 +93,14 @@ module.exports = async (req, res) => {
     shippingKurus: basket.shippingKurus,
     totalKurus:    basket.totalKurus,
     currency:      'TRY',
-    environment:   cfg.mode,
+    environment:   paytrMode(),
     agreements: {
       distanceSales: true,
       preInfo:       true,
       acceptedAt:    new Date().toISOString(),
       ip
     },
-    paymentId:     null,
-    conversationId: orderId
+    paymentId:     null
   };
 
   try {
@@ -104,101 +110,57 @@ module.exports = async (req, res) => {
     return fail(res, 503, 'order_create_failed', 'Siparişiniz oluşturulamadı. Lütfen birkaç dakika sonra tekrar deneyin.');
   }
 
-  /* ─── iyzico Checkout Form initialize ─── */
-  const shippingAddress = {
-    contactName: `${buyer.ad} ${buyer.soyad}`,
-    city:        address ? address.sehir : MERCHANT.address.city,
-    country:     'Turkey',
-    address:     address ? `${address.adres} ${address.ilce}` : MERCHANT.address.full,
-    zipCode:     address && address.posta ? address.posta : MERCHANT.address.zipCode
-  };
+  /* ─── PayTR token isteği ───
+     Sepet satır adları varyantı da içerir ("Ürün (Renk · Beden)"), böylece
+     PayTR ekranında ve mutabakatta hangi varyantın satıldığı görünür. */
+  const base = siteBaseUrl();
+  const resultUrl = `${base}/odeme-sonuc.html?order=${encodeURIComponent(orderId)}&t=${encodeURIComponent(accessToken)}`;
 
-  const billingAddress = {
-    contactName: invoice.unvan,
-    city:        address ? address.sehir : MERCHANT.address.city,
-    country:     'Turkey',
-    address:     invoice.adres || shippingAddress.address,
-    zipCode:     shippingAddress.zipCode
-  };
-
-  const payload = {
-    locale:         'tr',
-    conversationId: orderId,
-    price:          iyzico.formatPriceFromKurus(basket.subtotalKurus),
-    paidPrice:      iyzico.formatPriceFromKurus(basket.totalKurus),
-    currency:       'TRY',
-    basketId:       orderId,
-    paymentGroup:   'PRODUCT',
-    callbackUrl:    `${siteBaseUrl()}/api/payment/callback`,
-    enabledInstallments: enabledInstallments(),
-    buyer: {
-      id:                  session ? session.uid : `GUEST-${orderId}`,
-      name:                buyer.ad,
-      surname:             buyer.soyad,
-      gsmNumber:           toGsmNumber(buyer.telefon),
-      email:               buyer.email,
-      identityNumber:      IDENTITY_PLACEHOLDER,
-      registrationAddress: address ? address.adres : MERCHANT.address.full,
-      ip,
-      city:                address ? address.sehir : MERCHANT.address.city,
-      country:             'Turkey',
-      zipCode:             address && address.posta ? address.posta : MERCHANT.address.zipCode
-    },
-    shippingAddress,
-    billingAddress,
-    basketItems: basket.lines.map(line => ({
-      // Varyantlı üründe iyzico'daki kalem kimliği sku'dur: ödeme kaydı ile
-      // depodan çıkan ürün birebir eşleşsin.
-      id:        String(line.sku || line.id),
-      name:      clean(lineTitle(line), 120),
-      category1: line.category,
-      itemType:  'PHYSICAL',
-      price:     iyzico.formatPriceFromKurus(line.totalKurus)
-    }))
-  };
+  const addressText = address
+    ? `${address.adres} ${address.ilce}/${address.sehir}`
+    : MERCHANT.address.full;
 
   let result;
   try {
-    result = await iyzico.initializeCheckoutForm(payload, cfg, { timeoutMs: 20000 });
+    result = await paytr.createPaymentToken({
+      userIp:        ip,
+      merchantOid:   orderId,
+      email:         buyer.email,
+      totalKurus:    basket.totalKurus,
+      lines:         basket.lines.map(l => ({ name: clean(lineTitle(l), 100), unitKurus: l.unitKurus, qty: l.qty })),
+      noInstallment,
+      maxInstallment,
+      currency:      'TL',
+      userName:      `${buyer.ad} ${buyer.soyad}`,
+      userAddress:   addressText,
+      userPhone:     buyer.telefon,
+      okUrl:         resultUrl,
+      failUrl:       `${resultUrl}&durum=basarisiz`,
+      timeoutMinutes: PAYMENT_TIMEOUT_MINUTES
+    }, cfg, { timeoutMs: 20000 });
   } catch (err) {
-    console.error('[payment] initialize çağrısı başarısız (%s): %s', orderId, err.message);
+    console.error('[payment] PayTR token isteği başarısız (%s): %s', orderId, err.message);
     await safeMarkFailed(orderId, 'gateway_unreachable', 'Ödeme sağlayıcısına ulaşılamadı.');
     return fail(res, 503, 'gateway_unreachable', 'Ödeme sayfası şu anda açılamadı. Lütfen tekrar deneyin; kartınızdan herhangi bir çekim yapılmadı.');
   }
 
-  const resultBody = result.body || {};
-
-  if (resultBody.status !== 'success') {
+  if (result.status !== 'success' || !result.token) {
     logPaymentEvent({
       event: 'initialize_failed',
       orderId,
-      environment: cfg.mode,
-      httpStatus: result.status,
-      errorCode: resultBody.errorCode || null,
-      errorMessage: resultBody.errorMessage || null
+      provider: 'paytr',
+      environment: paytrMode(),
+      httpStatus: result.httpStatus,
+      reason: result.reason || null
     });
-    await safeMarkFailed(orderId, resultBody.errorCode || 'initialize_failed', resultBody.errorMessage || 'Ödeme başlatılamadı.');
+    await safeMarkFailed(orderId, 'token_failed', result.reason || 'Ödeme başlatılamadı.');
     return fail(res, 502, 'initialize_failed', 'Ödeme başlatılamadı. Lütfen tekrar deneyin; kartınızdan herhangi bir çekim yapılmadı.');
-  }
-
-  /* Yanıt imzası doğrulanamıyorsa kullanıcıyı bu ödeme sayfasına yollamayız. */
-  if (!result.signatureValid) {
-    console.error('[payment] initialize imza doğrulaması başarısız (%s)', orderId);
-    await safeMarkFailed(orderId, 'signature_invalid', 'Ödeme yanıtı doğrulanamadı.');
-    return fail(res, 502, 'signature_invalid', 'Ödeme başlatılamadı. Lütfen tekrar deneyin; kartınızdan herhangi bir çekim yapılmadı.');
-  }
-
-  const paymentPageUrl = resultBody.paymentPageUrl || resultBody.payWithIyzicoPageUrl || null;
-  if (!paymentPageUrl) {
-    console.error('[payment] initialize yanıtında paymentPageUrl yok (%s)', orderId);
-    await safeMarkFailed(orderId, 'no_payment_page', 'Ödeme sayfası adresi alınamadı.');
-    return fail(res, 502, 'no_payment_page', 'Ödeme sayfası açılamadı. Lütfen tekrar deneyin; kartınızdan herhangi bir çekim yapılmadı.');
   }
 
   try {
     await store.updateOrder(orderId, {
-      checkoutToken:   resultBody.token,
-      tokenExpireTime: resultBody.tokenExpireTime || null
+      checkoutToken: result.token,
+      tokenCreatedAt: new Date().toISOString()
     });
   } catch (err) {
     console.error('[payment] token kaydedilemedi (%s): %s', orderId, err.message);
@@ -207,7 +169,8 @@ module.exports = async (req, res) => {
   logPaymentEvent({
     event: 'initialize_ok',
     orderId,
-    environment: cfg.mode,
+    provider: 'paytr',
+    environment: paytrMode(),
     totalKurus: basket.totalKurus,
     itemCount: basket.lines.length,
     member: Boolean(session)
@@ -217,8 +180,11 @@ module.exports = async (req, res) => {
     ok: true,
     orderId,
     accessToken,
-    paymentPageUrl,
-    totalKurus: basket.totalKurus
+    // Ödeme formu bu adreste açılır (iframe). Kart verisi yalnız PayTR'ye gider.
+    iframeUrl: result.iframeUrl,
+    paymentToken: result.token,
+    totalKurus: basket.totalKurus,
+    timeoutMinutes: PAYMENT_TIMEOUT_MINUTES
   });
 };
 

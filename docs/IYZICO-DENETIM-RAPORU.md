@@ -1,3 +1,8 @@
+> **NOT (2026-08-17):** Ödeme sağlayıcısı bu denetimden sonra **PayTR**'ye taşındı.
+> Sağlayıcıya özel maddeler (iyzico imza/endpoint'leri) artık geçerli değildir; mevzuat,
+> KVKK, PCI kapsamı, fiyat bütünlüğü ve mutabakat bulguları **aynen geçerlidir**.
+> Güncel entegrasyon: `docs/PAYTR-ENTEGRASYON.md`.
+
 # iyzico Canlıya Çıkış Denetim Raporu — efemiletisim.com
 
 Tarih: 2026-08-16

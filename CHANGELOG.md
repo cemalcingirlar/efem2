@@ -3,6 +3,64 @@
 Bu dosya projede yapılan her ekleme, değişiklik ve kaldırmayı kayıt altına alır.
 En yeni kayıtlar en üstte.
 
+## 2026-08-17 (devam)
+
+### Ödeme sağlayıcısı değişti: iyzico → PayTR (iFrame API)
+Kurulum ve işletim rehberi: `docs/PAYTR-ENTEGRASYON.md`.
+Kart verisi bu projede hâlâ hiçbir yerde toplanmıyor; değişen yalnız sağlayıcı.
+
+**Sunucu tarafı**
+- Add: `api/_lib/paytr.js` — PayTR iFrame API istemcisi. `paytr_token` üretimi
+  (merchant_id + user_ip + merchant_oid + email + payment_amount + user_basket +
+  no_installment + max_installment + currency + test_mode + salt → HMAC-SHA256 → base64),
+  bildirim `hash` doğrulaması, sepet (base64 JSON) ve kuruş biçimlendirme.
+- Add: `api/payment/notify.js` — PayTR "Bildirim URL"si. **Sonucun tek yetkili kaynağı.**
+  `hash` doğrulanmadan hiçbir sipariş durumu değişmez; işlem bitince gövdesi
+  **tam olarak `OK`** olan yanıt döner (aksi hâlde PayTR bildirimi tekrarlar).
+  Aynı bildirim tekrar gelse de ikinci kez işlenmez.
+- Change: `api/payment/initialize.js` — iyzico Checkout Form yerine PayTR get-token.
+  Sipariş yine ödeme öncesi `awaiting_payment` olarak açılıyor, tutar yine sunucuda
+  hesaplanıyor, sepet satırları varyant adıyla (`Ürün (Renk · Beden)`) gönderiliyor.
+- Change: `api/_lib/settle.js` — PayTR bildirim modeline göre yeniden yazıldı.
+  Tahsil edilen tutar, para birimi veya test/canlı ortam sipariş kaydıyla uyuşmazsa sipariş `paid` değil
+  **`pending_review`** olur; sevkiyat başlamaz, mail gitmez.
+- Change: `api/_lib/env.js` — `PAYTR_*` değişkenleri. **Varsayılan test modu**:
+  `PAYTR_TEST_MODE` açıkça `0` yapılmadıkça gerçek para çekilmez.
+- Change: Sipariş numarası artık **alfanumerik** (`EFM260817A5973E`) — PayTR
+  `merchant_oid` alanı tire/boşluk kabul etmiyor. Eski tireli numaralar okunmaya
+  devam ediyor (geçmiş siparişler bozulmasın diye).
+- Remove: `api/_lib/iyzico.js`, `api/payment/callback.js`, `api/payment/webhook.js`
+  ve iyzico'ya özel yardımcılar (`toGsmNumber`, `IDENTITY_PLACEHOLDER`).
+
+**Arayüz**
+- Add: `odeme-guvenli.html` — PayTR ödeme formunu iframe içinde açan, üzerinde
+  başka iş mantığı çalışmayan sade sayfa (e-skimming yüzeyini küçültmek için).
+- Change: `odeme.html` ve `js/payment.js` PayTR akışına bağlandı; kart alanı yok,
+  test modunda müşteriye açık uyarı gösteriliyor.
+- Change: `odeme-sonuc.html` — bildirim henüz ulaşmadıysa "ödeme tamamlanmadı"
+  yerine **"sonucunuz kontrol ediliyor"** gösteriliyor (PayTR akışı asenkron).
+- Change: Tüm sayfalardaki ödeme rozeti ve yasal metinlerdeki sağlayıcı adı
+  PayTR olarak güncellendi (`mark-paytr`, `.provider-badge`).
+- Change: `vercel.json` CSP — `frame-src` ve `script-src` için `https://www.paytr.com`.
+
+**Test**
+- Change: `npm run test:payment` → **52 birim + 45 akış testi**. Akış testleri
+  PayTR'yi taklit eden yerel bir sunucuya karşı koşuyor ve gönderilen
+  `paytr_token` imzasını bağımsız olarak yeniden hesaplayıp doğruluyor.
+  Kapsananlar: imzalı bildirim → `paid`, bildirim tekrarı → tek etki, tutar
+  uyuşmazlığı → `pending_review`, ortam/para birimi uyuşmazlığı → `pending_review`,
+  bozuk imza → 401 ve değişiklik yok,
+  `status=failed` → `failed`, "OK" gövdesi, doğrulama kapıları, hız sınırı.
+
+**Dokümantasyon**
+- Add: `docs/PAYTR-ENTEGRASYON.md` (mimari, kurulum, kabul testleri, canlıya geçiş,
+  işletim, mutabakat, sık hatalar, güvenlik kuralları).
+- Change: `docs/IYZICO-ENTEGRASYON.md` → `docs/ARSIV-IYZICO-ENTEGRASYON.md` (arşiv notu ile).
+  `docs/IYZICO-DENETIM-RAPORU.md` başına sağlayıcı değişikliği notu eklendi —
+  mevzuat/KVKK/PCI/fiyat bütünlüğü bulguları aynen geçerli.
+- Change: `CLAUDE.md` ödeme kuralları, `README.md`, `.env.example`,
+  `docs/ARKADAS-YAPILACAKLAR.md` PayTR'ye göre güncellendi.
+
 ## 2026-08-17
 
 ### Katalog doğruluk denetimi: teknik özellikler, renk görselleri

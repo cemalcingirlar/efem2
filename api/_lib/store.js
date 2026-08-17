@@ -5,7 +5,7 @@
    =========================================
    Sipariş ve ödeme durumunun TEK otoritesi sunucudur. Tarayıcı artık
    sipariş yazamaz (bkz. firestore.rules): "ödendi" bilgisi yalnızca
-   iyzico'dan doğrulanmış sonuç ile bu modül üzerinden yazılır.
+   PayTR bildiriminden doğrulanmış sonuç ile bu modül üzerinden yazılır.
 
    Koleksiyonlar:
    - orders/{orderId}        : otoritatif sipariş + ödeme durumu
@@ -78,18 +78,6 @@ async function getOrder(orderId) {
   if (!store) throw new Error('store_not_configured');
   const snap = await store.db.collection('orders').doc(orderId).get();
   return snap.exists ? snap.data() : null;
-}
-
-/* Callback yalnızca `token` taşıyabildiği için sipariş jeton üzerinden de
-   bulunabilmelidir (tek alan sorgusu — ek index gerekmez). */
-async function findOrderByCheckoutToken(token) {
-  const store = getStore();
-  if (!store || !token) return null;
-  const snap = await store.db.collection('orders')
-    .where('checkoutToken', '==', String(token))
-    .limit(1)
-    .get();
-  return snap.empty ? null : snap.docs[0].data();
 }
 
 async function updateOrder(orderId, data) {
@@ -174,7 +162,6 @@ module.exports = {
   verifyIdToken,
   createOrder,
   getOrder,
-  findOrderByCheckoutToken,
   updateOrder,
   transitionOrder,
   recordEventOnce,

@@ -38,7 +38,7 @@ const SITE = {
     phone:        '0542 840 08 88',
     phoneTodo:    false,
     phoneHref:    '+905428400888',
-    email:        'info@efemiletisim.com',
+    email:        'destek@efemiletisim.com',
     address: {
       line1:    'Yeni Mahalle 87071 Sokak No:5 Z32',
       line2:    'M1 Avm',

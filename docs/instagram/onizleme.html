@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>İlk 9 gönderi — önizleme</title>
+<style>
+  :root{
+    --bg:#F5F7FA; --card:#FFF; --ink:#0F1626; --ink2:#56617A; --ink3:#7C879C;
+    --line:#DCE2EC; --blue:#2563EB; --blue-soft:#E7EEFD;
+    --body:-apple-system,"Segoe UI",system-ui,sans-serif;
+    --mono:"Cascadia Mono",Consolas,ui-monospace,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.6}
+  .wrap{max-width:960px;margin:0 auto;padding:48px 24px 96px;display:flex;flex-direction:column;gap:56px}
+
+  header{display:flex;flex-direction:column;gap:10px}
+  .kicker{font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--blue)}
+  h1{font-size:34px;letter-spacing:-.02em;font-weight:700}
+  header p{color:var(--ink2);max-width:64ch}
+
+  h2{font-size:22px;letter-spacing:-.01em;display:flex;align-items:baseline;gap:12px;
+     border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:18px}
+  h2 .n{font-family:var(--mono);font-size:12px;color:var(--blue)}
+  h2 .type{margin-left:auto;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;
+     text-transform:uppercase;color:var(--ink3)}
+
+  /* profil izgarasi */
+  .profile{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:22px}
+  .phead{display:flex;gap:20px;align-items:center;padding-bottom:18px;border-bottom:1px solid var(--line);margin-bottom:18px}
+  .pav{width:76px;height:76px;border-radius:50%;background:var(--blue);color:#fff;flex:0 0 auto;
+       display:flex;align-items:center;justify-content:center;font-weight:700;font-size:22px}
+  .pmeta b{font-size:17px}
+  .pmeta div{color:var(--ink2);font-size:14px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:3px}
+  .grid img{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:#fff}
+  .grid figure{position:relative}
+  .grid figcaption{position:absolute;top:6px;right:6px;background:rgba(15,22,38,.72);color:#fff;
+       font-family:var(--mono);font-size:10px;padding:2px 6px;border-radius:3px}
+  .note{font-size:13.5px;color:var(--ink3);margin-top:12px}
+
+  /* gonderiler */
+  .post{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:22px}
+  .frames{display:flex;gap:12px;overflow-x:auto;padding-bottom:10px}
+  .frames figure{flex:0 0 190px}
+  .frames img{width:190px;height:190px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:4px;display:block}
+  .frames figcaption{font-family:var(--mono);font-size:10.5px;color:var(--ink3);margin-top:6px;
+       overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .cap{position:relative;margin-top:18px}
+  .cap pre{background:#F7F8FB;border:1px dashed var(--line);border-radius:4px;padding:16px 16px 16px 18px;
+       font-family:var(--body);font-size:14.5px;white-space:pre-wrap;color:var(--ink2)}
+  .copy{position:absolute;top:8px;right:8px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;
+       background:var(--blue);color:#fff;border:0;border-radius:3px;padding:6px 12px;cursor:pointer}
+  .copy:hover{background:#1B4ACB}
+  .copy:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+  .meta{font-size:13.5px;color:var(--ink3);margin-top:12px}
+  .meta b{color:var(--ink2)}
+  footer{border-top:1px solid var(--line);padding-top:18px;font-size:13px;color:var(--ink3)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <span class="kicker">@efemelektronik · yayına hazır</span>
+  <h1>İlk 9 gönderi — önizleme</h1>
+  <p>Kareler <code>docs/instagram/gorseller/</code> altından okunuyor; <code>build.ps1</code>'i her çalıştırdığında bu sayfa da güncellenir. Metinlerin yanındaki <b>Kopyala</b> düğmesi caption'ı panoya alır.</p>
+</header>
+
+<section>
+  <h2><span class="n">A</span> Profil nasıl görünecek</h2>
+  <div class="profile">
+    <div class="phead">
+      <div class="pav">ef</div>
+      <div class="pmeta">
+        <b>efemelektronik</b>
+        <div>Efem İletişim | Adana · 9 gönderi</div>
+        <div>Akıllı saat · Kulaklık · Aksesuar</div>
+      </div>
+    </div>
+    <div class="grid">
+      <figure><img src="gorseller/gonderi-09/09-1-kapak.png" alt="Gönderi 09 kapağı"><figcaption>09</figcaption></figure>
+      <figure><img src="gorseller/gonderi-08/08-1-gt6.png" alt="Gönderi 08 kapağı"><figcaption>08</figcaption></figure>
+      <figure><img src="gorseller/gonderi-07/07-vodafone.png" alt="Gönderi 07 kapağı"><figcaption>07</figcaption></figure>
+      <figure><img src="gorseller/gonderi-06/06-1-jbl.png" alt="Gönderi 06 kapağı"><figcaption>06</figcaption></figure>
+      <figure><img src="gorseller/gonderi-05/05-1-kapak.png" alt="Gönderi 05 kapağı"><figcaption>05</figcaption></figure>
+      <figure><img src="gorseller/gonderi-04/04-1-airpods.png" alt="Gönderi 04 kapağı"><figcaption>04</figcaption></figure>
+      <figure><img src="gorseller/gonderi-03/03-1-kapak.png" alt="Gönderi 03 kapağı"><figcaption>03</figcaption></figure>
+      <figure><img src="gorseller/gonderi-02/02-1-watch-s11.png" alt="Gönderi 02 kapağı"><figcaption>02</figcaption></figure>
+      <figure><img src="gorseller/gonderi-01/01-tanitim.png" alt="Gönderi 01 kapağı"><figcaption>01</figcaption></figure>
+    </div>
+    <p class="note">Instagram en yeni gönderiyi sol üste koyar; ızgara dokuzu da yüklendikten sonra bu sırada görünür. Kurumsal çapa gönderileri (01, 05, 09) köşegen üzerinde duruyor — profile hangi satırdan bakılırsa bakılsın bir güven mesajı görünüyor.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">01</span> Tanıtım <span class="type">Karusel · 2 kare</span></h2>
+  <div class="post">
+    <div class="frames">
+      <figure><img src="gorseller/gonderi-01/01-tanitim.png" alt=""><figcaption>01-tanitim</figcaption></figure>
+      <figure><img src="gorseller/gonderi-01/01-2-kunye.png" alt=""><figcaption>01-2-kunye</figcaption></figure>
+    </div>
+    <div class="cap">
+      <button class="copy">Kopyala</button>
+      <pre>2015'ten beri Adana'dayız.
+
+M1 AVM Seyhan'daki mağazamızda akıllı saat, kulaklık ve teknoloji aksesuarları satıyoruz. Vodafone İş Ortağıyız; sattığımız her ürün orijinal, faturalı ve Türkiye garantili.
+
+Artık efemiletisim.com üzerinden Türkiye'nin her yerine gönderiyoruz — tüm siparişlerde kargo ücretsiz.
+
+Mağazamız her gün 10.00-22.00 açık. Sorunuz varsa WhatsApp'tan yazın, aynı gün dönüş yapıyoruz.
+
+#adana #seyhan #m1avm #adanateknoloji #akıllısaat #kulaklık #efemiletisim</pre>
+    </div>
+    <p class="meta"><b>Alt metin:</b> Efem İletişim tanıtım görseli: akıllı saat, kulaklık, aksesuar ve ses sistemleri; mağaza adresi ve telefon.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">02</span> Apple Watch Series 11 <span class="type">Karusel · 3 kare</span></h2>
+  <div class="post">
+    <div class="frames">
+      <figure><img src="gorseller/gonderi-02/02-1-watch-s11.png" alt=""><figcaption>02-1-watch-s11</figcaption></figure>
+      <figure><img src="gorseller/gonderi-02/02-2-renkler.png" alt=""><figcaption>02-2-renkler</figcaption></figure>
+      <figure><img src="gorseller/gonderi-02/02-3-guvence.png" alt=""><figcaption>02-3-guvence</figcaption></figure>
+    </div>
+    <div class="cap">
+      <button class="copy">Kopyala</button>
+      <pre>Apple Watch Series 11 — 42 mm, GPS.
+
+Jet Siyah, Uzay Grisi, Gümüş ve Roze Altın; S/M ve M/L kordon seçenekleriyle stokta.
+
+Orijinal, faturalı, Türkiye garantili. Tüm siparişlerde ücretsiz kargo.
+
+Güncel fiyat ve stok için profildeki bağlantı → Akıllı Saatler
+
+#applewatch #applewatchseries11 #akıllısaat #adana #adanateknoloji #m1avm #efemiletisim</pre>
+    </div>
+    <p class="meta"><b>Alt metin:</b> Apple Watch Series 11 42 mm akıllı saat, renk seçenekleriyle.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">03</span> Karşılaştırma: SE 3 mü, Series 11 mi? <span class="type">Karusel · 4 kare</span></h2>
+  <div class="post">
+    <div class="frames">
+      <figure><img src="gorseller/gonderi-03/03-1-kapak.png" alt=""><figcaption>03-1-kapak</figcaption></figure>
+      <figure><img src="gorseller/gonderi-03/03-2-se3.png" alt=""><figcaption>03-2-se3</figcaption></figure>
+      <figure><img src="gorseller/gonderi-03/03-3-s11.png" alt=""><figcaption>03-3-s11</figcaption></figure>
+      <figure><img src="gorseller/gonderi-03/03-4-danis.png" alt=""><figcaption>03-4-danis</figcaption></figure>
+    </div>
+    <div class="cap">
+      <button class="copy">Kopyala</button>
+      <pre>Hangisi size uygun?
+
+Apple Watch SE 3 — ilk Apple Watch'ını alacaklar için. Günlük takip, bildirim ve spor özelliklerinin tamamı burada.
+
+Apple Watch Series 11 — daha büyük ve her zaman açık ekran, gelişmiş sağlık sensörleri.
+
+İkisi de mağazamızda ve sitemizde. Kararsız kaldıysanız WhatsApp'tan yazın, kullanımınıza göre önerelim.
+
+#applewatch #applewatchse #akıllısaat #teknoloji #adana #seyhan #efemiletisim</pre>
+    </div>
+    <p class="meta"><b>Alt metin:</b> Apple Watch SE 3 ve Apple Watch Series 11 karşılaştırması. — <b>Not:</b> kaydedilme getiren tür budur.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">04</span> AirPods Pro 3 <span class="type">Karusel · 3 kare</span></h2>
+  <div class="post">
+    <div class="frames">
+      <figure><img src="gorseller/gonderi-04/04-1-airpods.png" alt=""><figcaption>04-1-airpods</figcaption></figure>
+      <figure><img src="gorseller/gonderi-04/04-2-detay.png" alt=""><figcaption>04-2-detay</figcaption></figure>
+      <figure><img src="gorseller/gonderi-04/04-3-anc.png" alt=""><figcaption>04-3-anc</figcaption></figure>
+    </div>
+    <div class="cap">
+      <button class="copy">Kopyala</button>
+      <pre>AirPods Pro 3 — aktif gürültü engelleme.
+
+Trafikte, otobüste, ofiste: gürültüyü kapatın.
+
+Mağazamızda deneyebilir, sitemizden ücretsiz kargoyla sipariş verebilirsiniz.
+
+#airpods #airpodspro #kulaklık #apple #adana #m1avm #efemiletisim</pre>
+    </div>
+    <p class="meta"><b>Alt metin:</b> AirPods Pro 3 kablosuz kulaklık, aktif gürültü engelleme.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">05</span> Neden bizden? <span class="type">Karusel · 6 kare</span></h2>
+  <div class="post">
+    <div class="frames">
+      <figure><img src="gorseller/gonderi-05/05-1-kapak.png" alt=""><figcaption>05-1-kapak</figcaption></figure>
+      <figure><img src="gorseller/gonderi-05/05-2.png" alt=""><figcaption>05-2 · orijinal mi</figcaption></figure>
+      <figure><img src="gorseller/gonderi-05/05-3.png" alt=""><figcaption>05-3 · kargo</figcaption></figure>
+      <figure><img src="gorseller/gonderi-05/05-4.png" alt=""><figcaption>05-4 · iade</figcaption></figure>
+      <figure><img src="gorseller/gonderi-05/05-5.png" alt=""><figcaption>05-5 · ödeme</figcaption></figure>
+      <figure><img src="gorseller/gonderi-05/05-6.png" alt=""><figcaption>05-6 · mağaza</figcaption></figure>
+    </div>
+    <div class="cap">
+      <button class="copy">Kopyala</button>
+      <pre>İnternetten teknoloji alırken en çok sorulan beş soru:
+
+1. Ürün orijinal mi? Sattığımız her ürün orijinal, faturalı ve Türkiye garantilidir.
+2. Kargo ne kadar? Tüm siparişlerde ücretsiz. Yurtiçi Kargo ile 1-3 iş günü içinde teslim.
+3. Beğenmezsem? Teslimattan itibaren 14 gün içinde koşulsuz iade hakkınız var.
+4. Ödeme güvenli mi? Ödemeler iyzico altyapısı üzerinden alınıyor; kart bilgileriniz bize ulaşmıyor.
+5. Gerçek mağaza var mı? M1 AVM Seyhan'da, 2015'ten beri.
+
+efemiletisim.com
+
+#güvenlialışveriş #adana #seyhan #m1avm #teknoloji #efemiletisim</pre>
+    </div>
+    <p class="meta"><b>Alt metin:</b> İnternetten teknoloji alırken sorulan 5 soru ve cevapları. — <b>Not:</b> hesabın güven omurgası.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">06</span> JBL PartyBox Club 120 <span class="type">Karusel · 3 kare</span></h2>
+  <div class="post">
+    <div class="frames">
+      <figure><img src="gorseller/gonderi-06/06-1-jbl.png" alt=""><figcaption>06-1-jbl</figcaption></figure>
+      <figure><img src="gorseller/gonderi-06/06-2-detay.png" alt=""><figcaption>06-2-detay</figcaption></figure>
+      <figure><img src="gorseller/gonderi-06/06-3-dinle.png" alt=""><figcaption>06-3-dinle</figcaption></figure>
+    </div>
+    <div class="cap">
+      <button class="copy">Kopyala</button>
+      <pre>JBL PartyBox Club 120 geldi.
+
+Işıklı gövde, güçlü bas, taşınabilir kasa. Mağazamızda dinleyebilirsiniz.
+
+Stok ve fiyat için profildeki bağlantı → Ses & Diğer
+
+#jbl #partybox #bluetoothhoparlör #ses #adana #m1avm #efemiletisim</pre>
+    </div>
+    <p class="meta"><b>Alt metin:</b> JBL PartyBox Club 120 ışıklı bluetooth hoparlör.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">07</span> Vodafone İş Ortağı <span class="type">Tek görsel · konum etiketli</span></h2>
+  <div class="post">
+    <div class="frames">
+      <figure><img src="gorseller/gonderi-07/07-vodafone.png" alt=""><figcaption>07-vodafone</figcaption></figure>
+    </div>
+    <div class="cap">
+      <button class="copy">Kopyala</button>
+      <pre>Vodafone İş Ortağıyız.
+
+Hat işlemleri, cihaz ve aksesuar için M1 AVM Seyhan'daki mağazamıza bekleriz. Her gün 10.00-22.00 açığız.
+
+Yeni Mahalle 87071 Sokak No:5 Z32, M1 AVM — Seyhan / Adana
+0543 440 25 25
+
+#vodafone #adana #seyhan #m1avm #adanaesnaf #efemiletisim</pre>
+    </div>
+    <p class="meta"><b>Konum etiketi:</b> M1 Merkez Adana — bu gönderide şart. <b>Not:</b> Vodafone logosu bilerek kullanılmadı.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">08</span> Huawei Watch GT 6 kampanya <span class="type">Karusel · 2 kare</span></h2>
+  <div class="post">
+    <div class="frames">
+      <figure><img src="gorseller/gonderi-08/08-1-gt6.png" alt=""><figcaption>08-1-gt6</figcaption></figure>
+      <figure><img src="gorseller/gonderi-08/08-2-ozellik.png" alt=""><figcaption>08-2-ozellik</figcaption></figure>
+    </div>
+    <div class="cap">
+      <button class="copy">Kopyala</button>
+      <pre>Huawei Watch GT 6 46 mm — bu hafta indirimde.
+
+Uzun pil ömrü, AMOLED ekran, tam kapsamlı spor takibi.
+
+Güncel fiyat sitemizde: profildeki bağlantı → Akıllı Saatler
+Kampanya stoklarla sınırlıdır.
+
+#huawei #huaweiwatch #akıllısaat #indirim #adana #efemiletisim</pre>
+    </div>
+    <p class="meta"><b>Alt metin:</b> Huawei Watch GT 6 46 mm akıllı saat, indirim rozetiyle. — <b>Not:</b> oran değişirse <code>spec.json</code> → <code>badge</code>.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">09</span> Sık sorulanlar <span class="type">Karusel · 5 kare · sabitle</span></h2>
+  <div class="post">
+    <div class="frames">
+      <figure><img src="gorseller/gonderi-09/09-1-kapak.png" alt=""><figcaption>09-1-kapak</figcaption></figure>
+      <figure><img src="gorseller/gonderi-09/09-2.png" alt=""><figcaption>09-2 · kargo süresi</figcaption></figure>
+      <figure><img src="gorseller/gonderi-09/09-3.png" alt=""><figcaption>09-3 · kargo ücreti</figcaption></figure>
+      <figure><img src="gorseller/gonderi-09/09-4.png" alt=""><figcaption>09-4 · iade</figcaption></figure>
+      <figure><img src="gorseller/gonderi-09/09-5.png" alt=""><figcaption>09-5 · kapıda ödeme</figcaption></figure>
+    </div>
+    <div class="cap">
+      <button class="copy">Kopyala</button>
+      <pre>En çok sorulanlar:
+
+"Kargo ne zaman elimde olur?" — Siparişiniz hazırlandıktan sonra Yurtiçi Kargo ile 1-3 iş günü içinde.
+"Kargo ücreti var mı?" — Yok, tüm siparişlerde ücretsiz.
+"İade edebilir miyim?" — Teslimattan itibaren 14 gün içinde, koşulsuz.
+"Kapıda ödeme var mı?" — Şu an yok; kredi kartı veya havale/EFT ile ödeyebilirsiniz.
+
+Başka sorunuz varsa WhatsApp'tan yazın.
+
+#sıksorulansorular #kargo #adana #güvenlialışveriş #efemiletisim</pre>
+    </div>
+    <p class="meta"><b>Alt metin:</b> Kargo, iade ve ödeme hakkında sık sorulan sorular. — <b>Not:</b> bu gönderiyi profilde sabitle.</p>
+  </div>
+</section>
+
+<footer>
+  Bu sayfa yalnız yerelde çalışır; <code>docs/</code> klasörü <code>.vercelignore</code> içinde olduğu için siteyle yayına çıkmaz.
+</footer>
+
+</div>
+
+<script>
+document.querySelectorAll('.copy').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    var text = btn.parentElement.querySelector('pre').textContent;
+    navigator.clipboard.writeText(text).then(function () {
+      btn.textContent = 'Kopyalandı';
+      setTimeout(function () { btn.textContent = 'Kopyala'; }, 1600);
+    }).catch(function () {
+      btn.textContent = 'Kopyalanamadı';
+      setTimeout(function () { btn.textContent = 'Kopyala'; }, 1600);
+    });
+  });
+});
+</script>
+</body>
+</html>

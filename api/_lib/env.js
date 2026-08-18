@@ -102,6 +102,50 @@ function serviceAccount() {
 }
 
 /* ─── Genel durum ─── */
+/* ─── Servis hesabı teşhisi ───
+   "Değişken hiç yok" ile "var ama okunamıyor" aynı sonucu (store: false)
+   verdiği için ayırt edilemiyordu. Bu fonksiyon SADECE durumu söyler;
+   anahtarın kendisinden hiçbir parça dışarı verilmez.
+
+   present  : ortam değişkeni tanımlı mı
+   parsed   : JSON olarak çözülüp zorunlu alanları taşıyor mu
+   reason   : çözülemediyse hangi aşamada takıldı                        */
+function serviceAccountDiagnostics() {
+  const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
+
+  if (typeof raw !== 'string' || !raw.trim()) {
+    return { present: false, parsed: false, reason: 'not_set' };
+  }
+
+  let text = raw.trim();
+  if (!text.startsWith('{')) {
+    try {
+      text = Buffer.from(text, 'base64').toString('utf8').trim();
+    } catch {
+      return { present: true, parsed: false, reason: 'not_json_not_base64' };
+    }
+    if (!text.startsWith('{')) {
+      return { present: true, parsed: false, reason: 'not_json_not_base64' };
+    }
+  }
+
+  let parsed;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    return { present: true, parsed: false, reason: 'invalid_json' };
+  }
+
+  const missing = ['project_id', 'client_email', 'private_key']
+    .filter(k => !parsed[k]);
+  if (missing.length) {
+    return { present: true, parsed: false, reason: 'missing_fields', missing };
+  }
+
+  // project_id gizli bir bilgi değil; istemci SDK yapılandırmasında zaten var.
+  return { present: true, parsed: true, projectId: String(parsed.project_id) };
+}
+
 function paymentStatusReport() {
   return {
     paytr: Boolean(paytrConfig()),
@@ -127,6 +171,7 @@ module.exports = {
   siteBaseUrl,
   orderTokenSecret,
   serviceAccount,
+  serviceAccountDiagnostics,
   paymentStatusReport,
   isCardPaymentEnabled
 };

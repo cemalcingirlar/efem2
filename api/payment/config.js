@@ -6,7 +6,7 @@
    Sır veya yapılandırma detayı dönmez, yalnızca yetenek bilgisi. */
 
 const { methodNotAllowed, json } = require('../_lib/http');
-const { isCardPaymentEnabled, paytrMode, installmentSettings } = require('../_lib/env');
+const { isCardPaymentEnabled, paytrMode, installmentSettings, serviceAccountDiagnostics } = require('../_lib/env');
 const { isStoreConfigured } = require('../_lib/store');
 
 module.exports = async (req, res) => {
@@ -26,6 +26,8 @@ module.exports = async (req, res) => {
     // Sunucu tarafı sipariş defteri açık mı? Kapalıysa EFT siparişi eski
     // istemci akışıyla oluşturulur (bkz. js/payment.js).
     orderApiEnabled: isStoreConfigured(),
+    // Kurulum teşhisi: anahtarın içeriği DEĞİL, yalnız durumu.
+    serviceAccount: serviceAccountDiagnostics(),
     provider: 'paytr'
   });
 };

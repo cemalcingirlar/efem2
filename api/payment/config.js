@@ -8,6 +8,7 @@
 const { methodNotAllowed, json } = require('../_lib/http');
 const { isCardPaymentEnabled, paytrMode, installmentSettings, serviceAccountDiagnostics } = require('../_lib/env');
 const { isStoreConfigured } = require('../_lib/store');
+const { adminEmailsDiagnostics } = require('../_lib/admin-auth');
 
 module.exports = async (req, res) => {
   if (req.method !== 'GET') return methodNotAllowed(res, ['GET']);
@@ -28,6 +29,7 @@ module.exports = async (req, res) => {
     orderApiEnabled: isStoreConfigured(),
     // Kurulum teşhisi: anahtarın içeriği DEĞİL, yalnız durumu.
     serviceAccount: serviceAccountDiagnostics(),
+    adminEmails:    adminEmailsDiagnostics(),
     provider: 'paytr'
   });
 };

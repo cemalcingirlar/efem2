@@ -61,12 +61,33 @@ döner ve panele girilemez. Sahte bir "başarılı giriş" üretilmez.
 
 ## 3. Yönetici hesabı oluşturma
 
-1. Firebase Console → Authentication → Users → **Add user** (e-posta + şifre).
-2. Hesapla siteye bir kez giriş yapıp **e-posta doğrulama** bağlantısını
-   tıklayın. Doğrulanmamış e-posta panele giremez (`403 email_unverified`).
-3. Adresi `ADMIN_EMAILS` listesine ekleyip projeyi yeniden deploy edin.
+Bu projede ayrı bir "admin kaydı" yoktur. Yönetici = **normal bir Firebase
+kullanıcısı** + e-postası `ADMIN_EMAILS` listesinde olan hesap.
+Custom claim ayarlamaya gerek yoktur.
 
-Custom claim ayarlamaya gerek yoktur; yetki listesi ortam değişkenindedir.
+> ⚠️ Hesabı **Firebase Console → Authentication → Add user** ile açmayın.
+> O yolla oluşan kullanıcının `emailVerified` değeri `false` kalır ve Console'da
+> bunu doğrulanmış yapan bir düğme yoktur. Panel doğrulanmış e-posta şart
+> koştuğu için hesap `403 email_unverified` alır.
+
+### Doğru yol — siteden kayıt ol
+
+1. `https://efemiletisim.com/hesap.html?tab=register` (yerelde
+   `http://localhost:3000/hesap.html?tab=register`) adresinden ad, soyad,
+   e-posta ve şifre ile kayıt olun.
+2. Firebase doğrulama e-postasını gönderir; gelen kutusundaki bağlantıya tıklayın.
+   (Gelmezse spam klasörüne bakın; gönderen `noreply@efemiletisim.firebaseapp.com`.)
+3. Aynı e-postayı `ADMIN_EMAILS` değişkenine ekleyip projeyi **yeniden deploy
+   edin** — Vercel ortam değişkenleri yalnız yeni dağıtımda etkinleşir.
+4. `admin.html` adresinden bu hesapla giriş yapın.
+
+Kayıt akışı hesabı oluştururken Firestore'da `users/{uid}` profilini de yazar;
+Console'dan açılan kullanıcıda bu doküman oluşmaz.
+
+### Alan adı yetkilendirmesi
+
+Firebase Console → Authentication → Settings → **Authorized domains** listesinde
+`efemiletisim.com` bulunmalıdır. `localhost` varsayılan olarak yetkilidir.
 
 ---
 

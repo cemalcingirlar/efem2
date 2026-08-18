@@ -157,9 +157,17 @@ dönmeli. Dönmüyorsa değişkenlerden biri eksiktir. Canlıya geçince `mode` 
 Ayrıntılı anlatım: `docs/ADMIN-KURULUMU.md`
 
 ### 2.1 Yönetici hesabı oluştur
-Firebase Console → Authentication → Users → **Add user** (e-posta + şifre).
-Sonra o hesapla siteye bir kez girip **e-posta doğrulama** bağlantısını tıkla.
-Doğrulanmamış e-posta panele giremez.
+
+> ⚠️ Firebase Console → Authentication → **Add user** ile AÇMA. O yolla oluşan
+> kullanıcının e-postası "doğrulanmamış" kalır ve Console'da bunu doğrulanmış
+> yapan bir düğme yok; panel o hesabı içeri almaz.
+
+1. `efemiletisim.com/hesap.html?tab=register` adresinden normal kullanıcı gibi kayıt ol.
+2. Gelen doğrulama e-postasındaki bağlantıya tıkla (spam klasörüne de bak).
+3. Bu e-postayı aşağıdaki `ADMIN_EMAILS` değişkenine yaz.
+
+Yönetici = normal Firebase kullanıcısı + e-postası `ADMIN_EMAILS` listesinde olan hesap.
+Ayrı bir "admin kaydı" yok.
 
 ### 2.2 Vercel ortam değişkenleri
 

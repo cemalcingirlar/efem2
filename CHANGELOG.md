@@ -3,6 +3,38 @@
 Bu dosya projede yapılan her ekleme, değişiklik ve kaldırmayı kayıt altına alır.
 En yeni kayıtlar en üstte.
 
+## 2026-08-18 (kurulum teşhisi)
+
+### `/api/payment/config` artık yapılandırma hatasının SEBEBİNİ söylüyor
+Panel canlıya alınırken `FIREBASE_SERVICE_ACCOUNT` okunamadı, ama sunucunun
+verdiği tek bilgi `store: false` idi. "Değişken hiç tanımlı değil", "tanımlı ama
+yanlış şey yapıştırılmış" ve "değer kırpılmış" durumlarının hepsi aynı görünüyordu;
+her tahmin bir deploy turu demekti.
+
+- Add: `serviceAccountDiagnostics()` (`api/_lib/env.js`) — `present` / `parsed` /
+  `reason` (`not_set`, `not_json_not_base64`, `invalid_json`, `missing_fields`)
+  ve çözülebildiyse `projectId`.
+- Add: `valueShapeHint()` — değer çözülemediğinde NE olduğunu sınıflandırır
+  (tırnak içinde yapıştırılmış, dosya yolu/adı, sadece private_key, web API key)
+  ve uzunluğunu verir. Kurulumdaki hatayı ilk bakışta gösterdi: 182 karakter =
+  Firebase Console'daki Admin SDK kod örneği, 24 karakter = e-posta adresi.
+- Add: `adminEmailsDiagnostics()` (`api/_lib/admin-auth.js`) — kaç geçerli adres
+  var, kaçı bozuk. Aynı hata `ADMIN_EMAILS`'e de yapılmıştı ve hiçbir yerden
+  görünmüyordu; yalnız giriş denemesinde 403 alınıyordu.
+
+**Sır sızdırmama kuralı:** Hiçbiri değerin İÇERİĞİNDEN parça döndürmez.
+Servis hesabı tarafında yalnız `project_id` verilir — o da zaten
+`js/firebase-config.js` içinde açıkta. Yönetici adresleri hiç verilmez: kişisel
+veri olmasının yanı sıra, yönetici hesaplarının listesi saldırgan için doğrudan bir
+hedef listesidir. Sınıf ve uzunluk bilgisi de yalnız değer ZATEN çözülemediğinde
+hesaplanır, yani çalışan bir anahtar hakkında hiçbir şey söylenmez.
+
+- Change: `dev-server.js` → `api/` altındaki tüm modüller her istekte tazeleniyor
+  (önceden yalnız handler dosyası; `api/_lib/*` değişiklikleri sunucu yeniden
+  başlatılana kadar görünmüyordu) ve `vercel.json` başlıkları yerelde de uygulanıyor.
+
+İlgili PR'lar: #14, #15, #16.
+
 ## 2026-08-18 (CSP: ödeme sayfası sıkılaştırıldı)
 
 ### `odeme-guvenli.html` artık `'unsafe-inline'` olmadan servis ediliyor

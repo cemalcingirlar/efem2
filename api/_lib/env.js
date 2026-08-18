@@ -102,6 +102,18 @@ function serviceAccount() {
 }
 
 /* ─── Genel durum ─── */
+/* Çalışmayan bir değerin NE olduğunu tahmin eder. İçeriğinden hiçbir şey
+   döndürmez, yalnız sınıfını. */
+function valueShapeHint(text) {
+  if (/^["']/.test(text))              return 'tirnak_icinde_yapistirilmis';
+  if (/^[A-Za-z]:[\/]/.test(text))     return 'windows_dosya_yolu';
+  if (/^[~/]/.test(text))               return 'unix_dosya_yolu';
+  if (/.json$/i.test(text))            return 'dosya_adi';
+  if (/^-----BEGIN/.test(text))         return 'sadece_private_key';
+  if (/^AIza/.test(text))               return 'web_api_key';
+  return 'bilinmiyor';
+}
+
 /* ─── Servis hesabı teşhisi ───
    "Değişken hiç yok" ile "var ama okunamıyor" aynı sonucu (store: false)
    verdiği için ayırt edilemiyordu. Bu fonksiyon SADECE durumu söyler;
@@ -119,14 +131,22 @@ function serviceAccountDiagnostics() {
 
   let text = raw.trim();
   if (!text.startsWith('{')) {
+    let decoded = null;
     try {
-      text = Buffer.from(text, 'base64').toString('utf8').trim();
-    } catch {
-      return { present: true, parsed: false, reason: 'not_json_not_base64' };
+      const candidate = Buffer.from(text, 'base64').toString('utf8').trim();
+      if (candidate.startsWith('{')) decoded = candidate;
+    } catch { /* base64 değil */ }
+
+    if (decoded === null) {
+      return {
+        present: true,
+        parsed:  false,
+        reason:  'not_json_not_base64',
+        hint:    valueShapeHint(text),
+        length:  text.length
+      };
     }
-    if (!text.startsWith('{')) {
-      return { present: true, parsed: false, reason: 'not_json_not_base64' };
-    }
+    text = decoded;
   }
 
   let parsed;

@@ -179,7 +179,55 @@ Sepet değişirse uygulanan kupon otomatik düşer ve yeniden doğrulanması ger
 
 ---
 
-## 6. Doğrulama listesi (canlıya çıkmadan)
+## 6. Kurulumu doğrulama — tek adres
+
+```bash
+curl -s https://efemiletisim.com/api/payment/config
+```
+
+Her şey yerindeyse:
+
+```json
+{
+  "orderApiEnabled": true,
+  "serviceAccount": { "present": true, "parsed": true, "projectId": "efemiletisim" },
+  "adminEmails":    { "present": true, "valid": 1, "invalid": 0 }
+}
+```
+
+### `serviceAccount` hata kodları
+
+| `reason` | Anlamı | Çözüm |
+|---|---|---|
+| `not_set` | Değişken sunucuya ulaşmamış | Production ortamına ekle, sonra **redeploy** |
+| `not_json_not_base64` | Değer var ama `{` ile başlamıyor | Yanlış şey yapıştırılmış — `hint` ve `length` alanına bak |
+| `invalid_json` | JSON kırpılmış | Dosyanın tamamı kopyalanmamış |
+| `missing_fields` | Alan eksik | Yanlış dosya (servis hesabı değil) |
+
+`hint` değerinin anlamı: `tirnak_icinde_yapistirilmis`, `windows_dosya_yolu`,
+`unix_dosya_yolu`, `dosya_adi`, `sadece_private_key`, `web_api_key`, `bilinmiyor`.
+
+`length` de çok işe yarar — doğru bir servis hesabı JSON'u **~2.300 karakterdir**:
+
+| Görülen uzunluk | Muhtemelen yapıştırılan |
+|---|---|
+| ~180 | Firebase Console'daki "Admin SDK configuration snippet" kod örneği |
+| ~24–60 | Bir e-posta adresi veya dosya adı |
+| ~2.300 | Doğru dosya |
+
+> ⚠️ **Değişkeni kaydetmek yetmez.** Vercel ortam değişkenlerini yalnız dağıtım
+> oluşturulurken okur; çalışan site eski değerlerle devam eder. Kaydettikten sonra
+> Deployments → en üstteki → **⋯ → Redeploy**. Kontrol ederken de o an canlıda
+> olan dağıtımın senin düzeltmenden SONRA oluşturulduğundan emin ol.
+
+### `adminEmails`
+
+`valid` kaç geçerli adres olduğunu söyler. `0` ise (`no_valid_email`) değişkene
+e-posta dışında bir şey yazılmış demektir. Adresler güvenlik gereği dönmez.
+
+---
+
+## 7. Doğrulama listesi (canlıya çıkmadan)
 
 - [ ] `ADMIN_EMAILS` dışındaki bir hesapla giriş → panel açılmıyor, `403`
 - [ ] Doğru hesapla giriş → panel açılıyor, ürün listesi sunucudan geliyor
@@ -193,7 +241,7 @@ Sepet değişirse uygulanan kupon otomatik düşer ve yeniden doğrulanması ger
 
 ---
 
-## 7. Testler
+## 8. Testler
 
 ```bash
 npm run test:admin:catalog

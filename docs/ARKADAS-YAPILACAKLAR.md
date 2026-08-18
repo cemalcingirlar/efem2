@@ -73,11 +73,11 @@ Adım 1 ve 2 bitince bana haber ver, `efemiletisim.com` üzerinden ben de kontro
 ## Öncelik sırası
 
 1. ~~Prompt 1 — Gerçek ödeme entegrasyonu~~ ✅ **tamamlandı**; 2026-08-17'de sağlayıcı **PayTR**'ye taşındı. Geriye kalan: Adım 1'deki ortam değişkenleri, Bildirim URL ve test işlemleri.
-2. **Prompt 2 — Admin panelini Firestore + Storage'a taşı, gerçek auth**
-3. **Prompt 3 — Sipariş yönetimi (misafir siparişleri dahil)**
-4. **Prompt 4 — Kupon yönetim ekranı**
+2. ~~Prompt 2 — Admin panelini Firestore + Storage'a taşı, gerçek auth~~ ✅ **tamamlandı** (2026-08-18). Geriye kalan: Adım 2'deki yönetici hesabı + kural yayınlama.
+3. ~~Prompt 3 — Sipariş yönetimi (misafir siparişleri dahil)~~ ✅ **tamamlandı** (2026-08-18)
+4. ~~Prompt 4 — Kupon yönetim ekranı~~ ✅ **tamamlandı** (2026-08-18)
 5. **Prompt 5 — Mobil app (opsiyonel, en son)**
-6. **Prompt 6 — CSP sıkılaştırma (opsiyonel, ileri seviye güvenlik)**
+6. 🟡 **Prompt 6 — CSP sıkılaştırma** — ödeme sayfası tamamlandı, kalan sayfalar bekliyor
 
 Ayrıca aşağıda **senin doldurman gereken veriler** ve **iş kararı bekleyen konular** listesi var
 (bunlar AI'nin yapabileceği iş değil, senin bilgi/karar vermen gerekiyor).
@@ -152,7 +152,80 @@ dönmeli. Dönmüyorsa değişkenlerden biri eksiktir. Canlıya geçince `mode` 
 
 ---
 
-## Prompt 2 — Admin panelini Firestore + Storage'a taşı, gerçek auth
+## Adım 2 — Yönetim panelini açmak için yapman gerekenler (AI prompt'u değil, senin işin)
+
+Ayrıntılı anlatım: `docs/ADMIN-KURULUMU.md`
+
+### 2.1 Yönetici hesabı oluştur
+
+> ⚠️ Firebase Console → Authentication → **Add user** ile AÇMA. O yolla oluşan
+> kullanıcının e-postası "doğrulanmamış" kalır ve Console'da bunu doğrulanmış
+> yapan bir düğme yok; panel o hesabı içeri almaz.
+
+1. `efemiletisim.com/hesap.html?tab=register` adresinden normal kullanıcı gibi kayıt ol.
+2. Gelen doğrulama e-postasındaki bağlantıya tıkla (spam klasörüne de bak).
+3. Bu e-postayı aşağıdaki `ADMIN_EMAILS` değişkenine yaz.
+
+Yönetici = normal Firebase kullanıcısı + e-postası `ADMIN_EMAILS` listesinde olan hesap.
+Ayrı bir "admin kaydı" yok.
+
+### 2.2 Vercel ortam değişkenleri
+
+| Değişken | Değer |
+|---|---|
+| `ADMIN_EMAILS` | yönetici e-postan (virgülle birden fazla yazılabilir) |
+| `FIREBASE_SERVICE_ACCOUNT` | Adım 1.2'de aldığın servis hesabı JSON'u (aynısı) |
+| `FIREBASE_STORAGE_BUCKET` | boş bırakılabilir; Firebase varsayılanı kullanılır |
+
+### 2.3 Firebase Storage'ı aç
+Firebase Console → Storage → **Get started**. Kova oluşmadan görsel yüklenemez.
+
+### 2.4 Kuralları yayınla  ← ATLAMA
+
+```bash
+firebase deploy --only firestore:rules,storage
+```
+
+Ya da Console → Firestore → Rules ve Storage → Rules ekranlarından
+`firestore.rules` / `storage.rules` içeriğini yapıştırıp **Publish**.
+
+Bu adım yapılmazsa: `coupons` koleksiyonu tarayıcıdan okunabilir kalır ve
+Storage'a yetkisiz yazma yolu açık kalabilir.
+
+### 2.5 Kontrol
+- [ ] Yetkisiz bir hesapla giriş → panel açılmıyor
+- [ ] Yönetici hesabıyla giriş → panel açılıyor, ürünler sunucudan geliyor
+- [ ] Panelden ürün ekle → `urunler.html` sayfasında **başka bir tarayıcıda** görünüyor
+- [ ] Panelden görsel yükle → ürün kartında görünüyor
+- [ ] Aktif bir kupon oluştur → sepette uygulanıyor, toplam düşüyor
+
+---
+
+## ~~Prompt 2 — Admin panelini Firestore + Storage'a taşı, gerçek auth~~ ✅ tamamlandı (2026-08-18)
+
+**Ne yapıldı:** Panel giriş ekranı gerçek Firebase e-posta/şifre girişine bağlandı; yetki
+sunucuda `/api/verify-admin` ile doğrulanıyor (ID token + doğrulanmış e-posta +
+`ADMIN_EMAILS` listesi). Ürün ekle/düzenle/sil artık `localStorage` değil Firestore
+`products` koleksiyonuna yazıyor; vitrin bu katalogu `/api/catalog` üzerinden okuyor.
+Görsel yükleme Firebase Storage'a taşındı. Ayrıntı: `docs/ADMIN-KURULUMU.md`.
+
+**Prompt'tan sapılan iki nokta ve sebebi:**
+
+1. *Custom claim / `admins/{uid}` yerine `ADMIN_EMAILS` ortam değişkeni.*
+   Custom claim ayarlamak için tek seferlik bir Admin SDK betiği çalıştırman gerekirdi;
+   ortam değişkeni aynı güvenliği sağlıyor (kontrol yine sunucuda) ve yönetici eklemek
+   Vercel panelinden bir satır değiştirmeye iniyor. Kontrolün istemciye kaymaması şartı
+   korunuyor.
+
+2. *İstemci Firestore'u doğrudan okumuyor, `/api/catalog` ucundan okuyor.*
+   Kural yazmak yerine yazma yolunu tamamen kapattık: `products` koleksiyonuna ve
+   Storage'a hiçbir tarayıcı yazamıyor, bütün yazma işlemleri Admin SDK ile sunucudan
+   geçiyor. Ürün fiyatı sipariş tutarını belirlediği için "admin oturumu ele geçirilirse
+   fiyat değiştirilebilir" riskini böyle kapattık. Okuma tarafında da site zaten statik;
+   Firebase istemci SDK'sını her sayfaya bindirmemiş olduk.
+
+**Senin yapman gerekenler:** aşağıdaki "Adım 2".
+
 
 ```
 Bu proje efemiletisim.com — admin.html şu an tamamen demo seviyesinde:
@@ -236,7 +309,18 @@ Bu iş bitti; aşağıdakiler artık kodda var:
 > Gerçek sipariş verisi sunucu yetkisiyle korunuyor. Panelin tamamını Firebase girişine
 > bağlamak Prompt 2'nin işi.
 
-## Prompt 4 — Kupon yönetim ekranı
+## ~~Prompt 4 — Kupon yönetim ekranı~~ ✅ tamamlandı (2026-08-18)
+
+**Ne yapıldı:** Kuponlar Firestore `coupons` koleksiyonunda; panelde "Kuponlar"
+sekmesinden ekleniyor, düzenleniyor, açılıp kapatılıyor. `js/cart.js` içindeki sabit
+`COUPONS` objesi kaldırıldı; sepet kupon kodunu `/api/coupon/validate` ucuna
+soruyor. İndirim tutarı istemciden ALINMIYOR — sipariş oluşturulurken sunucuda yeniden
+hesaplanıyor, yani sepetteki değerle oynamak ödenecek tutarı değiştirmiyor.
+
+**Not:** Sepet değiştiğinde uygulanan kupon otomatik düşer ve yeniden girilmesi gerekir.
+Bunun sebebi minimum sepet tutarı şartıdır: ürün çıkarıldığında geçersizleşen bir indirimin
+ekranda kalması ödeme adımında tutar sürprizi yaratırdı.
+
 
 ```
 efemiletisim.com projesinde kuponlar şu an js/cart.js içinde hardcoded (COUPONS objesi,
@@ -284,7 +368,31 @@ deploy edilsin.
 
 ---
 
-## Prompt 6 — CSP sıkılaştırma (opsiyonel, ileri seviye güvenlik)
+## Prompt 6 — CSP sıkılaştırma (opsiyonel) — 🟡 kısmen yapıldı (2026-08-18)
+
+**Yapılan:** Ödeme formunun taşındığı sayfa (`odeme-guvenli.html`) tamamen satır içi
+kod barındırmayacak hâle getirildi ve kendisine özel, `'unsafe-inline'` İÇERMEYEN bir
+CSP ile servis ediliyor (`vercel.json`). Bu, e-skimming (kart bilgisi çalan enjekte
+script) açısından sitenin en kritik sayfası. Toast kapatma düğmesindeki satır içi
+`onclick` de kaldırıldı, çünkü sıkı CSP altında sessizce çalışmıyordu.
+
+**Yapılmayan ve sebebi:** Sitenin geri kalanı hâlâ `'unsafe-inline'` ile servis ediliyor.
+`'unsafe-inline'` ancak bir sayfadaki satır içi kodun TAMAMI kaldırıldığında düşürülebilir;
+yarım temizlik hiçbir güvenlik kazancı vermez. 16 sayfada ~300 statik `on*="…"` handler'ı,
+ayrıca ürün kartı / sepet satırı / admin tablosu gibi çalışma anında üretilen işaretlemede
+yüzlerce handler daha var — hepsinin olay delegasyonuna çevrilmesi gerekir. Sitenin her
+etkileşimli öğesine dokunan, regresyon riski yüksek bir iş; ödeme sağlayıcısı geçişi ve
+panel yeniden yazımının hemen ardına sıkıştırılmadı. Ayrı bir çalışma olarak duruyor.
+
+**Sırada ne var (istersen):** sayfa sayfa ilerle — her sayfanın satır içi `<script>` bloğunu
+kendi `js/<sayfa>-page.js` dosyasına al, `on*=` handler'larını `addEventListener`'a
+ve dinamik listeler için olay delegasyonuna çevir, `style=""` attribute'larını sınıflara
+taşı. Bir sayfa tamamen temizlendiğinde `vercel.json`'a o sayfa için sıkı CSP kuralı ekle
+(`odeme-guvenli` kuralı örnek). Hepsi bittiğinde genel kuraldan `'unsafe-inline'`
+kaldırılabilir.
+
+<details><summary>Özgün prompt</summary>
+
 
 ```
 efemiletisim.com projesinde vercel.json'a temel güvenlik header'ları (X-Frame-Options,
@@ -301,6 +409,8 @@ tabanlı bir politika kur.
 
 Bu büyük bir refactor, acil değil — sadece "tam puan" bir güvenlik denetimi istiyorsan yap.
 ```
+
+</details>
 
 ---
 

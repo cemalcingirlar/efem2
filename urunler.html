@@ -341,7 +341,10 @@
 <script>
 let filteredProducts = [...PRODUCTS];
 
-document.addEventListener('DOMContentLoaded', () => {
+whenCatalogReady(() => {
+  // Katalog sunucudan gelmiş olabilir; liste yeniden alınır
+  filteredProducts = [...PRODUCTS];
+
   // URL parametresini kontrol et
   const kat = getUrlParam('kat');
   const q   = getUrlParam('q');

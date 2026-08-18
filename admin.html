@@ -238,6 +238,12 @@
 
     .admin-card-title { font-size: 1rem; font-weight: 700; color: #0F172A; }
 
+    /* Dar ekranda tablo kendi içinde kaysın, sayfa yatay kaymasın */
+    .admin-table-wrap { overflow-x: auto; }
+    .admin-badge {
+      display: inline-block; padding: 3px 10px; border-radius: 999px;
+      font-size: 0.75rem; font-weight: 600; white-space: nowrap;
+    }
     .admin-table { width: 100%; border-collapse: collapse; }
 
     .admin-table th {
@@ -517,25 +523,27 @@
 
     <div class="auth-form" style="text-align:left">
       <div class="form-group">
-        <label class="form-label admin-login-label">Kullanıcı Adı</label>
-        <input type="text" class="form-input" id="admin-username" placeholder="admin"
+        <label class="form-label admin-login-label">E-posta</label>
+        <input type="email" class="form-input" id="admin-email" autocomplete="username"
+               placeholder="ornek@efemiletisim.com"
                onkeydown="if(event.key==='Enter') adminLogin()">
       </div>
       <div class="form-group">
         <label class="form-label admin-login-label">Şifre</label>
-        <input type="password" class="form-input" id="admin-password" placeholder="••••••••"
+        <input type="password" class="form-input" id="admin-password" autocomplete="current-password"
+               placeholder="••••••••"
                onkeydown="if(event.key==='Enter') adminLogin()">
         <span class="form-error" id="admin-login-error"></span>
       </div>
-      <button class="btn btn-primary btn-block btn-lg" onclick="adminLogin()">
+      <button class="btn btn-primary btn-block btn-lg" id="admin-login-btn" onclick="adminLogin()">
         <svg class="icon" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Giriş Yap
       </button>
     </div>
 
     <div class="admin-demo-info">
-      <strong>Demo Giriş Bilgileri:</strong><br>
-      Kullanıcı: <code>admin</code> &nbsp;
-      Şifre: <code>efemi2024</code>
+      Giriş <strong>Firebase hesabınızla</strong> yapılır ve yetki sunucuda
+      doğrulanır. Panele yalnız sunucudaki <code>ADMIN_EMAILS</code> listesinde
+      bulunan, e-postası doğrulanmış hesaplar girebilir.
     </div>
   </div>
 </div>
@@ -567,6 +575,10 @@
       <div class="admin-nav-item" id="nav-orders" onclick="showSection('orders')">
         <span class="icon"><svg class="icon" viewBox="0 0 24 24"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></span> Siparişler
         <span class="badge-count" id="nav-order-count">0</span>
+      </div>
+      <div class="admin-nav-item" id="nav-coupons" onclick="showSection('coupons')">
+        <span class="icon"><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="2"/><path d="M9 7v10M15 7v10"/></svg></span> Kuponlar
+        <span class="badge-count" id="nav-coupon-count">0</span>
       </div>
       <div class="admin-nav-item" id="nav-settings" onclick="showSection('settings')">
         <span class="icon"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></span> Ayarlar
@@ -832,45 +844,59 @@
         </div>
       </div>
 
-      <div class="admin-card" style="max-width:480px">
+      <div class="admin-card" style="max-width:560px">
         <div class="admin-card-header">
-          <span class="admin-card-title">Şifre Değiştir</span>
+          <span class="admin-card-title">Yönetici Hesabı</span>
         </div>
         <div class="auth-form" style="padding:24px">
+          <p class="admin-hint-text" style="margin:0 0 16px">
+            Panele giriş <strong>Firebase Authentication</strong> ile yapılır, yetki ise
+            sunucuda doğrulanır: yalnız <code>ADMIN_EMAILS</code> ortam değişkeninde yazan,
+            e-postası doğrulanmış hesaplar panele girebilir ve <code>/api/admin/*</code>
+            uçlarına yazabilir.
+          </p>
           <div class="form-group">
-            <label class="form-label">Mevcut Şifre <span class="required">*</span></label>
-            <input type="password" class="form-input" id="settings-current-password" autocomplete="off">
-            <span class="form-error" id="settings-current-password-error"></span>
+            <label class="form-label">Oturum açan hesap</label>
+            <input type="text" class="form-input" id="settings-admin-email" readonly>
           </div>
-          <div class="form-group">
-            <label class="form-label">Yeni Şifre <span class="required">*</span></label>
-            <input type="password" class="form-input" id="settings-new-password" placeholder="En az 6 karakter" autocomplete="off">
-            <span class="form-error" id="settings-new-password-error"></span>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Yeni Şifre (Tekrar) <span class="required">*</span></label>
-            <input type="password" class="form-input" id="settings-new-password2" autocomplete="off">
-            <span class="form-error" id="settings-new-password2-error"></span>
-          </div>
-          <button class="btn btn-primary" onclick="handleAdminPasswordChange()">Şifreyi Güncelle</button>
+          <button class="btn btn-secondary" onclick="handleAdminPasswordReset()">
+            Şifre sıfırlama e-postası gönder
+          </button>
+          <p class="admin-hint-text" style="margin:12px 0 0">
+            Yeni yönetici eklemek için: Firebase Console'da hesabı oluşturun, e-postasını
+            doğrulatın ve adresini sunucudaki <code>ADMIN_EMAILS</code> listesine ekleyin.
+          </p>
         </div>
       </div>
+    </section>
 
-      <div class="admin-card" style="max-width:480px">
-        <div class="admin-card-header">
-          <span class="admin-card-title">Kurtarma Bilgileri</span>
+    <!-- ─── KUPONLAR ─── -->
+    <section id="section-coupons" style="display:none">
+      <div class="admin-topbar">
+        <div>
+          <h1><svg class="icon" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="10" rx="2"/><path d="M9 7v10M15 7v10"/></svg> Kuponlar</h1>
+          <p>İndirim kuponlarını oluştur, düzenle, aç/kapat</p>
         </div>
-        <div class="auth-form" style="padding:24px">
-          <p class="admin-hint-text" style="margin:-8px 0 0">Şifrenizi unutursanız sizinle bu bilgilerle iletişime geçilir.</p>
-          <div class="form-group">
-            <label class="form-label">Kurtarma E-postası</label>
-            <input type="email" class="form-input" id="settings-recovery-email" placeholder="ornek@mail.com" autocomplete="email">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Telefon Numarası</label>
-            <input type="tel" class="form-input" id="settings-recovery-phone" placeholder="05XX XXX XX XX" autocomplete="tel">
-          </div>
-          <button class="btn btn-secondary" onclick="handleAdminRecoveryInfoSave()">Kaydet</button>
+        <button class="btn btn-primary" onclick="openCouponModal()">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Yeni Kupon
+        </button>
+      </div>
+
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <span class="admin-card-title">Tanımlı Kuponlar</span>
+          <span class="admin-hint-text" id="coupons-count"></span>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Kod</th><th>Açıklama</th><th>İndirim</th>
+                <th>Min. Sepet</th><th>Son Kullanma</th><th>Durum</th><th>İşlem</th>
+              </tr>
+            </thead>
+            <tbody id="coupons-table-body"></tbody>
+          </table>
         </div>
       </div>
     </section>
@@ -892,7 +918,7 @@
 
       <div class="admin-demo-info" id="modal-source-note" style="display:none;background:rgba(37,99,235,0.08);color:var(--primary-dark);margin-bottom:20px">
         <svg class="icon icon-sm" viewBox="0 0 24 24" style="vertical-align:-2px"><circle cx="12" cy="12" r="9"/><path d="M12 8v.01M12 11v5"/></svg>
-        Bu, katalogda sabit tanımlı bir ürün. Kaydettiğinde değişiklikler bu tarayıcıda bir "düzenleme" olarak saklanır, orijinal kayıt bozulmaz — "Sıfırla" ile geri alınabilir.
+        Bu, kod içindeki katalogda tanımlı bir ürün. Kaydettiğinde değişiklikler Firestore'a yazılır ve orijinalin üzerine biner; kod içindeki kayıt bozulmaz — "Sıfırla" ile geri dönülebilir.
       </div>
 
       <div class="modal-body-split">
@@ -1072,73 +1098,182 @@
   </div>
 </div>
 
+<!-- Kupon Ekle/Düzenle Modal -->
+<div class="admin-modal-overlay" id="coupon-modal">
+  <div class="admin-modal" style="max-width:520px">
+    <div class="admin-modal-header">
+      <h3 class="admin-modal-title" id="coupon-modal-title">Yeni Kupon</h3>
+      <button onclick="closeCouponModal()" class="admin-modal-close"><svg class="icon" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="admin-modal-body">
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Kupon Kodu <span class="required">*</span></label>
+          <input type="text" class="form-input" id="c-code" placeholder="EFEM500" style="text-transform:uppercase">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Açıklama</label>
+          <input type="text" class="form-input" id="c-label" placeholder="500₺ İndirim">
+        </div>
+        <div class="form-group">
+          <label class="form-label">İndirim Tipi <span class="required">*</span></label>
+          <select class="form-input" id="c-type" onchange="updateCouponValueHint()">
+            <option value="fixed">Sabit tutar (₺)</option>
+            <option value="percent">Yüzde (%)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">İndirim Değeri <span class="required">*</span></label>
+          <input type="number" class="form-input" id="c-value" min="1" step="1">
+          <span class="admin-hint-text" id="c-value-hint">₺ cinsinden indirim tutarı</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Minimum Sepet Tutarı (₺)</label>
+          <input type="number" class="form-input" id="c-min" min="0" step="1" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Son Kullanma Tarihi</label>
+          <input type="date" class="form-input" id="c-expires">
+        </div>
+        <div class="form-group col-span-2">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" id="c-enabled"> Kupon aktif (müşteriler kullanabilir)
+          </label>
+        </div>
+      </div>
+      <p class="admin-hint-text">
+        İndirim müşterinin tarayıcısında değil, sipariş oluşturulurken sunucuda hesaplanır;
+        buradaki tanım tahsil edilen tutarı doğrudan belirler.
+      </p>
+    </div>
+    <div class="admin-modal-footer">
+      <button class="btn btn-ghost" onclick="closeCouponModal()">Vazgeç</button>
+      <button class="btn btn-primary" id="save-coupon-btn" onclick="saveCoupon()">Kuponu Kaydet</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast-container"></div>
 
 <script src="js/site-config.js"></script>
 <script src="js/data.js"></script>
 <script src="js/cart.js"></script>
 <script type="module" src="js/auth.js"></script>
+<script type="module">
+  /* Panelin giriş ekranı gerçek Firebase oturumu açar. js/auth.js müşteri
+     akışına göre yazıldığı (giriş sonrası yönlendirme yapıyor) için burada
+     doğrudan firebase-auth katmanı kullanılır. */
+  import { firebaseLogin, firebaseForgotPassword } from './js/firebase-auth.js';
+  window.adminSignIn        = firebaseLogin;
+  window.adminResetPassword = firebaseForgotPassword;
+</script>
 <script src="js/main.js"></script>
 <script>
 /* ════════════════════════════
    ADMIN AUTH
-════════════════════════════ */
-const ADMIN_CREDS = { username: 'admin', password: 'efemi2024' };
-const ADMIN_SESSION_KEY  = 'efemi_admin_session';
-const ADMIN_SETTINGS_KEY = 'efemi_admin_settings';
+════════════════════════════
+   Panele giriş artık sayfanın içindeki bir şifreyle değil, GERÇEK bir
+   Firebase oturumuyla yapılır ve yetki SUNUCUDA doğrulanır:
 
-/* ─── Admin ayarları (şifre override, kurtarma e-postası/telefon) ───
-   Demo seviyesi client-side depolama — ürünler/siparişler gibi bu da
-   localStorage'da tutulur (bkz. docs/ARKADAS-YAPILACAKLAR.md Prompt 2,
-   admin auth'un Firebase Auth'a taşınması planı). */
-function getAdminSettings() {
-  try { return JSON.parse(localStorage.getItem(ADMIN_SETTINGS_KEY)) || {}; }
-  catch { return {}; }
+     1) Firebase e-posta/şifre girişi        → kimlik
+     2) POST /api/verify-admin (ID token)    → yetki (ADMIN_EMAILS listesi)
+
+   Bu ekranın kendisi bir güvenlik sınırı DEĞİLDİR (statik HTML herkese
+   açıktır); asıl sınır /api/admin/* uçlarında ve Firestore kurallarında.
+   Panelin gösterdiği her veri o uçlardan gelir, dolayısıyla yetkisiz bir
+   tarayıcı sayfayı açsa bile hiçbir veri göremez ve hiçbir şey yazamaz. */
+
+let adminIdentity = null;   // { email }
+
+function setLoginError(message) {
+  document.getElementById('admin-login-error').textContent = message || '';
 }
 
-function saveAdminSettings(settings) {
-  localStorage.setItem(ADMIN_SETTINGS_KEY, JSON.stringify(settings));
+function showAdminPanel() {
+  document.getElementById('admin-login').style.display = 'none';
+  document.getElementById('admin-wrapper').classList.add('active');
+  document.body.style.background = '#F8FAFC';
 }
 
-function getAdminPassword() {
-  return getAdminSettings().password || ADMIN_CREDS.password;
-}
+/* Sunucuya "bu oturum yönetici mi?" diye sorar. Dönüş: {email} | null */
+async function verifyAdminSession() {
+  if (typeof window.getIdToken !== 'function') return null;
+  const token = await window.getIdToken();
+  if (!token) return null;
 
-function adminLogin() {
-  const u = document.getElementById('admin-username').value.trim();
-  const p = document.getElementById('admin-password').value;
-
-  if (u === ADMIN_CREDS.username && p === getAdminPassword()) {
-    sessionStorage.setItem(ADMIN_SESSION_KEY, '1');
-    document.getElementById('admin-login').style.display   = 'none';
-    document.getElementById('admin-wrapper').classList.add('active');
-    document.body.style.background = '#F8FAFC';
-    initAdmin();
-  } else {
-    document.getElementById('admin-login-error').textContent = 'Kullanıcı adı veya şifre hatalı.';
+  try {
+    const res  = await fetch('/api/verify-admin', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
+    });
+    const data = await res.json().catch(() => null);
+    if (res.ok && data && data.ok) return data.admin;
+    return { error: (data && data.message) || 'Yönetici yetkisi doğrulanamadı.' };
+  } catch {
+    return { error: 'Sunucuya ulaşılamadı. Bağlantınızı kontrol edin.' };
   }
 }
 
-function adminLogout() {
-  sessionStorage.removeItem(ADMIN_SESSION_KEY);
+async function adminLogin() {
+  const email = document.getElementById('admin-email').value.trim();
+  const pass  = document.getElementById('admin-password').value;
+  const btn   = document.getElementById('admin-login-btn');
+
+  setLoginError('');
+  if (!email || !pass) { setLoginError('E-posta ve şifre gereklidir.'); return; }
+  if (typeof window.adminSignIn !== 'function') {
+    setLoginError('Giriş bileşeni yüklenemedi. Sayfayı yenileyin.');
+    return;
+  }
+
+  btn.disabled = true;
+  const original = btn.innerHTML;
+  btn.textContent = 'Giriş yapılıyor…';
+
+  try {
+    const result = await window.adminSignIn(email, pass);
+    if (!result.success) { setLoginError(result.msg || 'Giriş başarısız.'); return; }
+
+    const admin = await verifyAdminSession();
+    if (!admin || admin.error) {
+      /* Kimlik doğru ama yetki yok: oturumu açık bırakmıyoruz. */
+      if (typeof window.logout === 'function') await window.logout({ silent: true });
+      setLoginError((admin && admin.error) || 'Bu hesabın yönetici yetkisi yok.');
+      return;
+    }
+
+    adminIdentity = admin;
+    showAdminPanel();
+    await initAdmin();
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = original;
+  }
+}
+
+async function adminLogout() {
+  adminIdentity = null;
+  if (typeof window.logout === 'function') { await window.logout({ silent: true }); }
   location.reload();
 }
 
 /* ════════════════════════════
    INIT
 ════════════════════════════ */
-document.addEventListener('DOMContentLoaded', () => {
-  if (sessionStorage.getItem(ADMIN_SESSION_KEY)) {
-    document.getElementById('admin-login').style.display   = 'none';
-    document.getElementById('admin-wrapper').classList.add('active');
-    document.body.style.background = '#F8FAFC';
-    initAdmin();
-  }
-
+document.addEventListener('DOMContentLoaded', async () => {
   // Enter ile giriş
   document.getElementById('admin-password')?.addEventListener('keydown', e => {
     if (e.key === 'Enter') adminLogin();
   });
+
+  // Zaten açık bir oturum varsa yetkisi sunucuda kontrol edilir
+  if (window.authReady) await window.authReady;
+  const admin = await verifyAdminSession();
+  if (admin && !admin.error) {
+    adminIdentity = admin;
+    showAdminPanel();
+    await initAdmin();
+  }
 });
 
 async function initAdmin() {
@@ -1148,11 +1283,38 @@ async function initAdmin() {
   renderProductsTable(PRODUCTS);
   renderOrdersTable();
   document.getElementById('admin-greeting').textContent =
-    `Hoş geldiniz, Admin! — ${new Date().toLocaleDateString('tr-TR', { weekday:'long', day:'numeric', month:'long' })}`;
+    `Hoş geldiniz${adminIdentity ? ', ' + adminIdentity.email : ''}! — ${new Date().toLocaleDateString('tr-TR', { weekday:'long', day:'numeric', month:'long' })}`;
   document.getElementById('nav-product-count').textContent = PRODUCTS.length;
 
   // Sunucu siparişlerini çek (yetki/yapılandırma yoksa yerel deftere düşer)
   await refreshOrders();
+  // Sunucu katalogu + kuponlar
+  await Promise.all([refreshServerProducts(), refreshCoupons()]);
+}
+
+/* ─── Yetkili API çağrısı ───
+   Her istek taze bir ID token taşır; panelde tutulan hiçbir bayrak yetki
+   yerine geçmez. */
+async function adminFetch(url, options = {}) {
+  const token = typeof window.getIdToken === 'function' ? await window.getIdToken() : null;
+  const res = await fetch(url, {
+    ...options,
+    headers: {
+      'Accept': 'application/json',
+      ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      ...(options.headers || {})
+    }
+  });
+
+  const data = await res.json().catch(() => null);
+  if (!res.ok || !data || data.ok !== true) {
+    const err = new Error((data && data.message) || 'İşlem tamamlanamadı.');
+    err.code = (data && data.code) || `http_${res.status}`;
+    err.status = res.status;
+    throw err;
+  }
+  return data;
 }
 
 /* ════════════════════════════
@@ -1174,10 +1336,12 @@ function updateStats() {
    DASHBOARD
 ════════════════════════════ */
 function renderDashboard() {
-  const adminProds  = getAdminProducts();
-  const adminIds    = new Set(adminProds.map(p => p.id));
-  const overrides   = getProductOverrides();
-  const overrideIds = new Set(Object.keys(overrides).map(Number));
+  /* Kaynak rozetleri artık sunucu listesinden: Firestore'da kaydı olan ve
+     kod içindeki katalogda BULUNMAYAN ürünler "Admin", her ikisinde de
+     olanlar "Düzenlendi", yalnız kodda olanlar "Sabit". */
+  const adminIds    = new Set([...serverProductIds].filter(id => !staticProductIds.has(id)));
+  const overrideIds = new Set([...serverProductIds].filter(id => staticProductIds.has(id)));
+  const adminProds  = PRODUCTS.filter(p => adminIds.has(p.id));
   const recentEl    = document.getElementById('recent-admin-products');
 
   // Sipariş özeti
@@ -1321,8 +1485,8 @@ function renderDashboard() {
    ÜRÜN TABLOSU
 ════════════════════════════ */
 function renderProductsTable(products) {
-  const adminIds    = new Set(getAdminProducts().map(p => p.id));
-  const overrideIds = new Set(Object.keys(getProductOverrides()).map(Number));
+  const adminIds    = new Set([...serverProductIds].filter(id => !staticProductIds.has(id)));
+  const overrideIds = new Set([...serverProductIds].filter(id => staticProductIds.has(id)));
   document.getElementById('products-subtitle').textContent = `${products.length} ürün listeleniyor`;
 
   document.getElementById('products-table-body').innerHTML = products.map(p => {
@@ -1733,12 +1897,38 @@ function openAddModal() {
   document.getElementById('product-modal').classList.add('open');
 }
 
+/* Firestore'da bir kaydı olan ürünler (panelden eklenmiş veya düzenlenmiş).
+   Statik katalogdaki ürünler ilk düzenlemede buraya kopyalanır. */
+let serverProductIds = new Set();
+let staticProductIds = new Set();
+
 function isAdminProduct(id) {
-  return getAdminProducts().some(p => p.id === id);
+  return serverProductIds.has(Number(id)) && !staticProductIds.has(Number(id));
 }
 
+/* Kod içindeki katalogda da olan ama Firestore'da üzerine yazılmış ürün:
+   "orijinale sıfırla" seçeneği bunlar için anlamlı. */
 function isOverriddenProduct(id) {
-  return Object.prototype.hasOwnProperty.call(getProductOverrides(), id);
+  return serverProductIds.has(Number(id)) && staticProductIds.has(Number(id));
+}
+
+/* Sunucudaki ürün listesini çeker ve vitrin listesini (PRODUCTS) tazeler. */
+async function refreshServerProducts() {
+  try {
+    const data = await adminFetch('/api/admin/products');
+    serverProductIds = new Set((data.products || []).map(p => Number(p.id)));
+    staticProductIds = new Set((data.staticIds || []).map(Number));
+    setServerProducts(data.products || []);
+  } catch (err) {
+    console.warn('[admin] sunucu ürün listesi alınamadı:', err.message);
+    showToast('Ürün listesi sunucudan alınamadı: ' + err.message, 'error');
+    return;
+  }
+
+  updateStats();
+  renderDashboard();
+  renderProductsTable(PRODUCTS);
+  document.getElementById('nav-product-count').textContent = PRODUCTS.length;
 }
 
 function openEditModal(id) {
@@ -1807,8 +1997,17 @@ function clearModal() {
 
 /* ════════════════════════════
    KAYDET
-════════════════════════════ */
-function saveProduct() {
+════════════════════════════
+   Ürün artık localStorage'a değil, /api/admin/products üzerinden
+   Firestore'a yazılır: değişiklik bu tarayıcıda değil, siteyi açan
+   herkeste görünür. Fiyat sunucuda kuruşa çevrilir ve sipariş tutarı
+   oradan okunur — panelde girilen fiyat ile tahsil edilen tutar birbirine
+   bağlıdır.
+
+   Formda olmayan alanlar (varyantlar, renk görselleri, galeri) düzenleme
+   sırasında mevcut üründen taşınır; aksi hâlde bir fiyat düzeltmesi
+   ürünün renk seçeneklerini silerdi.                                     */
+async function saveProduct() {
   const name     = document.getElementById('p-name').value.trim();
   const category = document.getElementById('p-category').value;
   const brand    = document.getElementById('p-brand').value.trim();
@@ -1837,63 +2036,52 @@ function saveProduct() {
     if (k && v) specs.push({ key: k, value: v });
   });
 
-  const catLabels = CATEGORY_LABELS;
+  const existing = editMode && editProductId ? PRODUCTS.find(p => p.id === editProductId) : null;
 
-  const adminProds = getAdminProducts();
-  const now = Date.now();
+  /* Yeni ürün numarası: mevcut en büyük id + 1 (100'ün altına inmez, kod
+     içindeki katalog id'leriyle çakışmasın). */
+  const nextId = Math.max(100, ...PRODUCTS.map(p => p.id)) + 1;
 
-  if (editMode && editProductId && isAdminProduct(editProductId)) {
-    // Admin tarafından eklenmiş bir ürünün düzenlenmesi
-    const idx = adminProds.findIndex(p => p.id === editProductId);
-    if (idx >= 0) {
-      adminProds[idx] = {
-        ...adminProds[idx],
-        name, category, categoryLabel: catLabels[category],
-        brand, price, originalPrice: origP, stock,
-        badge, badgeLabel: badgeLbl,
-        rating, reviewCount: reviews, featured,
-        images: image ? [image] : adminProds[idx].images,
-        desc, specs, updatedAt: now
-      };
-      saveAdminProducts(adminProds);
-      showToast(`"${name}" güncellendi!`, 'success');
-    }
-  } else if (editMode && editProductId) {
-    // Sabit (katalog) bir ürünün düzenlenmesi — bir "override" olarak saklanır
-    const original = BASE_PRODUCTS.find(p => p.id === editProductId);
-    const overrides = getProductOverrides();
-    overrides[editProductId] = {
-      name, category, categoryLabel: catLabels[category],
-      brand, price, originalPrice: origP, stock,
-      badge, badgeLabel: badgeLbl,
-      rating, reviewCount: reviews, featured,
-      images: image ? [image] : original?.images,
-      desc, specs, updatedAt: now
-    };
-    saveProductOverrides(overrides);
-    showToast(`"${name}" güncellendi! (sabit ürün düzenlemesi)`, 'success');
-  } else {
-    // Yeni ürün
-    const maxId = Math.max(...PRODUCTS.map(p => p.id), ...adminProds.map(p => p.id), 100);
-    const newProduct = {
-      id: maxId + 1,
-      name, category, categoryLabel: catLabels[category],
-      brand, price, originalPrice: origP, stock,
-      badge, badgeLabel: badgeLbl,
-      rating, reviewCount: reviews, featured,
-      images: image ? [image] : ['assets/images/products/placeholder-product.svg'],
-      desc, specs, updatedAt: now, createdAt: now
-    };
-    adminProds.push(newProduct);
-    saveAdminProducts(adminProds);
-    showToast(`"${name}" başarıyla eklendi!`, 'success');
+  const payload = {
+    id:            existing ? existing.id : nextId,
+    name, category, brand, price,
+    originalPrice: origP,
+    stock,
+    badge,
+    featured,
+    desc,
+    specs,
+    images:        image ? [image] : (existing?.images || []),
+    // Formda düzenlenmeyen alanlar korunur
+    colorImages:   existing?.colorImages || {},
+    variants:      existing?.variants || [],
+    sizeLabel:     existing?.sizeLabel || null,
+    active:        true
+  };
+
+  if (!payload.images.length) {
+    payload.images = ['assets/images/products/placeholder-product.svg'];
   }
 
-  refreshProducts();
-  updateStats();
-  renderDashboard();
-  renderProductsTable(PRODUCTS);
-  closeModal();
+  const btn = document.getElementById('save-product-btn');
+  const originalLabel = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Kaydediliyor…';
+
+  try {
+    await adminFetch('/api/admin/products', {
+      method: 'POST',
+      body: JSON.stringify({ product: payload })
+    });
+    showToast(existing ? `"${name}" güncellendi!` : `"${name}" başarıyla eklendi!`, 'success');
+    await refreshServerProducts();
+    closeModal();
+  } catch (err) {
+    showToast(err.message || 'Ürün kaydedilemedi.', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalLabel;
+  }
 }
 
 /* ════════════════════════════
@@ -1932,25 +2120,34 @@ function closeConfirmModal() {
   confirmTargetAction = null;
 }
 
-function confirmModalAction() {
+/* Silme ve "orijinale sıfırla" aynı işlemdir: Firestore'daki kayıt kaldırılır.
+   Ürün kod içindeki katalogda da varsa oradaki hâline geri döner, yoksa
+   tamamen kaybolur. Sunucu hangisinin olduğunu `revertedToStatic` ile söyler. */
+async function confirmModalAction() {
   if (!confirmTargetId || !confirmTargetAction) return;
 
-  if (confirmTargetAction === 'delete') {
-    const adminProds = getAdminProducts().filter(p => p.id !== confirmTargetId);
-    saveAdminProducts(adminProds);
-    showToast('Ürün silindi.', 'warning');
-  } else if (confirmTargetAction === 'reset') {
-    const overrides = getProductOverrides();
-    delete overrides[confirmTargetId];
-    saveProductOverrides(overrides);
-    showToast('Ürün orijinal katalog haline sıfırlandı.', 'warning');
-  }
+  const id  = confirmTargetId;
+  const btn = document.getElementById('confirm-action-btn');
+  const originalLabel = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'İşleniyor…';
 
-  refreshProducts();
-  updateStats();
-  renderDashboard();
-  renderProductsTable(PRODUCTS);
-  closeConfirmModal();
+  try {
+    const data = await adminFetch('/api/admin/products', {
+      method: 'DELETE',
+      body: JSON.stringify({ id })
+    });
+    showToast(data.revertedToStatic
+      ? 'Ürün orijinal katalog haline sıfırlandı.'
+      : 'Ürün silindi.', 'warning');
+    await refreshServerProducts();
+    closeConfirmModal();
+  } catch (err) {
+    showToast(err.message || 'İşlem tamamlanamadı.', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalLabel;
+  }
 }
 
 /* ════════════════════════════
@@ -1962,53 +2159,175 @@ function showSection(name) {
   document.querySelectorAll('.admin-nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('nav-' + name)?.classList.add('active');
   if (name === 'settings') populateAdminSettingsForm();
+  if (name === 'coupons')  refreshCoupons();
 }
 
 /* ════════════════════════════
    AYARLAR
-════════════════════════════ */
+════════════════════════════
+   Şifre artık panelde tutulmuyor: hesap Firebase'de, yetki listesi
+   sunucuda. Bu ekran yalnız kim olduğunuzu gösterir ve şifre sıfırlama
+   e-postasını tetikler. */
 function populateAdminSettingsForm() {
-  const settings = getAdminSettings();
-  document.getElementById('settings-recovery-email').value = settings.recoveryEmail || '';
-  document.getElementById('settings-recovery-phone').value = settings.phone || '';
+  document.getElementById('settings-admin-email').value =
+    adminIdentity ? adminIdentity.email : '—';
 }
 
-function handleAdminPasswordChange() {
-  const currentEl = document.getElementById('settings-current-password');
-  const newEl     = document.getElementById('settings-new-password');
-  const new2El    = document.getElementById('settings-new-password2');
-  const currentErr = document.getElementById('settings-current-password-error');
-  const newErr      = document.getElementById('settings-new-password-error');
-  const new2Err     = document.getElementById('settings-new-password2-error');
-
-  currentErr.textContent = ''; newErr.textContent = ''; new2Err.textContent = '';
-
-  let valid = true;
-  if (currentEl.value !== getAdminPassword()) {
-    currentErr.textContent = 'Mevcut şifre hatalı.'; valid = false;
+async function handleAdminPasswordReset() {
+  if (!adminIdentity) { showToast('Oturum bilgisi bulunamadı.', 'error'); return; }
+  if (typeof window.adminResetPassword !== 'function') {
+    showToast('Şifre sıfırlama bileşeni yüklenemedi.', 'error');
+    return;
   }
-  if (newEl.value.length < 6) {
-    newErr.textContent = 'Yeni şifre en az 6 karakter olmalıdır.'; valid = false;
-  }
-  if (new2El.value !== newEl.value) {
-    new2Err.textContent = 'Şifreler birbiriyle eşleşmiyor.'; valid = false;
-  }
-  if (!valid) return;
-
-  const settings = getAdminSettings();
-  settings.password = newEl.value;
-  saveAdminSettings(settings);
-
-  currentEl.value = ''; newEl.value = ''; new2El.value = '';
-  showToast('Şifre güncellendi.', 'success');
+  const result = await window.adminResetPassword(adminIdentity.email);
+  showToast(result.success
+    ? 'Şifre sıfırlama bağlantısı e-postanıza gönderildi.'
+    : (result.msg || 'E-posta gönderilemedi.'), result.success ? 'success' : 'error');
 }
 
-function handleAdminRecoveryInfoSave() {
-  const settings = getAdminSettings();
-  settings.recoveryEmail = document.getElementById('settings-recovery-email').value.trim();
-  settings.phone         = document.getElementById('settings-recovery-phone').value.trim();
-  saveAdminSettings(settings);
-  showToast('Kurtarma bilgileri kaydedildi.', 'success');
+/* ════════════════════════════
+   KUPONLAR
+════════════════════════════
+   Kupon tanımları Firestore'da (`coupons`) durur ve yalnız /api/admin/coupons
+   üzerinden yazılır. Tarayıcı ne kupon listesini görür ne de indirim tutarını
+   belirler — sepette girilen kod sunucuda doğrulanır. */
+let coupons = [];
+let editCouponCode = null;
+
+async function refreshCoupons() {
+  try {
+    const data = await adminFetch('/api/admin/coupons');
+    coupons = data.coupons || [];
+  } catch (err) {
+    console.warn('[admin] kuponlar alınamadı:', err.message);
+    coupons = [];
+  }
+  renderCouponsTable();
+}
+
+function renderCouponsTable() {
+  const body = document.getElementById('coupons-table-body');
+  document.getElementById('nav-coupon-count').textContent = coupons.length;
+  document.getElementById('coupons-count').textContent =
+    coupons.length ? `${coupons.length} kupon` : '';
+
+  if (!coupons.length) {
+    body.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted)">
+      Henüz kupon tanımlanmamış.</td></tr>`;
+    return;
+  }
+
+  body.innerHTML = coupons.map(c => {
+    const durum = c.expired
+      ? '<span class="admin-badge" style="background:#FEE2E2;color:#B91C1C">Süresi doldu</span>'
+      : c.enabled
+        ? '<span class="admin-badge" style="background:#DCFCE7;color:#15803D">Aktif</span>'
+        : '<span class="admin-badge" style="background:#E2E8F0;color:#475569">Pasif</span>';
+
+    return `<tr>
+      <td><strong>${escapeAdminHtml(c.code)}</strong></td>
+      <td>${escapeAdminHtml(c.label)}</td>
+      <td>${escapeAdminHtml(c.valueText)}</td>
+      <td>${c.minSubtotal > 0 ? formatPrice(c.minSubtotal) : '—'}</td>
+      <td>${c.expiresAt ? new Date(c.expiresAt).toLocaleDateString('tr-TR') : '—'}</td>
+      <td>${durum}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-ghost btn-sm" onclick="openCouponModal('${escapeAdminHtml(c.code)}')">Düzenle</button>
+        <button class="btn btn-ghost btn-sm" onclick="toggleCoupon('${escapeAdminHtml(c.code)}')">${c.enabled ? 'Kapat' : 'Aç'}</button>
+        <button class="btn btn-ghost btn-sm" style="color:var(--error)" onclick="deleteCoupon('${escapeAdminHtml(c.code)}')">Sil</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function updateCouponValueHint() {
+  const type = document.getElementById('c-type').value;
+  document.getElementById('c-value-hint').textContent =
+    type === 'percent' ? 'Yüzde olarak indirim (en fazla 90)' : '₺ cinsinden indirim tutarı';
+}
+
+function openCouponModal(code = null) {
+  editCouponCode = code;
+  const c = code ? coupons.find(x => x.code === code) : null;
+
+  document.getElementById('coupon-modal-title').textContent = c ? 'Kuponu Düzenle' : 'Yeni Kupon';
+  document.getElementById('c-code').value    = c ? c.code : '';
+  document.getElementById('c-code').readOnly = Boolean(c);   // kod birincil anahtar
+  document.getElementById('c-label').value   = c ? c.label : '';
+  document.getElementById('c-type').value    = c ? c.type : 'fixed';
+  document.getElementById('c-value').value   = c ? c.value : '';
+  document.getElementById('c-min').value     = c && c.minSubtotal ? c.minSubtotal : '';
+  document.getElementById('c-expires').value = c && c.expiresAt ? c.expiresAt.slice(0, 10) : '';
+  document.getElementById('c-enabled').checked = c ? c.enabled : false;
+
+  updateCouponValueHint();
+  document.getElementById('coupon-modal').classList.add('open');
+}
+
+function closeCouponModal() {
+  document.getElementById('coupon-modal').classList.remove('open');
+  editCouponCode = null;
+}
+
+async function saveCoupon() {
+  const payload = {
+    code:        document.getElementById('c-code').value.trim().toUpperCase(),
+    label:       document.getElementById('c-label').value.trim(),
+    type:        document.getElementById('c-type').value,
+    value:       Number(document.getElementById('c-value').value),
+    minSubtotal: Number(document.getElementById('c-min').value) || 0,
+    expiresAt:   document.getElementById('c-expires').value || null,
+    enabled:     document.getElementById('c-enabled').checked
+  };
+
+  const btn = document.getElementById('save-coupon-btn');
+  btn.disabled = true;
+  btn.textContent = 'Kaydediliyor…';
+
+  try {
+    await adminFetch('/api/admin/coupons', { method: 'POST', body: JSON.stringify({ coupon: payload }) });
+    showToast(`"${payload.code}" kaydedildi.`, 'success');
+    await refreshCoupons();
+    closeCouponModal();
+  } catch (err) {
+    showToast(err.message || 'Kupon kaydedilemedi.', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Kuponu Kaydet';
+  }
+}
+
+async function toggleCoupon(code) {
+  const c = coupons.find(x => x.code === code);
+  if (!c) return;
+
+  try {
+    await adminFetch('/api/admin/coupons', {
+      method: 'POST',
+      body: JSON.stringify({ coupon: { ...c, enabled: !c.enabled } })
+    });
+    showToast(`"${code}" ${c.enabled ? 'kapatıldı' : 'açıldı'}.`, 'success');
+    await refreshCoupons();
+  } catch (err) {
+    showToast(err.message || 'Kupon güncellenemedi.', 'error');
+  }
+}
+
+async function deleteCoupon(code) {
+  if (!confirm(`"${code}" kuponu silinsin mi?`)) return;
+  try {
+    await adminFetch('/api/admin/coupons', { method: 'DELETE', body: JSON.stringify({ code }) });
+    showToast(`"${code}" silindi.`, 'warning');
+    await refreshCoupons();
+  } catch (err) {
+    showToast(err.message || 'Kupon silinemedi.', 'error');
+  }
+}
+
+function escapeAdminHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, c => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
 }
 
 function addSpecRow(key = '', value = '') {
@@ -2039,39 +2358,64 @@ function previewImage(url) {
   }
 }
 
-/* ─── Görsel: bilgisayardan yükle (resize + sıkıştır, localStorage'ı şişirmesin) ─── */
-function handleImageUpload(event) {
+/* ─── Görsel: bilgisayardan yükle ───
+   Görsel artık ürün kaydının içine gömülmüyor; Firebase Storage'a
+   yükleniyor ve ürüne yalnız URL'si yazılıyor. Yükleme /api/admin/upload
+   üzerinden, sunucudaki Admin SDK ile yapılır — tarayıcının Storage'a
+   yazma yetkisi yoktur (bkz. storage.rules).
+
+   Tarayıcıda önce yeniden boyutlandırılır: hem yükleme hızlanır hem de
+   vitrinde gereksiz büyük dosya servis edilmez. */
+function resizeToDataUrl(file, maxWidth = 1200) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Dosya okunamadı.'));
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('Görsel okunamadı.'));
+      img.onload = () => {
+        const scale  = Math.min(1, maxWidth / img.width);
+        const canvas = document.createElement('canvas');
+        canvas.width  = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        // PNG şeffaflığı korunur, diğerleri JPEG'e sıkıştırılır
+        resolve(file.type === 'image/png'
+          ? canvas.toDataURL('image/png')
+          : canvas.toDataURL('image/jpeg', 0.85));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleImageUpload(event) {
   const file = event.target.files[0];
+  event.target.value = '';
   if (!file) return;
+
   if (!file.type.startsWith('image/')) {
     showToast('Lütfen bir görsel dosyası seçin.', 'error');
-    event.target.value = '';
     return;
   }
 
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const img = new Image();
-    img.onload = () => {
-      const maxW  = 800;
-      const scale = Math.min(1, maxW / img.width);
-      const canvas = document.createElement('canvas');
-      canvas.width  = Math.round(img.width * scale);
-      canvas.height = Math.round(img.height * scale);
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+  showToast('Görsel yükleniyor…', 'info');
 
-      document.getElementById('p-image').value = dataUrl;
-      document.getElementById('p-image-url').value = '';
-      previewImage(dataUrl);
-      showToast('Görsel yüklendi.', 'success');
-    };
-    img.onerror = () => showToast('Görsel okunamadı.', 'error');
-    img.src = e.target.result;
-  };
-  reader.readAsDataURL(file);
-  event.target.value = '';
+  try {
+    const dataUrl = await resizeToDataUrl(file);
+    const data = await adminFetch('/api/admin/upload', {
+      method: 'POST',
+      body: JSON.stringify({ fileName: file.name, data: dataUrl })
+    });
+
+    document.getElementById('p-image').value = data.url;
+    document.getElementById('p-image-url').value = data.url;
+    previewImage(data.url);
+    showToast('Görsel yüklendi.', 'success');
+  } catch (err) {
+    showToast(err.message || 'Görsel yüklenemedi.', 'error');
+  }
 }
 
 function handleImageUrlInput(url) {

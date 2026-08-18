@@ -18,11 +18,15 @@ function showToast(message, type = 'info') {
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
   toast.id = id;
+  /* Kapatma düğmesi inline onclick yerine addEventListener ile bağlanır:
+     inline handler'lar sıkı CSP altında (script-src'de 'unsafe-inline' yokken)
+     sessizce çalışmaz. Ödeme sayfası bu sıkı politikayla servis ediliyor. */
   toast.innerHTML = `
     <span class="toast-icon">${icons[type] || icons.info}</span>
     <span class="toast-msg">${message}</span>
-    <button class="toast-close" onclick="closeToast('${id}')"><svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <button class="toast-close" type="button" aria-label="Bildirimi kapat"><svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
   `;
+  toast.querySelector('.toast-close').addEventListener('click', () => closeToast(id));
 
   container.appendChild(toast);
   setTimeout(() => closeToast(id), 3500);

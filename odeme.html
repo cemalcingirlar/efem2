@@ -556,6 +556,12 @@
             <span class="label"><svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="2" y="8" width="12" height="8" rx="1"/><path d="M14 11h4l3 3v2h-2"/><circle cx="6" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg> Kargo</span>
             <span>Ücretsiz</span>
           </div>
+          <!-- Kupon satırı yalnız geçerli bir kupon uygulanmışsa görünür;
+               indirimi sunucu hesaplar (/api/coupon/validate). -->
+          <div class="price-row hidden" id="checkout-discount-row" style="color:var(--success)">
+            <span class="label" id="checkout-discount-label">Kupon</span>
+            <span id="checkout-discount">-</span>
+          </div>
           <div class="price-row total">
             <span>Toplam</span>
             <span id="checkout-total" class="success-total">-</span>
@@ -682,13 +688,25 @@ let currentStep  = 1;
 let deliveryMode = 'kargo';  // 'kargo' | 'magaza'
 let paymentMode  = 'kart';   // 'kart'  | 'eft'
 
-document.addEventListener('DOMContentLoaded', async () => {
-  const cart = getCart();
-  if (cart.length === 0) { window.location.href = 'sepet.html'; return; }
+/* Katalog beklenir: özet, sunucunun sipariş anında kullanacağı fiyatlarla
+   çizilsin. Aksi hâlde müşteri eski fiyatı görüp farklı tutar öderdi. */
+whenCatalogReady(async () => {
+  if (getCart().length === 0) { window.location.href = 'sepet.html'; return; }
+
+  const sync = syncCartWithCatalog();
+  if (sync.removed) {
+    showToast('Sepetinizdeki bazı ürünler artık satışta değil. Lütfen sepetinizi kontrol edin.', 'warning');
+    window.location.href = 'sepet.html';
+    return;
+  }
+  if (sync.repriced) showToast('Sepetinizdeki bazı ürünlerin fiyatı güncellendi.', 'info');
 
   populateCitySelect('addr-sehir');
   renderCheckoutSummary();
   applyPaymentCapabilities();
+
+  // Kupon indirimi sunucudan gelince özet tazelenir
+  refreshCheckoutDiscount().then(renderCheckoutSummary);
 
   setStep(1);
 
@@ -917,10 +935,47 @@ function copyIBAN(elId) {
   });
 }
 
+/* Sepette uygulanan kuponun bu sepetteki karşılığı. Tutar sunucudan gelir;
+   burada saklanan değer yalnız ekranda gösterilir, ödemede yeniden
+   hesaplanır. */
+let checkoutDiscount = 0;
+
+async function refreshCheckoutDiscount() {
+  const code = typeof getAppliedCouponCode === 'function' ? getAppliedCouponCode() : '';
+  const row  = document.getElementById('checkout-discount-row');
+  checkoutDiscount = 0;
+
+  if (!code) { row.classList.add('hidden'); return; }
+
+  try {
+    const res = await fetch('/api/coupon/validate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, items: getCart().map(i => ({ id: i.id, sku: i.sku || null, qty: i.qty })) })
+    });
+    const data = await res.json();
+
+    if (!res.ok || !data.ok) {
+      /* Kupon bu sepette artık geçerli değil: sessizce düşürülür, böylece
+         ödeme adımında beklenmedik bir tutar farkı çıkmaz. */
+      if (typeof clearAppliedCoupon === 'function') clearAppliedCoupon();
+      row.classList.add('hidden');
+      return;
+    }
+
+    checkoutDiscount = data.discountKurus / 100;
+    document.getElementById('checkout-discount-label').textContent = `Kupon (${data.label})`;
+    document.getElementById('checkout-discount').textContent = '-' + formatPrice(checkoutDiscount);
+    row.classList.remove('hidden');
+  } catch {
+    row.classList.add('hidden');
+  }
+}
+
 function renderCheckoutSummary() {
   const cart      = getCart();
   const subtotal  = getCartSubtotal();
-  const total     = getCartTotal();
+  const total     = getCartTotal(checkoutDiscount);
 
   document.getElementById('checkout-items-list').innerHTML = cart.map(item => `
     <div class="price-row checkout-summary-row">
@@ -1110,7 +1165,7 @@ async function handleEftOrder(orderInput) {
   try {
     const order = await saveOrder({
       items:         getCart(),
-      total:         getCartTotal(),
+      total:         getCartTotal(checkoutDiscount),
       address:       addressData,
       invoice:       invoiceData,
       delivery:      deliveryMode,

@@ -8,14 +8,13 @@
    (rapor: TC-PRICE-TAMPER, "Checkout fiyat bütünlüğü"). */
 
 const crypto = require('crypto');
-const catalog = require('./catalog.json');
 const { orderTokenSecret } = require('./env');
+const { loadCatalog } = require('./catalog-store');
+const { applyCoupon } = require('./coupons');
 
 const MAX_DISTINCT_ITEMS = 20;
 const MAX_ITEM_QTY       = 10;
 const MAX_ORDER_KURUS    = 50000000; // 500.000 ₺ üzeri sipariş manuel incelemeye düşer
-
-const PRODUCTS = new Map(catalog.products.map(p => [p.id, p]));
 
 /* ─── Metin temizleme ───
    PayTR'ye ve Firestore'a giden tüm serbest metinler kırpılır: kontrol
@@ -48,8 +47,12 @@ function lineTitle(line) {
 
 /* ─── Sepeti sunucu fiyatlarıyla yeniden hesapla ───
    Sepet satırları ürün id'si + varyant sku'su ile ayrışır: aynı ürünün iki
-   farklı rengi iki ayrı satırdır (js/cart.js → cartLineKey ile aynı mantık). */
-function priceBasket(rawItems) {
+   farklı rengi iki ayrı satırdır (js/cart.js → cartLineKey ile aynı mantık).
+
+   Fiyatlar Firestore + statik katalogdan gelir (api/_lib/catalog-store.js);
+   kupon indirimi de burada, sunucudaki tanıma göre hesaplanır. İstemciden
+   gelen fiyat/indirim değerleri kullanılmaz. */
+async function priceBasket(rawItems, { couponCode = null } = {}) {
   if (!Array.isArray(rawItems) || rawItems.length === 0) {
     return { error: 'Sepetiniz boş görünüyor.' };
   }
@@ -57,6 +60,7 @@ function priceBasket(rawItems) {
     return { error: `Tek siparişte en fazla ${MAX_DISTINCT_ITEMS} farklı ürün bulunabilir.` };
   }
 
+  const { products: PRODUCTS } = await loadCatalog();
   const lines = [];
   const seen = new Set();
 
@@ -108,12 +112,30 @@ function priceBasket(rawItems) {
 
   const subtotalKurus = lines.reduce((sum, l) => sum + l.totalKurus, 0);
   const shippingKurus = 0;                       // tüm siparişlerde ücretsiz kargo
-  const totalKurus    = subtotalKurus + shippingKurus;
 
+  /* Kupon: indirim tutarı istemciden alınmaz, koddan hesaplanır. */
+  const couponResult = await applyCoupon(couponCode, subtotalKurus);
+  if (couponResult.error) return { error: couponResult.error };
+
+  const discountKurus = couponResult.discountKurus || 0;
+  const totalKurus    = subtotalKurus + shippingKurus - discountKurus;
+
+  /* İndirim sepetin tamamını yiyorsa sipariş oluşturulamaz: ödeme
+     sağlayıcısı 0 ₺ tahsil edemez. Sebebi müşteriye açıkça söylüyoruz. */
+  if (totalKurus <= 0 && discountKurus > 0) {
+    return { error: 'Bu kupon sepet tutarının tamamını karşılıyor; sipariş tutarı sıfır olamaz.' };
+  }
   if (totalKurus <= 0)               return { error: 'Sipariş tutarı hesaplanamadı.' };
   if (totalKurus > MAX_ORDER_KURUS)  return { error: 'Bu tutardaki siparişler için lütfen bizimle iletişime geçin.' };
 
-  return { lines, subtotalKurus, shippingKurus, totalKurus };
+  return {
+    lines,
+    subtotalKurus,
+    shippingKurus,
+    discountKurus,
+    coupon: couponResult.coupon ? { code: couponResult.coupon.code, label: couponResult.coupon.label } : null,
+    totalKurus
+  };
 }
 
 /* ─── Alıcı / adres doğrulama (istemci doğrulaması bir kontrol değildir) ─── */

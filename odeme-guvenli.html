@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-  <script>(function(){try{var t=localStorage.getItem("efemi_theme");if(!t){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
+  <script src="js/theme-init.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Güvenli Ödeme – efemiletisim.com</title>
@@ -13,48 +13,7 @@
   <link rel="stylesheet" href="css/main.css">
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/pages.css">
-  <style>
-    /* Bu sayfa BİLEREK sade tutulur: üzerinde ödeme formunu taşıyan iframe
-       dışında iş mantığı çalıştıran üçüncü taraf script yoktur (e-skimming
-       yüzeyini küçültmek için). */
-    .secure-wrap { max-width: 760px; margin: var(--space-6) auto var(--space-10); padding: 0 var(--space-4); }
-    .secure-head { text-align: center; margin-bottom: var(--space-5); }
-    .secure-head h1 { font-size: 1.375rem; margin-bottom: var(--space-2); }
-    .secure-head p  { color: var(--text-secondary); font-size: 0.9375rem; }
-
-    .secure-summary {
-      display: flex; justify-content: space-between; align-items: center; gap: var(--space-4);
-      padding: var(--space-4);
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      margin-bottom: var(--space-5);
-      font-size: 0.9375rem;
-    }
-    .secure-summary .label { color: var(--text-muted); }
-    .secure-summary .value { font-weight: 700; }
-
-    .paytr-frame-wrap {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-xl);
-      overflow: hidden;
-      min-height: 620px;
-    }
-    #paytriframe { width: 100%; min-height: 620px; border: 0; display: block; }
-
-    .secure-note {
-      margin-top: var(--space-4);
-      font-size: 0.8125rem;
-      color: var(--text-muted);
-      text-align: center;
-      line-height: 1.7;
-    }
-    .secure-error {
-      padding: var(--space-6);
-      text-align: center;
-    }
-  </style>
+  <link rel="stylesheet" href="css/odeme-guvenli.css">
 </head>
 <body>
 
@@ -68,8 +27,8 @@
           <span class="logo-sub">iletişim</span>
         </div>
       </a>
-      <div style="margin-left:auto;display:flex;align-items:center;gap:var(--space-3)">
-        <span class="checkout-secure-note" style="display:flex;align-items:center;gap:6px;font-size:0.875rem;color:var(--text-muted)">
+      <div class="secure-navbar-right">
+        <span class="secure-navbar-badge">
           <svg class="icon" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg> Güvenli Ödeme
         </span>
         <a href="sepet.html" class="btn btn-ghost btn-sm">← Sepete Dön</a>
@@ -92,8 +51,8 @@
 
     <div class="paytr-frame-wrap" id="frame-wrap">
       <div class="secure-error" id="frame-error" hidden>
-        <p style="color:var(--error);font-weight:600;margin-bottom:var(--space-3)">Ödeme formu açılamadı.</p>
-        <p style="color:var(--text-secondary);margin-bottom:var(--space-4)">
+        <p class="secure-error-title">Ödeme formu açılamadı.</p>
+        <p class="secure-error-text">
           Ödeme oturumunuz bulunamadı veya süresi dolmuş olabilir. Kartınızdan herhangi bir çekim yapılmadı.
         </p>
         <a href="odeme.html" class="btn btn-primary">Ödeme adımına dön</a>
@@ -115,51 +74,6 @@
 <script src="js/payment.js"></script>
 <script src="js/main.js"></script>
 <script src="https://www.paytr.com/js/iframeResizer.min.js"></script>
-<script>
-/* =========================================
-   PayTR ödeme formu (iFrame API 1. adım çıktısı)
-   =========================================
-   Token, /api/payment/initialize çağrısından gelir ve bu sayfaya sorgu
-   parametresiyle taşınır. Buradaki hiçbir kod ödeme sonucu üretmez. */
-
-document.addEventListener('DOMContentLoaded', () => {
-  const params = new URLSearchParams(window.location.search);
-  const token   = (params.get('token') || '').trim();
-  const orderId = (params.get('order') || '').trim();
-  const access  = (params.get('t') || '').trim();
-
-  const wrap  = document.getElementById('frame-wrap');
-  const error = document.getElementById('frame-error');
-
-  // Token yoksa bekleyen siparişe düş; o da yoksa hata göster.
-  if (!/^[A-Za-z0-9]{10,128}$/.test(token)) {
-    error.hidden = false;
-    return;
-  }
-
-  const frame = document.createElement('iframe');
-  frame.id = 'paytriframe';
-  frame.src = 'https://www.paytr.com/odeme/guvenli/' + encodeURIComponent(token);
-  frame.setAttribute('frameborder', '0');
-  frame.setAttribute('scrolling', 'no');
-  frame.setAttribute('title', 'PayTR güvenli ödeme formu');
-  wrap.appendChild(frame);
-
-  if (typeof iFrameResize === 'function') {
-    iFrameResize({ checkOrigin: false }, '#paytriframe');
-  }
-
-  // Sipariş özeti (bilgi amaçlı; tutarın kaynağı sunucudur)
-  if (orderId && access) {
-    document.getElementById('summary-order').textContent = orderId;
-    fetchOrderStatus(orderId, access)
-      .then(order => {
-        document.getElementById('summary-total').textContent = order.totalText;
-        document.getElementById('secure-summary').hidden = false;
-      })
-      .catch(() => { /* özet gösterilemezse ödeme akışı yine de sürer */ });
-  }
-});
-</script>
+<script src="js/odeme-guvenli.js"></script>
 </body>
 </html>

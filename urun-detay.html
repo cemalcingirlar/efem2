@@ -295,7 +295,9 @@
 let currentProduct = null;
 let selectedQty    = 1;
 
-document.addEventListener('DOMContentLoaded', () => {
+/* Katalog beklenir: Firestore'dan gelen bir ürün, statik listede olmadığı
+   için "bulunamadı" sayılıp urunler.html'e atılmasın. */
+whenCatalogReady(() => {
   const id = getUrlParam('id');
   if (!id) { window.location.href = 'urunler.html'; return; }
 

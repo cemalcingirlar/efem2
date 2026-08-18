@@ -567,8 +567,8 @@
 <script src="js/products.js"></script>
 <script src="js/main.js"></script>
 <script>
-  // Öne çıkan ürünleri yükle
-  document.addEventListener('DOMContentLoaded', () => {
+  // Öne çıkan ürünleri yükle (sunucu katalogu geldikten sonra)
+  whenCatalogReady(() => {
     injectOrganizationSchema();
 
     // Öne çıkanlar şeridi: katalog büyüdükçe şişmemesi için 8 ürünle sınırlı

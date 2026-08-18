@@ -47,7 +47,8 @@ module.exports = async (req, res) => {
 
   const delivery = body.delivery === 'magaza' ? 'magaza' : 'kargo';
 
-  const basket = priceBasket(body.items);
+  /* Kupon: istemci yalnız KODU gönderir, indirimi sunucu hesaplar. */
+  const basket = await priceBasket(body.items, { couponCode: body.couponCode });
   if (basket.error) return fail(res, 400, 'basket_invalid', basket.error);
 
   const buyerResult = validateBuyer(body.buyer);
@@ -91,6 +92,8 @@ module.exports = async (req, res) => {
     items:         basket.lines,
     subtotalKurus: basket.subtotalKurus,
     shippingKurus: basket.shippingKurus,
+    discountKurus: basket.discountKurus,
+    coupon:        basket.coupon,
     totalKurus:    basket.totalKurus,
     currency:      'TRY',
     environment:   paytrMode(),

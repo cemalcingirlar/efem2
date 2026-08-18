@@ -133,10 +133,10 @@ const P1 = catalog.products[0];
 const SKU1 = P1.variants[0].sku;
 const SKU1B = P1.variants[1].sku;
 
-const EXPECTED_TOTAL_KURUS = priceBasket([
+const EXPECTED_TOTAL_KURUS = (await priceBasket([
   { id: P1.id, sku: SKU1, qty: 2 },
   { id: P1.id, sku: SKU1B, qty: 1 }
-]).totalKurus;
+])).totalKurus;
 
 /* ─── Handler çağırma yardımcıları ─── */
 function makeRes() {

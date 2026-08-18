@@ -26,9 +26,15 @@ function getStore() {
   // firebase-admin yalnızca yapılandırma varsa yüklenir; eksikse fonksiyon
   // soğuk başlangıçta gereksiz yere ağır bağımlılığı çözmez.
   const admin = require('firebase-admin');
+
+  /* Storage kovası: açıkça verilmezse Firebase'in varsayılan adlandırmasına
+     düşülür (görsel yükleme bu kovaya yazar). */
+  const storageBucket = (process.env.FIREBASE_STORAGE_BUCKET || '').trim()
+    || `${account.project_id}.firebasestorage.app`;
+
   const app = admin.apps.length
     ? admin.app()
-    : admin.initializeApp({ credential: admin.credential.cert(account) });
+    : admin.initializeApp({ credential: admin.credential.cert(account), storageBucket });
 
   cached = {
     admin,
@@ -194,6 +200,74 @@ async function syncUserOrderStatus(uid, orderId, status, statusLabel) {
   }
 }
 
+/* ─── Katalog: ürünler ───
+   Admin panelinden yönetilen ürünler. İstemci bu koleksiyona yazamaz
+   (firestore.rules); tüm yazma işlemleri Admin SDK ile buradan geçer. */
+async function listProducts() {
+  const store = getStore();
+  if (!store) return [];
+  const snap = await store.db.collection('products').get();
+  return snap.docs.map(d => d.data());
+}
+
+async function saveProduct(product) {
+  const store = getStore();
+  if (!store) throw new Error('store_not_configured');
+  await store.db.collection('products').doc(String(product.id)).set({
+    ...product,
+    updatedAt: store.FieldValue.serverTimestamp()
+  }, { merge: true });
+}
+
+async function deleteProduct(id) {
+  const store = getStore();
+  if (!store) throw new Error('store_not_configured');
+  await store.db.collection('products').doc(String(id)).delete();
+}
+
+/* ─── Katalog: kuponlar ─── */
+async function listCoupons() {
+  const store = getStore();
+  if (!store) return [];
+  const snap = await store.db.collection('coupons').get();
+  return snap.docs.map(d => d.data());
+}
+
+async function saveCoupon(coupon) {
+  const store = getStore();
+  if (!store) throw new Error('store_not_configured');
+  await store.db.collection('coupons').doc(coupon.code).set({
+    ...coupon,
+    updatedAt: store.FieldValue.serverTimestamp()
+  }, { merge: true });
+}
+
+async function deleteCoupon(code) {
+  const store = getStore();
+  if (!store) throw new Error('store_not_configured');
+  await store.db.collection('coupons').doc(String(code).toUpperCase()).delete();
+}
+
+/* ─── Görsel yükleme (Firebase Storage) ───
+   Yükleme sunucudan yapılır; istemcinin Storage'a yazma yetkisi yoktur.
+   Dönüş: herkesin okuyabildiği kalıcı URL. */
+async function uploadImage(path, buffer, contentType) {
+  const store = getStore();
+  if (!store) throw new Error('store_not_configured');
+
+  const bucket = store.admin.storage().bucket();
+  const file = bucket.file(path);
+
+  await file.save(buffer, {
+    contentType,
+    resumable: false,
+    metadata: { cacheControl: 'public, max-age=31536000, immutable' }
+  });
+  await file.makePublic();
+
+  return `https://storage.googleapis.com/${bucket.name}/${encodeURI(path)}`;
+}
+
 /* ─── Olay günlüğü (idempotency anahtarı) ───
    Aynı eventId ikinci kez gelirse `false` döner; işleyici erken çıkar. */
 async function recordEventOnce(eventId, data) {
@@ -249,6 +323,13 @@ module.exports = {
   listOrders,
   setOrderStatus,
   syncUserOrderStatus,
+  listProducts,
+  saveProduct,
+  deleteProduct,
+  listCoupons,
+  saveCoupon,
+  deleteCoupon,
+  uploadImage,
   recordEventOnce,
   appendOrderToUserProfile,
   queueMail

@@ -3,6 +3,118 @@
 Bu dosya projede yapılan her ekleme, değişiklik ve kaldırmayı kayıt altına alır.
 En yeni kayıtlar en üstte.
 
+## 2026-08-18 (CSP: ödeme sayfası sıkılaştırıldı)
+
+### `odeme-guvenli.html` artık `'unsafe-inline'` olmadan servis ediliyor
+Talep: `docs/ARKADAS-YAPILACAKLAR.md` → Prompt 6 (CSP sıkılaştırma). Talep tüm siteyi
+kapsıyordu; **kapsamı bilerek daralttık, sebebi aşağıda.**
+
+Kart formunun taşındığı sayfa e-skimming açısından sitenin en kritik yeri. Bu sayfa
+artık satır içi hiçbir script, style bloğu veya `style=""` attribute'u içermiyor;
+kendisine özel ve `script-src 'self' https://www.paytr.com` ile sınırlı bir CSP ile
+servis ediliyor. Sayfaya enjekte edilen bir script tarayıcı tarafından çalıştırılmaz.
+
+- Add: `js/theme-init.js` — `<head>` içindeki tema (FOUC) betiği dışarı alındı.
+- Add: `css/odeme-guvenli.css` — sayfanın stilleri; `style=""` attribute'ları
+  sınıflara çevrildi.
+- Add: `js/odeme-guvenli.js` — sayfanın iframe/özet mantığı.
+- Change: `vercel.json` → `/odeme-guvenli(.html)?` için ayrı, sıkı CSP.
+  Sitenin geri kalanı eski (gevşek) politikayla kalır.
+- Fix: `js/main.js` → toast kapatma düğmesi satır içi `onclick` yerine
+  `addEventListener` kullanıyor. Satır içi handler sıkı CSP altında SESSİZCE
+  çalışmaz; ödeme sayfasındaki bir bildirimin kapatma düğmesi ölü kalırdı.
+- Change: `dev-server.js` → `vercel.json` başlıklarını yerelde de uyguluyor.
+  Aksi hâlde sıkı CSP yalnız canlıda ortaya çıkar ve "yerelde çalışıyordu" durumu doğardı.
+
+**Neden tüm site değil:** `'unsafe-inline'` ancak sayfadaki satır içi handler/script'in
+**tamamı** kaldırıldığında düşürülebilir — kısmi temizlik sıfır güvenlik kazancı verir.
+Sitede 16 sayfada ~300 statik `on*="…"` handler'ı ve bunlara ek olarak ürün kartı,
+sepet satırı, admin tablosu gibi **çalışma anında üretilen** işaretlemede yüzlerce handler
+daha var; bunların tamamı olay delegasyonuna çevrilmeli. Bu, sitenin her etkileşimli
+öğesine dokunan ve regresyon riski yüksek bir refactor. Ödeme sağlayıcısı geçişi ve panel
+yeniden yazımının hemen ardından tek seferde yapılması doğru bulunmadı; kritik sayfa
+bugün korunuyor, kalan sayfalar ayrı bir çalışma olarak duruyor.
+
+## 2026-08-18 (katalog, kupon, gerçek admin auth)
+
+### Admin paneli Firestore + Storage üzerine taşındı; yetki artık sunucuda
+Talep: `docs/ARKADAS-YAPILACAKLAR.md` → Prompt 1 ve Prompt 2. Panelin ürün
+yönetimi `localStorage` yazıyordu: bir ürün eklendiğinde yalnızca O TARAYICIDA
+görülüyordu, siteyi açan müşteri görmüyordu. Giriş ekranı da sayfanın kaynağındaki
+sabit bir şifreyi kontrol ediyordu — bu bir yetki kontrolü değildir.
+
+**Yetkilendirme**
+
+- Add: `api/verify-admin.js` — panelin kapısı. Firebase ID token sunucuda
+  doğrulanır, e-posta doğrulanmış olmalı ve `ADMIN_EMAILS` listesinde bulunmalı.
+- Change: `admin.html` giriş ekranı gerçek Firebase e-posta/şifre girişi yapıyor;
+  sabit kullanıcı adı/şifre (`ADMIN_CREDS`) ve `sessionStorage` bayrağı kaldırıldı.
+  Kimlik doğru ama yetki yoksa oturum açık bırakılmıyor, hemen kapatılıyor.
+- Change: `admin.html` → Ayarlar ekranındaki istemci tarafı şifre değiştirme
+  kaldırıldı; yerine oturum sahibi bilgisi ve Firebase şifre sıfırlama e-postası geldi.
+- Add: `adminGate(req, res)` — tüm yönetici uçlarının ortak kapısı
+  (401 kimlik yok / 403 yetki yok / 503 yapılandırma yok).
+
+**Ürün kataloğu**
+
+- Add: `api/admin/products.js` — GET/POST/DELETE. `priceKurus` alanı
+  İSTEMCİDEN ALINMAZ, `price` üzerinden sunucuda türetilir; ödeme akışı yalnız
+  bu alanı okuduğu için panelde girilen fiyat ile tahsil edilen tutar birbirine bağlıdır.
+- Add: `api/_lib/product-schema.js` — serbest metinler kırpılır, `javascript:`
+  gibi görsel yolları reddedilir, varyant sku'ları tekilleştirilir.
+- Add: `api/_lib/catalog-store.js` — Firestore `products` koleksiyonu statik
+  `catalog.json` üzerine biner (aynı id → Firestore kazanır). Firestore okunamazsa
+  statik listeye düşülür: katalog servisi çökse bile ödeme akışı durmaz.
+- Add: `api/catalog.js` — vitrinin okuduğu, herkese açık uç.
+- Change: `js/data.js` → `PRODUCTS` artık BASE_PRODUCTS + sunucu kataloğu.
+  `whenCatalogReady()` eklendi; sayfalar hem DOM'u hem katalogu bekliyor, böylece
+  yalnızca Firestore'da olan bir ürünün detay sayfası "bulunamadı" diye yönlendirilmiyor.
+- Change: `index.html`, `urunler.html`, `urun-detay.html`, `sepet.html`
+  bu bekleyişi kullanıyor.
+
+**Görsel yükleme (Firebase Storage)**
+
+- Add: `api/admin/upload.js` — görsel Admin SDK ile yüklenir; istemcinin
+  Storage'a yazma yetkisi yoktur. İçerik türü gönderilen `contentType` alanına değil
+  dosyanın İLK BAYTLARINA bakılarak belirlenir; dosya adı sunucuda yeniden üretilir
+  (dizin geçişi ve üzerine yazma riski). Sınır 3 MB.
+- Change: `admin.html` görseli artık ürün kaydının içine gömülü `data:` URI
+  olarak değil, Storage URL'si olarak saklıyor.
+
+**Kuponlar**
+
+- Add: `api/admin/coupons.js` + `api/_lib/coupons.js` — kupon tanımları
+  Firestore `coupons` koleksiyonunda. Panel ₺ girer, kuruşa çevrilerek yazılır.
+- Add: `api/coupon/validate.js` — sepetin kullandığı, herkese açık uç. İstemci
+  yalnız KODU gönderir; indirim sunucuda hesaplanır.
+- Change: `api/_lib/orders.js` → `priceBasket()` asenkron oldu ve kupon
+  kodunu kabul ediyor. İndirim sepeti aşamaz; toplam sıfıra inerse sipariş reddedilir
+  (0 ₺ tahsil edilemez).
+- Change: `js/cart.js` → sabit `COUPONS` objesi kaldırıldı. Sepet değişince
+  uygulanan kupon düşürülüyor: minimum tutar şartı bozulmuş bir indirimin ekranda
+  kalması ödeme adımında sürpriz yapardı.
+- Change: `odeme.html` özetine kupon satırı eklendi; tutar `/api/coupon/validate`'ten.
+- Add: `admin.html` → "Kuponlar" sekmesi (liste, ekle/düzenle, aç/kapat, sil).
+
+**Kurallar (deploy SİZDE)**
+
+- Change: `firestore.rules` → `products` okumaya açık / yazmaya kapalı,
+  `coupons` tamamen kapalı (istemci kupon listesini göremez).
+- Add: `storage.rules` — `products/**` herkese açık okuma, yazma kapalı.
+  Yükleme Admin SDK ile yapıldığı için kuralları gevşetmeye gerek yok.
+- Add: `firebase.json` → `storage.rules` bağlandı.
+
+**Diğer**
+
+- Add: `docs/ADMIN-KURULUMU.md` — mimari, ortam değişkenleri, yönetici hesabı
+  açma, kural yayınlama ve canlıya çıkış doğrulama listesi.
+- Add: `FIREBASE_STORAGE_BUCKET` (`.env.example`); boş bırakılırsa
+  `<project_id>.firebasestorage.app` varsayılır.
+- Add: `npm run test:admin:catalog` — 52 test. `npm test` toplam 180 test.
+- Fix: `dev-server.js` artık `api/` altındaki TÜM modülleri her istekte
+  tazeliyor; önceden yalnız handler dosyası tazeleniyordu ve `api/_lib/*` değişiklikleri
+  sunucu yeniden başlatılana kadar görünmüyordu.
+
 ## 2026-08-18 (devam)
 
 ### Sipariş yönetimi: admin paneli artık TÜM siparişleri sunucudan görüyor

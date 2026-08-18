@@ -12,9 +12,13 @@ function getCart() {
   } catch { return []; }
 }
 
-/* ─── Sepeti kaydet ─── */
+/* ─── Sepeti kaydet ───
+   Sepet her değiştiğinde uygulanan kupon düşürülür: kupon minimum sepet
+   tutarına bağlı olabilir, eski indirim yeni sepette geçersiz olabilir.
+   Müşteri kodu yeniden girer, sunucu yeniden doğrular. */
 function saveCart(cart) {
   localStorage.setItem(CART_KEY, JSON.stringify(cart));
+  clearAppliedCoupon();
   updateCartBadge();
   dispatchCartEvent(cart);
 }
@@ -100,6 +104,43 @@ function clearCart() {
   saveCart([]);
 }
 
+/* ─── Sepet satırlarını güncel katalogla tazele ───
+   Sepet satırı eklendiği andaki fiyatı/adı saklar. Ürün yönetimi Firestore'a
+   taşındığından fiyat, sepet açıkken de değişebilir. Sunucu siparişi HER
+   ZAMAN kendi kataloğundan fiyatladığı için burada güncellememek tahsil
+   edilen tutarı değiştirmez — ama müşteriye eski tutarı gösterirdi. Bu yüzden
+   katalog yüklendiğinde satırlar sessizce tazelenir.
+
+   Satılmayan hâle gelen ürün sepetten düşürülür; aksi hâlde ödeme adımında
+   "artık satışta olmayan bir ürün var" hatasıyla karşılaşırdı. */
+function syncCartWithCatalog() {
+  const cart = getCart();
+  if (!cart.length) return { changed: false, removed: 0, repriced: 0 };
+
+  let repriced = 0;
+  const next = [];
+
+  for (const item of cart) {
+    const product = getProductById(item.id);
+    if (!product) continue;                       // katalogdan kalkmış
+
+    // Varyantlı üründe sepetteki sku hâlâ satılıyor olmalı
+    const variants = getVariants(product);
+    if (variants.length && item.sku && !variants.some(v => v.sku === item.sku)) continue;
+
+    if (item.price !== product.price || item.name !== product.name) repriced++;
+    next.push({ ...item, name: product.name, price: product.price, image: product.images[0] });
+  }
+
+  const removed = cart.length - next.length;
+  if (!removed && !repriced) return { changed: false, removed: 0, repriced: 0 };
+
+  /* saveCart() kuponu düşürür — fiyat değiştiyse kuponun yeniden
+     doğrulanması zaten doğru davranış. */
+  saveCart(next);
+  return { changed: true, removed, repriced };
+}
+
 /* ─── Toplam ürün sayısı (badge için) ─── */
 function getCartCount() {
   return getCart().reduce((sum, item) => sum + item.qty, 0);
@@ -115,42 +156,78 @@ function getShippingCost() {
   return FREE_SHIP; // Tüm ürünlerde ücretsiz
 }
 
-/* ─── Kupon ───
-   Tek geçerli kod: EFEM500.
-   ⚠️ TODO: İndirim tutarı ve minimum sepet şartı işletme tarafından
-   netleştirilene kadar kupon pasif tutulmaktadır (enabled: false).
-   Karar verildiğinde value / minSubtotal alanlarını doldurup
-   enabled: true yapmak yeterlidir. */
-const COUPONS = {
-  'EFEM500': {
-    type:        'fixed',
-    value:       500,
-    minSubtotal: 5000,
-    label:       '500₺ İndirim',
-    enabled:     false
+/* ═════════════════════════════════════════
+   KUPON
+   ═════════════════════════════════════════
+   Kupon tanımları artık kodun içinde DEĞİL, Firestore'da (`coupons`
+   koleksiyonu) durur ve admin panelinden yönetilir. Tarayıcı kupon
+   listesini hiç görmez; yalnız girilen kodu sunucuya sorar.
+
+   Buradaki indirim SADECE GÖSTERİM içindir. Siparişin gerçek tutarı
+   ödeme başlatılırken sunucuda yeniden hesaplanır (api/_lib/coupons.js);
+   bu değişkenlerle oynamak ödenecek tutarı değiştirmez.
+
+   Sepet değişince kupon düşürülür: ürün çıkarıp minimum tutarın altına
+   inen bir sepette eski indirimin gösterilmeye devam etmesi, müşteriye
+   ödeme adımında sürpriz yapardı.                                        */
+
+const COUPON_API = '/api/coupon/validate';
+const COUPON_KEY = 'efemi_coupon';
+
+function cartLinesForServer() {
+  return getCart().map(item => ({ id: item.id, sku: item.sku || null, qty: item.qty }));
+}
+
+/* Ödeme adımının okuduğu tek alan: uygulanan kupon KODU. */
+function getAppliedCouponCode() {
+  try { return sessionStorage.getItem(COUPON_KEY) || ''; }
+  catch { return ''; }
+}
+
+function setAppliedCouponCode(code) {
+  try {
+    if (code) sessionStorage.setItem(COUPON_KEY, code);
+    else sessionStorage.removeItem(COUPON_KEY);
+  } catch { /* özel mod: kupon oturum boyunca hatırlanmaz */ }
+}
+
+function clearAppliedCoupon() {
+  setAppliedCouponCode('');
+}
+
+/* Dönüş: { valid: true, code, label, discount, msg } | { valid: false, msg } */
+async function applyCoupon(code) {
+  const key = String(code || '').trim().toUpperCase();
+  if (!key) return { valid: false, msg: 'Lütfen bir kupon kodu girin.' };
+
+  const items = cartLinesForServer();
+  if (!items.length) return { valid: false, msg: 'Sepetiniz boş.' };
+
+  let res, data;
+  try {
+    res = await fetch(COUPON_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: key, items })
+    });
+    data = await res.json();
+  } catch {
+    return { valid: false, msg: 'Kupon doğrulanamadı. Lütfen bağlantınızı kontrol edip tekrar deneyin.' };
   }
-};
 
-function applyCoupon(code) {
-  const key    = code.trim().toUpperCase();
-  const coupon = COUPONS[key];
-
-  if (!coupon)         return { valid: false, msg: 'Geçersiz kupon kodu.' };
-  if (!coupon.enabled) return { valid: false, msg: 'Bu kupon şu anda kullanıma kapalı.' };
-
-  const subtotal = getCartSubtotal();
-  if (subtotal < coupon.minSubtotal) {
-    return {
-      valid: false,
-      msg: `Bu kupon en az ${formatPrice(coupon.minSubtotal)} tutarındaki sepetlerde geçerlidir.`
-    };
+  if (!res.ok || !data || !data.ok) {
+    clearAppliedCoupon();
+    return { valid: false, msg: (data && data.message) || 'Kupon uygulanamadı.' };
   }
 
-  const discount = coupon.type === 'percent'
-    ? Math.round(subtotal * coupon.value / 100)
-    : coupon.value;
-
-  return { valid: true, coupon, discount, msg: coupon.label + ' uygulandı!' };
+  setAppliedCouponCode(data.code);
+  return {
+    valid:    true,
+    code:     data.code,
+    label:    data.label,
+    discount: data.discountKurus / 100,
+    msg:      `${data.label} uygulandı!`
+  };
 }
 
 /* ─── Toplam (kupon dahil) ─── */

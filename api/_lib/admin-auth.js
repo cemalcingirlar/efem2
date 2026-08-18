@@ -25,6 +25,27 @@ function adminEmails() {
     .filter(Boolean);
 }
 
+/* ─── Kurulum teşhisi ───
+   Yönetici adresleri dışarı verilmez (kişisel veri + hedef listesi olur);
+   yalnız "kaç geçerli adres var" ve "geçersiz bir şey yapıştırılmış mı"
+   bilgisi döner. Yanlış değer yapıştırıldığında sebebi görünsün diye. */
+function adminEmailsDiagnostics() {
+  const raw = process.env.ADMIN_EMAILS;
+
+  if (typeof raw !== 'string' || !raw.trim()) {
+    return { present: false, valid: 0, reason: 'not_set' };
+  }
+
+  const parts = raw.split(',').map(p => p.trim()).filter(Boolean);
+  const EMAIL_RE = /^[^s@]+@[^s@]+.[^s@]{2,}$/;
+  const valid = parts.filter(p => EMAIL_RE.test(p)).length;
+
+  if (valid === 0) {
+    return { present: true, valid: 0, reason: 'no_valid_email', length: raw.trim().length };
+  }
+  return { present: true, valid, invalid: parts.length - valid };
+}
+
 function isAdminConfigured() {
   return adminEmails().length > 0;
 }
@@ -85,4 +106,4 @@ async function adminGate(req, res) {
   return auth.admin;
 }
 
-module.exports = { requireAdmin, adminGate, authStatus, isAdminConfigured, adminEmails };
+module.exports = { requireAdmin, adminGate, authStatus, isAdminConfigured, adminEmails, adminEmailsDiagnostics };

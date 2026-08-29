@@ -1,0 +1,64 @@
+{
+  "output": "docs/instagram/story",
+  "photoDir": "assets/images/products",
+  "width": 1080,
+  "height": 1920,
+  "brands": [
+    {
+      "key": "apple", "name": "APPLE", "tagline": "Akıllı saat · Kulaklık · Aksesuar",
+      "items": [
+        { "photo": "apple-watch-11-42-1.png",     "title": "Apple Watch Series 11", "sub": "42 mm · GPS" },
+        { "photo": "apple-watch-11-46-1.png",     "title": "Apple Watch Series 11", "sub": "46 mm · GPS" },
+        { "photo": "apple-watch-se3-40-1.jpg",    "title": "Apple Watch SE 3",      "sub": "40 mm · GPS" },
+        { "photo": "apple-watch-s10-46-alu-1.jpg","title": "Apple Watch Series 10", "sub": "46 mm · Alüminyum · Cellular" },
+        { "photo": "apple-watch-s9-41-1.png",     "title": "Apple Watch Series 9",  "sub": "41 mm · GPS" },
+        { "photo": "apple-airpods-pro-3-1.png",   "title": "AirPods Pro 3",         "sub": "Aktif gürültü engelleme" },
+        { "photo": "apple-airpods-4-1.png",       "title": "AirPods 4",             "sub": "Kablosuz kulaklık" },
+        { "photo": "apple-crossbody-strap-1.jpg", "title": "Crossbody Strap",       "sub": "Bright Guava" },
+        { "photo": "apple-20w-adapter-1.jpg",     "title": "20W USB-C Adaptör",     "sub": "Hızlı şarj" }
+      ]
+    },
+    {
+      "key": "jbl", "name": "JBL", "tagline": "Kulaklık · Bluetooth hoparlör",
+      "items": [
+        { "photo": "jbl-partybox-club120-1.png", "title": "PartyBox Club 120", "sub": "Işıklı gövde · güçlü bas" },
+        { "photo": "jbl-tune-520bt-1.jpg",       "title": "Tune 520BT",        "sub": "Kablosuz kulaklık" },
+        { "photo": "jbl-tune-530bt-1.png",       "title": "Tune 530BT",        "sub": "Kablosuz kulaklık" },
+        { "photo": "jbl-tune-680btnc-1.jpg",     "title": "Tune 680BT NC",     "sub": "Gürültü engelleme" },
+        { "photo": "jbl-tune-730bt-1.png",       "title": "Tune 730BT",        "sub": "Kablosuz kulaklık" },
+        { "photo": "jbl-tune-beam2-1.png",       "title": "Tune Beam 2",       "sub": "TWS kulaklık" },
+        { "photo": "jbl-tune-flex2-1.png",       "title": "Tune Flex 2",       "sub": "TWS kulaklık" },
+        { "photo": "jbl-wave-beam2-1.png",       "title": "Wave Beam 2",       "sub": "TWS kulaklık" },
+        { "photo": "jbl-wave-buds2-1.png",       "title": "Wave Buds 2",       "sub": "TWS kulaklık" }
+      ]
+    },
+    {
+      "key": "huawei", "name": "HUAWEI", "tagline": "Akıllı saat · Kulaklık · Ağ",
+      "items": [
+        { "photo": "huawei-watch-gt6-46-1.png",      "title": "Watch GT 6",      "sub": "46 mm" },
+        { "photo": "huawei-watch-gt6-41-1.png",      "title": "Watch GT 6",      "sub": "41 mm" },
+        { "photo": "huawei-watch-gt6-41-gold-1.png", "title": "Watch GT 6 41 mm","sub": "Altın" },
+        { "photo": "huawei-watch-gt6-pro-1.jpg",     "title": "Watch GT 6 Pro",  "sub": "46 mm" },
+        { "photo": "huawei-watch-gt6-pro-ti-1.png",  "title": "Watch GT 6 Pro",  "sub": "46 mm · Titanyum" },
+        { "photo": "huawei-watch-gt5-pro-1.png",     "title": "Watch GT 5 Pro",  "sub": "46 mm" },
+        { "photo": "huawei-watch-fit4-1.jpg",        "title": "Watch Fit 4",     "sub": "İnce ve hafif" },
+        { "photo": "huawei-freebuds-se3-1.jpg",      "title": "FreeBuds SE 3",   "sub": "TWS kulaklık" },
+        { "photo": "huawei-mesh-x3-pro-1.jpg",       "title": "WiFi Mesh X3 Pro","sub": "Ev ağı sistemi" }
+      ]
+    },
+    {
+      "key": "xiaomi", "name": "XIAOMI", "tagline": "Akıllı saat · Kulaklık · Projeksiyon",
+      "items": [
+        { "photo": "xiaomi-redmi-watch6-1.jpg",        "title": "Redmi Watch 6",        "sub": "Akıllı saat" },
+        { "photo": "xiaomi-redmi-watch5-active-1.jpg", "title": "Redmi Watch 5 Active", "sub": "Akıllı saat" },
+        { "photo": "xiaomi-redmi-watch5-lite-1.jpg",   "title": "Redmi Watch 5 Lite",   "sub": "Akıllı saat" },
+        { "photo": "xiaomi-redmi-watch3-active-1.jpg", "title": "Redmi Watch 3 Active", "sub": "Akıllı saat" },
+        { "photo": "xiaomi-redmi-buds8-1.jpg",         "title": "Redmi Buds 8",         "sub": "TWS kulaklık" },
+        { "photo": "xiaomi-redmi-buds8-pro-1.jpg",     "title": "Redmi Buds 8 Pro",     "sub": "TWS kulaklık" },
+        { "photo": "xiaomi-redmi-buds8-active-1.png",  "title": "Redmi Buds 8 Active",  "sub": "TWS kulaklık" },
+        { "photo": "xiaomi-redmi-buds6-play-1.jpg",    "title": "Redmi Buds 6 Play",    "sub": "TWS kulaklık" },
+        { "photo": "xiaomi-projector-l1-1.jpg",        "title": "Smart Projector L1",   "sub": "Taşınabilir projeksiyon" }
+      ]
+    }
+  ]
+}

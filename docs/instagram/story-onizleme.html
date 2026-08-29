@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Story kutuları — önizleme</title>
+<style>
+  :root{--bg:#F5F7FA;--card:#FFF;--ink:#0F1626;--ink2:#56617A;--ink3:#7C879C;
+    --line:#DCE2EC;--blue:#2563EB;
+    --body:-apple-system,"Segoe UI",system-ui,sans-serif;
+    --mono:"Cascadia Mono",Consolas,ui-monospace,monospace;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.6}
+  .wrap{max-width:1080px;margin:0 auto;padding:48px 24px 96px;display:flex;flex-direction:column;gap:52px}
+  header{display:flex;flex-direction:column;gap:10px}
+  .kicker{font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--blue)}
+  h1{font-size:34px;letter-spacing:-.02em;font-weight:700}
+  header p{color:var(--ink2);max-width:66ch}
+  h2{font-size:22px;letter-spacing:-.01em;display:flex;align-items:baseline;gap:12px;
+     border-bottom:2px solid var(--ink);padding-bottom:10px;margin-bottom:18px}
+  h2 .n{font-family:var(--mono);font-size:13px;color:var(--blue);letter-spacing:.08em}
+  h2 .type{margin-left:auto;font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;
+     text-transform:uppercase;color:var(--ink3)}
+  .post{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:22px}
+  .frames{display:flex;gap:12px;overflow-x:auto;padding-bottom:10px}
+  .frames figure{flex:0 0 132px}
+  .frames.story img{width:132px;height:235px;object-fit:cover;background:#fff;
+     border:1px solid var(--line);border-radius:8px;display:block}
+  .frames figcaption{font-family:var(--mono);font-size:10px;color:var(--ink3);margin-top:6px;
+     overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .meta{font-size:13.5px;color:var(--ink3)}
+  .meta b{color:var(--ink2)}
+  code{font-family:var(--mono);font-size:.9em;background:#EEF2F8;padding:1px 5px;border-radius:3px}
+  footer{border-top:1px solid var(--line);padding-top:18px;font-size:13px;color:var(--ink3)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <span class="kicker">@efemelektronik · story kutuları</span>
+  <h1>Story kutuları — önizleme</h1>
+  <p>Dört marka, her biri 10 kare, 1080×1920 tam çözünürlük. Kareler <code>docs/instagram/story/</code> altından okunuyor. Metin ve ürün eşleşmesi <code>story-spec.json</code> içinde; değiştirip <code>build-story.ps1</code>'i çalıştırınca hepsi yeniden üretilir.</p>
+</header>
+
+<section>
+  <h2><span class="n">APPLE</span> Öne çıkan kutusu <span class="type">10 kare · 1080×1920</span></h2>
+  <div class="post">
+    <p class="meta" style="margin:0 0 14px"><b>Kutu adı:</b> APPLE &nbsp;·&nbsp; <b>Kapak:</b> apple-00-kapak.png &nbsp;·&nbsp; <b>Klasör:</b> <code>docs/instagram/story/apple/</code></p>
+    <div class="frames story"><figure><img src="story/apple/apple-00-kapak.png" alt="APPLE kapak"><figcaption>kapak</figcaption></figure><figure><img src="story/apple/apple-01.png" alt="Apple Watch Series 11"><figcaption>01 · Apple Watch Series 11</figcaption></figure><figure><img src="story/apple/apple-02.png" alt="Apple Watch Series 11"><figcaption>02 · Apple Watch Series 11</figcaption></figure><figure><img src="story/apple/apple-03.png" alt="Apple Watch SE 3"><figcaption>03 · Apple Watch SE 3</figcaption></figure><figure><img src="story/apple/apple-04.png" alt="Apple Watch Series 10"><figcaption>04 · Apple Watch Series 10</figcaption></figure><figure><img src="story/apple/apple-05.png" alt="Apple Watch Series 9"><figcaption>05 · Apple Watch Series 9</figcaption></figure><figure><img src="story/apple/apple-06.png" alt="AirPods Pro 3"><figcaption>06 · AirPods Pro 3</figcaption></figure><figure><img src="story/apple/apple-07.png" alt="AirPods 4"><figcaption>07 · AirPods 4</figcaption></figure><figure><img src="story/apple/apple-08.png" alt="Crossbody Strap"><figcaption>08 · Crossbody Strap</figcaption></figure><figure><img src="story/apple/apple-09.png" alt="20W USB-C Adaptör"><figcaption>09 · 20W USB-C Adaptör</figcaption></figure></div>
+  </div>
+</section>
+<section>
+  <h2><span class="n">JBL</span> Öne çıkan kutusu <span class="type">10 kare · 1080×1920</span></h2>
+  <div class="post">
+    <p class="meta" style="margin:0 0 14px"><b>Kutu adı:</b> JBL &nbsp;·&nbsp; <b>Kapak:</b> jbl-00-kapak.png &nbsp;·&nbsp; <b>Klasör:</b> <code>docs/instagram/story/jbl/</code></p>
+    <div class="frames story"><figure><img src="story/jbl/jbl-00-kapak.png" alt="JBL kapak"><figcaption>kapak</figcaption></figure><figure><img src="story/jbl/jbl-01.png" alt="PartyBox Club 120"><figcaption>01 · PartyBox Club 120</figcaption></figure><figure><img src="story/jbl/jbl-02.png" alt="Tune 520BT"><figcaption>02 · Tune 520BT</figcaption></figure><figure><img src="story/jbl/jbl-03.png" alt="Tune 530BT"><figcaption>03 · Tune 530BT</figcaption></figure><figure><img src="story/jbl/jbl-04.png" alt="Tune 680BT NC"><figcaption>04 · Tune 680BT NC</figcaption></figure><figure><img src="story/jbl/jbl-05.png" alt="Tune 730BT"><figcaption>05 · Tune 730BT</figcaption></figure><figure><img src="story/jbl/jbl-06.png" alt="Tune Beam 2"><figcaption>06 · Tune Beam 2</figcaption></figure><figure><img src="story/jbl/jbl-07.png" alt="Tune Flex 2"><figcaption>07 · Tune Flex 2</figcaption></figure><figure><img src="story/jbl/jbl-08.png" alt="Wave Beam 2"><figcaption>08 · Wave Beam 2</figcaption></figure><figure><img src="story/jbl/jbl-09.png" alt="Wave Buds 2"><figcaption>09 · Wave Buds 2</figcaption></figure></div>
+  </div>
+</section>
+<section>
+  <h2><span class="n">HUAWEI</span> Öne çıkan kutusu <span class="type">10 kare · 1080×1920</span></h2>
+  <div class="post">
+    <p class="meta" style="margin:0 0 14px"><b>Kutu adı:</b> HUAWEI &nbsp;·&nbsp; <b>Kapak:</b> huawei-00-kapak.png &nbsp;·&nbsp; <b>Klasör:</b> <code>docs/instagram/story/huawei/</code></p>
+    <div class="frames story"><figure><img src="story/huawei/huawei-00-kapak.png" alt="HUAWEI kapak"><figcaption>kapak</figcaption></figure><figure><img src="story/huawei/huawei-01.png" alt="Watch GT 6"><figcaption>01 · Watch GT 6</figcaption></figure><figure><img src="story/huawei/huawei-02.png" alt="Watch GT 6"><figcaption>02 · Watch GT 6</figcaption></figure><figure><img src="story/huawei/huawei-03.png" alt="Watch GT 6 41 mm"><figcaption>03 · Watch GT 6 41 mm</figcaption></figure><figure><img src="story/huawei/huawei-04.png" alt="Watch GT 6 Pro"><figcaption>04 · Watch GT 6 Pro</figcaption></figure><figure><img src="story/huawei/huawei-05.png" alt="Watch GT 6 Pro"><figcaption>05 · Watch GT 6 Pro</figcaption></figure><figure><img src="story/huawei/huawei-06.png" alt="Watch GT 5 Pro"><figcaption>06 · Watch GT 5 Pro</figcaption></figure><figure><img src="story/huawei/huawei-07.png" alt="Watch Fit 4"><figcaption>07 · Watch Fit 4</figcaption></figure><figure><img src="story/huawei/huawei-08.png" alt="FreeBuds SE 3"><figcaption>08 · FreeBuds SE 3</figcaption></figure><figure><img src="story/huawei/huawei-09.png" alt="WiFi Mesh X3 Pro"><figcaption>09 · WiFi Mesh X3 Pro</figcaption></figure></div>
+  </div>
+</section>
+<section>
+  <h2><span class="n">XIAOMI</span> Öne çıkan kutusu <span class="type">10 kare · 1080×1920</span></h2>
+  <div class="post">
+    <p class="meta" style="margin:0 0 14px"><b>Kutu adı:</b> XIAOMI &nbsp;·&nbsp; <b>Kapak:</b> xiaomi-00-kapak.png &nbsp;·&nbsp; <b>Klasör:</b> <code>docs/instagram/story/xiaomi/</code></p>
+    <div class="frames story"><figure><img src="story/xiaomi/xiaomi-00-kapak.png" alt="XIAOMI kapak"><figcaption>kapak</figcaption></figure><figure><img src="story/xiaomi/xiaomi-01.png" alt="Redmi Watch 6"><figcaption>01 · Redmi Watch 6</figcaption></figure><figure><img src="story/xiaomi/xiaomi-02.png" alt="Redmi Watch 5 Active"><figcaption>02 · Redmi Watch 5 Active</figcaption></figure><figure><img src="story/xiaomi/xiaomi-03.png" alt="Redmi Watch 5 Lite"><figcaption>03 · Redmi Watch 5 Lite</figcaption></figure><figure><img src="story/xiaomi/xiaomi-04.png" alt="Redmi Watch 3 Active"><figcaption>04 · Redmi Watch 3 Active</figcaption></figure><figure><img src="story/xiaomi/xiaomi-05.png" alt="Redmi Buds 8"><figcaption>05 · Redmi Buds 8</figcaption></figure><figure><img src="story/xiaomi/xiaomi-06.png" alt="Redmi Buds 8 Pro"><figcaption>06 · Redmi Buds 8 Pro</figcaption></figure><figure><img src="story/xiaomi/xiaomi-07.png" alt="Redmi Buds 8 Active"><figcaption>07 · Redmi Buds 8 Active</figcaption></figure><figure><img src="story/xiaomi/xiaomi-08.png" alt="Redmi Buds 6 Play"><figcaption>08 · Redmi Buds 6 Play</figcaption></figure><figure><img src="story/xiaomi/xiaomi-09.png" alt="Smart Projector L1"><figcaption>09 · Smart Projector L1</figcaption></figure></div>
+  </div>
+</section>
+<footer>Her kutunun ilk karesi kapak olarak kullanılır. Ürün adları ve görselleri doğrudan <code>api/_lib/catalog.json</code> kataloğundan geliyor — stokta olmayan ürün yok.</footer>
+</div>
+</body>
+</html>

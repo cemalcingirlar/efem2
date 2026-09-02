@@ -127,7 +127,11 @@ const json = JSON.stringify(catalog, null, 2) + '\n';
 if (process.argv.includes('--check')) {
   let current = '';
   try { current = readFileSync(TARGET, 'utf8'); } catch { /* yok */ }
-  if (current !== json) {
+  /* Satır sonu farkı içerik farkı değildir. Depoda dosya CRLF ile
+     saklanabilir (Windows checkout), betik ise LF yazar; normalize
+     edilmezse Linux CI/deploy tarafında bu kontrol boş yere patlar. */
+  const norm = (s) => s.replace(/\r\n/g, '\n');
+  if (norm(current) !== norm(json)) {
     console.error('HATA: api/_lib/catalog.json, js/data.js ile uyumsuz. `npm run sync-catalog` çalıştırın.');
     process.exit(1);
   }

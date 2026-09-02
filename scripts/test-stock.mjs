@@ -113,7 +113,7 @@ console.log('\n1) ürün şeması — stok varyant toplamından türetilir');
   check('ürün stoğu varyant toplamı (2+10)', stoklu.product.stock, 12);
   check('tekil alan yok sayılır (999 değil)', stoklu.product.stock !== 999, true);
   check('varyant stokları korunur', stoklu.product.variants.map(v => v.stock), [2, 10]);
-  check('renk/beden korunur', stoklu.product.variants[0], { sku: 'A', color: 'Siyah', size: 'S/M', stock: 2 });
+  check('renk/beden korunur', stoklu.product.variants[0], { sku: 'A', color: 'Siyah', size: 'S/M', stock: 2, barcode: '' });
 
   const tekil = normalizeAdminProduct({ ...temel, stock: 7, variants: [] });
   check('varyantsız üründe tekil stok çalışır', tekil.product.stock, 7);
@@ -246,6 +246,74 @@ console.log('\n10) barkod alanı');
   check('tehlikeli karakterler temizlenir', normalizeAdminProduct({ ...temel, barcode: '<img src=x>123' }).product.barcode, 'img srcx123');
   check('40 karakterle sınırlı', normalizeAdminProduct({ ...temel, barcode: '1'.repeat(80) }).product.barcode.length <= 40, true);
   check('barkod stok/fiyatı etkilemez', normalizeAdminProduct({ ...temel, barcode: '999' }).product.stock, 1);
+}
+
+console.log('\n11) kargo bildirimi — HepsiJET takip linki');
+{
+  const shipping = require('../api/_lib/shipping.js');
+
+  check('takip linki numarayı taşır',
+    shipping.trackingUrl('1234567890'),
+    'https://hepsijet.com/coklu-gonderi-takibi/1234567890');
+  check('numara yoksa genel sorgu sayfası',
+    shipping.trackingUrl(''), shipping.HEPSIJET_SORGU);
+  check('numara URL için kaçışlanır',
+    shipping.trackingUrl('AB/CD').includes('AB%2FCD'), true);
+
+  check('kalem adına renk/beden eklenir',
+    shipping.lineTitle({ name: 'Apple Watch', color: 'Jet Siyah', size: 'S/M' }),
+    'Apple Watch (Jet Siyah · S/M)');
+  check('varyantsız kalemde sade ad',
+    shipping.lineTitle({ name: 'Şarj Adaptörü' }), 'Şarj Adaptörü');
+
+  const order = {
+    id: 'EFM260902ABC', trackingNumber: '1234567890',
+    buyer: { ad: 'Cemal', email: 'm@x.com' },
+    items: [{ name: 'Apple Watch', color: 'Jet Siyah', size: 'S/M', qty: 1 }],
+    address: { adres: 'Yeni Mah. 1 Sok', ilce: 'Seyhan', sehir: 'Adana' }
+  };
+  const html = shipping.shipmentMailHtml(order);
+
+  check('konuda sipariş numarası var',
+    shipping.shipmentMailSubject(order).includes('EFM260902ABC'), true);
+  check('gövdede takip numarası var', html.includes('1234567890'), true);
+  check('gövdede takip linki var',
+    html.includes('https://hepsijet.com/coklu-gonderi-takibi/1234567890'), true);
+  check('gövdede HepsiJET adı geçer', html.includes('HepsiJET'), true);
+  check('gövdede renk/beden görünür', html.includes('Jet Siyah · S/M'), true);
+  check('gövdede teslimat adresi var', html.includes('Seyhan'), true);
+
+  /* Müşteri adı ve adres kullanıcı girdisidir; HTML'e kaçışlanmadan
+     yazılırsa e-posta şablonu enjeksiyona açık olur. */
+  const kotu = shipping.shipmentMailHtml({
+    ...order, buyer: { ad: '<script>alert(1)</script>' }
+  });
+  check('müşteri adı kaçışlanır', kotu.includes('<script>alert(1)</script>'), false);
+  check('kaçışlanmış hali var', kotu.includes('&lt;script&gt;'), true);
+}
+
+console.log('\n12) varyant barkodu');
+{
+  const temel = {
+    id: 1, name: 'Watch', category: 'saat', brand: 'Apple', price: 100,
+    images: ['assets/images/products/a.jpg']
+  };
+
+  const r = normalizeAdminProduct({ ...temel, variants: [
+    { sku: 'A', color: 'Siyah', size: 'S/M', stock: 5, barcode: '8697654321098' },
+    { sku: 'B', color: 'Beyaz', stock: 2, barcode: 'EFM-002' }
+  ]});
+  check('varyant barkodu korunur', r.product.variants[0].barcode, '8697654321098');
+  check('firma içi kod korunur', r.product.variants[1].barcode, 'EFM-002');
+  check('barkod stoğu etkilemez', r.product.variants[0].stock, 5);
+
+  const bos = normalizeAdminProduct({ ...temel, variants: [{ sku: 'A', color: 'Siyah', stock: 1 }] });
+  check('barkod yoksa boş string', bos.product.variants[0].barcode, '');
+
+  const kirli = normalizeAdminProduct({ ...temel, variants: [
+    { sku: 'A', color: 'Siyah', stock: 1, barcode: '<img src=x>86976' }
+  ]});
+  check('tehlikeli karakterler temizlenir', kirli.product.variants[0].barcode, 'img srcx86976');
 }
 
 console.log(`\n${passed} test geçti, ${failed} test başarısız.`);

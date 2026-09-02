@@ -170,6 +170,42 @@ async function setOrderStatus(orderId, status, statusLabel, actorEmail) {
    müşteri de güncel durumu görsün diye dizideki ilgili kayıt güncellenir.
    Dizi elemanı güncellemek için tüm dizi okunup yeniden yazılır (Firestore'da
    dizi içi alan güncellemesi yok), bu yüzden transaction içinde yapılır. */
+/* ─── Kargo takip numarasını yaz ───
+   Numara müşteriye e-posta ile gönderileceği için tek otorite sunucudur;
+   panel yalnız bu ucu çağırır. Transaction: aynı siparişe iki yönetici aynı
+   anda numara girerse tek sonuç kalır ve e-posta bir kez tetiklenir.
+
+   Dönüş: { applied, reason, order, changed }
+   `changed` yalnız numara GERÇEKTEN değiştiğinde true olur — aynı numara
+   tekrar kaydedilince müşteriye ikinci bir e-posta gitmemelidir. */
+async function setOrderTracking(orderId, trackingNumber, actorEmail) {
+  const store = getStore();
+  if (!store) throw new Error('store_not_configured');
+  const ref = store.db.collection('orders').doc(orderId);
+
+  return store.db.runTransaction(async (tx) => {
+    const snap = await tx.get(ref);
+    if (!snap.exists) return { applied: false, reason: 'not_found', order: null, changed: false };
+
+    const order = snap.data();
+    const yeni  = trackingNumber ? String(trackingNumber).trim() : null;
+    const eski  = order.trackingNumber || null;
+    if (yeni === eski) return { applied: false, reason: 'no_change', order, changed: false };
+
+    tx.update(ref, {
+      trackingNumber: yeni,
+      shipping: {
+        carrier:   'hepsijet',
+        updatedAt: new Date().toISOString(),
+        updatedBy: actorEmail || null
+      },
+      updatedAt: store.FieldValue.serverTimestamp()
+    });
+
+    return { applied: true, order: { ...order, trackingNumber: yeni }, changed: Boolean(yeni) };
+  });
+}
+
 async function syncUserOrderStatus(uid, orderId, status, statusLabel) {
   const store = getStore();
   if (!store || !uid) return { applied: false, reason: 'no_user' };
@@ -407,6 +443,7 @@ module.exports = {
   transitionOrder,
   listOrders,
   setOrderStatus,
+  setOrderTracking,
   syncUserOrderStatus,
   listProducts,
   saveProduct,

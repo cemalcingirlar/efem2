@@ -3,6 +3,57 @@
 Bu dosya projede yapılan her ekleme, değişiklik ve kaldırmayı kayıt altına alır.
 En yeni kayıtlar en üstte.
 
+## 2026-09-02 (devam 5)
+
+### Kargo takip e-postası, varyant barkodları, sipariş ekranı düzeltmeleri
+- Fix: **Kargo takip numarası sunucuya hiç yazılmıyordu.** `saveTrackingNumber`
+  yalnız `localStorage`'a yazıyordu: numara başka bir cihazdan görünmüyor, müşteriye
+  hiçbir bildirim gitmiyordu. Artık `/api/admin/orders` üzerinden Firestore'a yazılıyor.
+- Add: `api/_lib/store.js` → `setOrderTracking()`. Transaction içinde çalışır ve
+  `changed` bayrağı döner: aynı numara tekrar kaydedilirse müşteriye ikinci e-posta
+  gitmez.
+- Add: `api/_lib/shipping.js` → HepsiJET takip e-postası. Numara kaydedilince müşteriye
+  "siparişiniz kargoya verildi" e-postası gider; içinde takip numarası, tıklanabilir
+  **Kargomu Takip Et** butonu, gönderi içeriği (renk/beden dahil) ve teslimat adresi
+  bulunur. Takip adresi `https://hepsijet.com/coklu-gonderi-takibi/<no>` — hepsijet.com'un
+  bu yolu dinamik rota olarak karşıladığı doğrulandı. Müşteri adı ve adres HTML'e
+  kaçışlanarak yazılır (şablon enjeksiyonuna karşı).
+- Change: E-posta yalnız numara GERÇEKTEN değiştiğinde ve dolu olduğunda gider; numara
+  silinince bildirim gönderilmez. Gönderim başarısız olursa numara yine de kaydedilir,
+  panel `mailed: false` ile uyarır.
+
+- Fix: **Sipariş detayında adres yanlış alanlardan okunuyordu.** Panel `addr.mahalle` ve
+  `addr.il` okuyordu; sipariş kaydı ise `{ adres, sehir, ilce, posta }` tutuyor
+  (`api/_lib/orders.js` → `validateAddress`). Bu yüzden şehir ve posta kodu hiç
+  görünmüyordu. Artık adres tam, satır satır gösteriliyor.
+- Fix: **Müşteri telefonu panelde hiç görünmüyordu.** `normalizeServerOrder` `buyer`
+  nesnesini düşürüyordu; telefon orada duruyor. Artık `buyer` taşınıyor ve telefon
+  tıklanabilir (`tel:`) olarak gösteriliyor.
+- Fix: `normalizeServerOrder` içinde `trackingNumber: null` sabit yazılmıştı — kaydedilen
+  takip numarası panelde hiç görünmezdi. Ayrıca `adminOrderView` bu alanı hiç
+  döndürmüyordu; ikisi de düzeltildi.
+- Add: Sipariş detayına **Sipariş Detayını Yazdır** butonu. Ayrı pencerede, mürekkep
+  dostu sade düzen: müşteri (ad, telefon, e-posta), teslimat adresi, kargo takip no,
+  fatura bilgileri, ürünler (renk/beden + varyant kodu) ve genel toplam.
+
+- Add: **Barkod alanı varyant başına.** Aynı modelin her rengi/bedeni ayrı barkod taşır
+  (`api/_lib/product-schema.js` → `normalizeVariants`). Panelde varyant satırlarında
+  Renk / Beden / **Barkod** / Stok sütunları var.
+  Katalogdaki 54 ürünün ve 114 varyantın tamamına barkod yazıldı — değer olarak
+  Excel'deki **Malzeme kodu** kullanıldı. Uydurma EAN-13 üretilmedi: gerçek barkodlarla
+  çakışıp kasada yanlış ürün okutabilirdi. Fiziksel ürünlerin EAN'ı okutuluyorsa bu
+  alanlar panelden gerçek barkodla değiştirilmelidir.
+
+- Fix: **sitemap.xml yalnız ilk 20 ürünü listeliyordu**, katalogda 54 ürün var — 34 ürün
+  arama motorlarına hiç bildirilmiyordu. `scripts/sync-sitemap.mjs` eklendi
+  (`npm run sync-sitemap`, kontrol: `npm run check-sitemap`); sitemap artık katalogdan
+  üretiliyor ve satıştan kaldırılan ürünleri dışarıda bırakıyor. 27 → 61 girdi.
+
+- Add: Testler — `scripts/test-admin-orders.mjs` içine kargo takip ucu (numara yazma,
+  e-posta gönderimi, aynı numarada tekrar göndermeme, numara silme, geçersiz karakter,
+  olmayan sipariş, yetkisiz erişim) ve `scripts/test-stock.mjs` içine HepsiJET şablonu +
+  varyant barkodu testleri. Toplam **258 test**.
+
 ## 2026-09-02 (devam 4)
 
 ### Ürün sayfasında kaybolan renk/kordon seçicisi, barkod alanı

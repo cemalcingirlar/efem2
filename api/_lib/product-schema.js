@@ -60,7 +60,11 @@ function normalizeVariants(raw) {
       sku,
       color: clean(v && v.color, 60),
       size:  clean(v && v.size, 30),
-      stock: Math.max(0, Math.round(Number(v && v.stock) || 0))
+      stock: Math.max(0, Math.round(Number(v && v.stock) || 0)),
+      /* Barkod varyant başınadır: aynı modelin her rengi/bedeni ayrı
+         barkod taşır. Ürün seviyesindeki `barcode` yalnız tek varyantlı
+         ürünler ve genel arama içindir. */
+      barcode: clean(v && v.barcode, 40).replace(/[^A-Za-z0-9 -]/g, '')
     });
   }
   return out;

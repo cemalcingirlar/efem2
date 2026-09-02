@@ -1013,8 +1013,8 @@
             </div>
             <div id="variant-source-note" style="display:none;font-size:0.8125rem;color:var(--primary);background:var(--primary-light);padding:8px 12px;border-radius:var(--radius-md);margin-bottom:10px"></div>
 
-            <div id="variant-editor-head" style="display:grid;grid-template-columns:1fr 130px 100px 40px;gap:8px;padding:0 0 6px;font-size:0.75rem;color:var(--text-muted);font-weight:600">
-              <span>Renk</span><span>Beden</span><span>Stok</span><span></span>
+            <div id="variant-editor-head" style="display:grid;grid-template-columns:1fr 120px 130px 90px 40px;gap:8px;padding:0 0 6px;font-size:0.75rem;color:var(--text-muted);font-weight:600">
+              <span>Renk</span><span>Beden</span><span>Barkod</span><span>Stok</span><span></span>
             </div>
             <div id="variant-stock-list"></div>
 
@@ -1628,6 +1628,10 @@ function normalizeServerOrder(o) {
     statusLabel:   o.statusLabel,
     customerName:  o.buyer ? [o.buyer.ad, o.buyer.soyad].filter(Boolean).join(' ') : null,
     customerEmail: o.buyer ? o.buyer.email : null,
+    customerPhone: o.buyer ? o.buyer.telefon : null,
+    /* buyer olduğu gibi taşınır: sipariş detayında telefon buradan okunur.
+       Düşürüldüğü sürece panelde müşteri telefonu hiç görünmüyordu. */
+    buyer:         o.buyer || null,
     total:         o.totalKurus / 100,
     items: (o.items || []).map(i => ({
       id: i.id, name: i.name, sku: i.sku, color: i.color, size: i.size,
@@ -1638,7 +1642,7 @@ function normalizeServerOrder(o) {
     delivery:      o.delivery,
     paymentMethod: o.paymentMethod,
     eftReceiptNo:  o.eftReceiptNo,
-    trackingNumber: null,
+    trackingNumber: o.trackingNumber || null,
     source:        o.guest ? 'guest' : 'member',
     userId:        o.userId,
     payment:       o.payment,
@@ -1824,6 +1828,115 @@ async function changeOrderStatus(orderId, status) {
   showToast('Sipariş durumu güncellendi (yalnız bu tarayıcıda).', 'warning');
 }
 
+/* ─── Sipariş detayını yazdır ───
+   Modalın içeriğini ayrı bir pencerede, sade ve mürekkep dostu bir düzenle
+   açar. Ekrandaki düzeni doğrudan yazdırmak yerine ayrı pencere kullanılır:
+   panelin koyu teması, yan menüsü ve butonları kâğıda basılmamalı.
+   Pencere açılamazsa (açılır pencere engelleyici) kullanıcı uyarılır. */
+function printOrder(orderId) {
+  const order = getOrdersForAdmin().find(o => o.id === orderId);
+  if (!order) { showToast('Sipariş bulunamadı.', 'error'); return; }
+
+  const addr  = order.address || {};
+  const buyer = order.buyer || {};
+  const inv   = order.invoice || {};
+
+  const adres = order.delivery === 'magaza'
+    ? 'Mağazadan teslim alınacak'
+    : [addr.adres, [addr.ilce, addr.sehir].filter(Boolean).join(' / '),
+       addr.posta ? 'Posta kodu: ' + addr.posta : '']
+        .filter(Boolean).map(escapeAdminHtml).join('<br>');
+
+  const satirlar = (order.items || []).map(i => {
+    const varyant = [i.color, i.size].filter(Boolean).join(' · ');
+    return `<tr>
+      <td>${escapeAdminHtml(i.name)}${varyant ? `<div class="alt">${escapeAdminHtml(varyant)}${i.sku ? ' — Kod: ' + escapeAdminHtml(i.sku) : ''}</div>` : ''}</td>
+      <td class="num">${i.qty}</td>
+      <td class="num">${formatPrice(i.price)}</td>
+      <td class="num"><strong>${formatPrice(i.price * i.qty)}</strong></td>
+    </tr>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html>
+<html lang="tr"><head><meta charset="UTF-8">
+<title>Sipariş ${escapeAdminHtml(order.id)}</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font: 13px/1.55 -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+         color: #0F172A; margin: 28px; }
+  h1 { font-size: 19px; margin: 0 0 2px; }
+  .sub { color: #64748B; font-size: 12px; margin-bottom: 20px; }
+  .kutu { border: 1px solid #E2E8F0; border-radius: 8px; padding: 12px 14px; margin-bottom: 14px; }
+  .baslik { font-size: 11px; text-transform: uppercase; letter-spacing: .06em;
+            color: #64748B; font-weight: 700; margin-bottom: 6px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; }
+  .etiket { color: #64748B; font-size: 11px; }
+  table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+  th { text-align: left; font-size: 11px; text-transform: uppercase; color: #64748B;
+       border-bottom: 1px solid #E2E8F0; padding: 6px 4px; }
+  td { padding: 7px 4px; border-bottom: 1px solid #F1F5F9; vertical-align: top; }
+  .num { text-align: right; white-space: nowrap; }
+  .alt { color: #64748B; font-size: 11px; margin-top: 2px; }
+  .toplam { text-align: right; font-size: 15px; font-weight: 700; margin-top: 10px; }
+  .footer { margin-top: 22px; padding-top: 10px; border-top: 1px solid #E2E8F0;
+            color: #64748B; font-size: 11px; }
+  @media print { body { margin: 12mm; } .kutu { break-inside: avoid; } }
+</style></head>
+<body>
+  <h1>Sipariş Detayı — ${escapeAdminHtml(order.id)}</h1>
+  <div class="sub">${escapeAdminHtml(formatOrderDate(order.date))} · ${escapeAdminHtml(order.statusLabel || order.status || '')}</div>
+
+  <div class="kutu">
+    <div class="baslik">Müşteri</div>
+    <div class="grid">
+      <div><span class="etiket">Ad Soyad</span><br><strong>${escapeAdminHtml(order.customerName || '—')}</strong></div>
+      <div><span class="etiket">Telefon</span><br><strong>${escapeAdminHtml(buyer.telefon || '—')}</strong></div>
+      <div><span class="etiket">E-posta</span><br>${escapeAdminHtml(order.customerEmail || '—')}</div>
+      <div><span class="etiket">Ödeme</span><br>${order.paymentMethod === 'eft' ? 'EFT/Havale' : 'Kredi Kartı'}</div>
+    </div>
+  </div>
+
+  <div class="kutu">
+    <div class="baslik">Teslimat</div>
+    ${adres}
+    ${order.trackingNumber ? `<div style="margin-top:8px"><span class="etiket">Kargo takip no</span><br><strong>${escapeAdminHtml(order.trackingNumber)}</strong></div>` : ''}
+  </div>
+
+  ${inv.unvan ? `<div class="kutu">
+    <div class="baslik">Fatura</div>
+    <div class="grid">
+      <div><span class="etiket">Tip</span><br>${inv.tip === 'kurumsal' ? 'Kurumsal' : 'Bireysel'}</div>
+      <div><span class="etiket">Ünvan</span><br><strong>${escapeAdminHtml(inv.unvan)}</strong></div>
+      <div><span class="etiket">${inv.tip === 'kurumsal' ? 'Vergi No' : 'T.C. Kimlik No'}</span><br>${escapeAdminHtml(inv.tcknVergiNo || '—')}</div>
+      ${inv.tip === 'kurumsal' ? `<div><span class="etiket">Vergi Dairesi</span><br>${escapeAdminHtml(inv.vergiDairesi || '—')}</div>` : ''}
+    </div>
+  </div>` : ''}
+
+  <div class="kutu">
+    <div class="baslik">Ürünler</div>
+    <table>
+      <thead><tr><th>Ürün</th><th class="num">Adet</th><th class="num">Birim</th><th class="num">Toplam</th></tr></thead>
+      <tbody>${satirlar}</tbody>
+    </table>
+    <div class="toplam">Genel Toplam: ${formatPrice(order.total)}</div>
+  </div>
+
+  <div class="footer">
+    ${escapeAdminHtml(SITE.brand.fullName)} · ${escapeAdminHtml(SITE.contact.email)} · ${escapeAdminHtml(SITE.contact.phone || '')}
+  </div>
+</body></html>`;
+
+  const pencere = window.open('', '_blank', 'width=820,height=900');
+  if (!pencere) {
+    showToast('Yazdırma penceresi açılamadı. Tarayıcınızın açılır pencere engelleyicisini kontrol edin.', 'error');
+    return;
+  }
+  pencere.document.write(html);
+  pencere.document.close();
+  /* Yazdırma kutusu içerik yerleşmeden açılırsa boş sayfa basılır. */
+  pencere.onload = () => { pencere.focus(); pencere.print(); };
+}
+
 function openOrderModal(orderId) {
   const order = getOrdersForAdmin().find(o => o.id === orderId);
   if (!order) return;
@@ -1842,10 +1955,27 @@ function openOrderModal(orderId) {
     </tr>`;
   }).join('');
 
-  const addr = order.address || {};
+  const addr  = order.address || {};
+  const buyer = order.buyer || {};
+
+  /* Adres alan adları: api/_lib/orders.js → validateAddress
+     { adres, sehir, ilce, posta }.  Panel önceden `mahalle` ve `il`
+     okuyordu — ikisi de mevcut değil, bu yüzden şehir hiç görünmüyordu.
+     Telefon adreste değil, `buyer.telefon` içinde durur. */
+  const adresSatirlari = [
+    addr.adres,
+    [addr.ilce, addr.sehir].filter(Boolean).join(' / '),
+    addr.posta ? 'Posta kodu: ' + addr.posta : ''
+  ].filter(Boolean).map(escapeAdminHtml);
+
+  const telefon = buyer.telefon || addr.telefon || '';
+  const telefonHTML = telefon
+    ? `<a href="tel:${escapeAdminHtml(telefon.replace(/[^0-9+]/g, ''))}">${escapeAdminHtml(telefon)}</a>`
+    : '—';
+
   const addressHTML = order.delivery === 'magaza'
-    ? `Mağazadan teslim — ${addr.telefon || ''}`
-    : [addr.adres, addr.mahalle, addr.ilce, addr.il].filter(Boolean).join(', ') || 'Adres bilgisi yok';
+    ? 'Mağazadan teslim alınacak'
+    : (adresSatirlari.length ? adresSatirlari.join('<br>') : 'Adres bilgisi yok');
 
   const inv = order.invoice || {};
   const invoiceHTML = inv.unvan
@@ -1871,7 +2001,14 @@ function openOrderModal(orderId) {
     </div>
 
     <div class="admin-section-label">Teslimat</div>
-    <p style="font-size:0.875rem;color:var(--text-secondary);margin-bottom:20px">${addressHTML}</p>
+    <div class="form-grid-2" style="margin-bottom:20px">
+      <div style="grid-column:1/-1">
+        <span class="admin-hint-text">Adres</span><br>
+        <strong style="font-weight:500;line-height:1.6">${addressHTML}</strong>
+      </div>
+      <div><span class="admin-hint-text">Telefon</span><br><strong>${telefonHTML}</strong></div>
+      <div><span class="admin-hint-text">Teslimat Şekli</span><br><strong>${order.delivery === 'magaza' ? 'Mağazadan Teslim' : 'Kargo'}</strong></div>
+    </div>
 
     <div class="admin-section-label">Fatura Bilgileri</div>
     ${invoiceHTML}
@@ -1896,7 +2033,13 @@ function openOrderModal(orderId) {
     <div class="admin-section-label">Kargo Takip No</div>
     <div style="display:flex;gap:10px">
       <input type="text" class="form-input" id="order-tracking-input" value="${order.trackingNumber || ''}" placeholder="Kargo firması takip numarası">
-      <button class="btn btn-primary btn-sm" onclick="saveTrackingNumber('${order.id}')">Kaydet</button>
+      <button class="btn btn-primary btn-sm" id="tracking-save-btn" onclick="saveTrackingNumber('${order.id}')">Kaydet</button>
+    </div>
+
+    <div style="margin-top:22px;display:flex;justify-content:flex-end">
+      <button class="btn btn-ghost btn-sm" onclick="printOrder('${order.id}')">
+        <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M6 9V3h12v6"/><rect x="4" y="9" width="16" height="7" rx="1.5"/><path d="M7 16h10v5H7z"/></svg> Sipariş Detayını Yazdır
+      </button>
     </div>
   `;
 
@@ -1919,10 +2062,45 @@ function buildCancellationMailto(order) {
   return `mailto:${order.customerEmail}?subject=${subject}&body=${body}`;
 }
 
-function saveTrackingNumber(orderId) {
-  const value = document.getElementById('order-tracking-input').value.trim();
-  updateOrderTrackingNumber(orderId, value || null);
-  showToast('Kargo takip numarası kaydedildi.', 'success');
+/* Kargo takip numarasını SUNUCUYA yazar ve müşteriye HepsiJET takip
+   e-postasını tetikler. Önceden yalnız localStorage'a yazılıyordu:
+   numara başka bir cihazdan görünmüyordu ve müşteriye hiçbir bildirim
+   gitmiyordu. */
+async function saveTrackingNumber(orderId) {
+  const kutu = document.getElementById('order-tracking-input');
+  const value = kutu.value.trim();
+
+  const btn = document.getElementById('tracking-save-btn');
+  const eskiEtiket = btn ? btn.textContent : null;
+  if (btn) { btn.disabled = true; btn.textContent = 'Kaydediliyor…'; }
+
+  try {
+    const data = await adminFetch('/api/admin/orders', {
+      method: 'POST',
+      body: JSON.stringify({ orderId, trackingNumber: value })
+    });
+
+    /* Yerel defter de güncellenir ki liste yenilenmeden doğru görünsün. */
+    updateOrderTrackingNumber(orderId, data.trackingNumber || null);
+
+    if (!value) {
+      showToast('Kargo takip numarası kaldırıldı.', 'warning');
+    } else if (data.mailed) {
+      showToast('Takip numarası kaydedildi, müşteriye bilgilendirme e-postası gönderildi.', 'success');
+    } else if (data.mailSkipReason === 'no_change') {
+      showToast('Takip numarası zaten aynıydı, e-posta tekrar gönderilmedi.', 'warning');
+    } else if (data.mailSkipReason === 'no_email') {
+      showToast('Takip numarası kaydedildi, ancak siparişte e-posta adresi yok.', 'warning');
+    } else {
+      showToast('Takip numarası kaydedildi, e-posta gönderilemedi.', 'warning');
+    }
+
+    await loadServerOrders();
+  } catch (err) {
+    showToast('Takip numarası kaydedilemedi: ' + err.message, 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = eskiEtiket; }
+  }
 }
 
 /* ════════════════════════════
@@ -2185,7 +2363,7 @@ function productSavePayload(p, active) {
     images:        p.images || [],
     colorImages:   p.colorImages || {},
     variants:      (p.variants || []).map(v => ({
-                     sku: v.sku, color: v.color, size: v.size || '', stock: Number(v.stock) || 0
+                     sku: v.sku, color: v.color, size: v.size || '', barcode: v.barcode || '', stock: Number(v.stock) || 0
                    })),
     sizeLabel:     p.sizeLabel || null,
     active:        active
@@ -2689,7 +2867,7 @@ function variantRowHtml(v) {
 
   return [
     '<div class="variant-row" data-row="' + v._row + '"',
-    '     style="display:grid;grid-template-columns:1fr 130px 100px 40px;gap:8px;align-items:start;padding:8px 0;border-bottom:1px solid var(--border)">',
+    '     style="display:grid;grid-template-columns:1fr 120px 130px 90px 40px;gap:8px;align-items:start;padding:8px 0;border-bottom:1px solid var(--border)">',
     '  <div>',
     '    <div style="display:flex;align-items:center;gap:8px">',
     '      <span class="variant-dot-preview" style="width:16px;height:16px;border-radius:50%;flex-shrink:0;border:1px solid var(--border);background:' + nokta + '"></span>',
@@ -2708,6 +2886,7 @@ function variantRowHtml(v) {
     '    <input type="text" class="form-input variant-size-manual" placeholder="Beden" value=""',
     '           style="display:none;margin-top:6px" oninput="onVariantEdited()">',
     '  </div>',
+    '  <input type="text" class="form-input variant-barcode" placeholder="Barkod" value="' + escapeAttr(v.barcode) + '" maxlength="40" oninput="onVariantEdited()">',
     '  <input type="number" min="0" class="form-input variant-stock-input" data-sku="' + escapeAttr(kod) + '" value="' + Math.max(0, Number(v.stock) || 0) + '" oninput="onVariantEdited()">',
     '  <button type="button" class="btn-icon" title="Bu seçeneği sil" onclick="removeVariantRow(\'' + v._row + '\')" style="color:var(--error)">',
     '    <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/></svg>',
@@ -2747,9 +2926,10 @@ function renderVariantStocks(variants, urunStok) {
   const pay     = stoksuz && Number(urunStok) > 0 ? Math.floor(Number(urunStok) / gelen.length) : 0;
 
   currentVariants = gelen.map(v => ({
-    sku:   v.sku || '',
-    color: v.color || '',
-    size:  v.size || '',
+    sku:     v.sku || '',
+    color:   v.color || '',
+    size:    v.size || '',
+    barcode: v.barcode || '',
     stock: Number.isFinite(Number(v.stock)) ? Math.max(0, Number(v.stock)) : pay,
     _row:  'v' + (++variantSeq)
   }));
@@ -2804,6 +2984,7 @@ function onVariantEdited() {
       ? row.querySelector('.variant-size-manual').value.trim()
       : bedenSec;
 
+    v.barcode = row.querySelector('.variant-barcode').value.trim();
     v.stock = Math.max(0, parseInt(row.querySelector('.variant-stock-input').value) || 0);
 
     const nokta = row.querySelector('.variant-dot-preview');
@@ -2827,7 +3008,7 @@ function onVariantEdited() {
 }
 
 function addVariantRow() {
-  currentVariants.push({ sku: '', color: '', size: '', stock: 0, _row: 'v' + (++variantSeq) });
+  currentVariants.push({ sku: '', color: '', size: '', barcode: '', stock: 0, _row: 'v' + (++variantSeq) });
   paintVariantEditor(false);
 }
 
@@ -2850,7 +3031,7 @@ function restoreCatalogVariants() {
     if (mevcut.has(k)) return;
     currentVariants.push({
       sku: v.sku || '', color: v.color || '', size: v.size || '',
-      stock: 0, _row: 'v' + (++variantSeq)
+      barcode: v.barcode || '', stock: 0, _row: 'v' + (++variantSeq)
     });
     eklenen++;
   });
@@ -2894,7 +3075,7 @@ function collectVariantStocks() {
       do { sku = urunId + '-V' + (sayac++); } while (kullanilan.has(sku));
       kullanilan.add(sku);
     }
-    return { sku: sku, color: v.color, size: v.size || '', stock: v.stock };
+    return { sku: sku, color: v.color, size: v.size || '', barcode: v.barcode || '', stock: v.stock };
   });
 
   return { ok: true, variants: variants };
@@ -2932,7 +3113,7 @@ async function openBulkStockDialog() {
           badge: p.badge || null, featured: !!p.featured, desc: p.desc || '',
           specs: p.specs || [], images: p.images || [],
           colorImages: p.colorImages || {},
-          variants: p.variants.map(v => ({ sku: v.sku, color: v.color, size: v.size || '', stock: adet })),
+          variants: p.variants.map(v => ({ sku: v.sku, color: v.color, size: v.size || '', barcode: v.barcode || '', stock: adet })),
           sizeLabel: p.sizeLabel || null, active: true
         } })
       });

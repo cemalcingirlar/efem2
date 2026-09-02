@@ -37,6 +37,7 @@ process.env.ADMIN_EMAILS = 'patron@efemiletisim.com, destek@efemiletisim.com';
 const orders = new Map();
 const users  = new Map();
 let tokenIdentity = null;   // { uid, email, emailVerified } | null
+const mails = [];            // queueMail çağrıları burada toplanır
 
 orders.set('EFM260818AAAAAA', {
   id: 'EFM260818AAAAAA', date: '2026-08-18T10:00:00.000Z',
@@ -77,6 +78,18 @@ const fakeStore = {
     orders.set(id, next);
     return { applied: true, order: next };
   },
+  /* Gerçek store.setOrderTracking ile aynı sözleşme: `changed` yalnız
+     numara GERÇEKTEN değiştiğinde ve dolu olduğunda true döner. */
+  setOrderTracking: async (id, no, actor) => {
+    const cur = orders.get(id);
+    if (!cur) return { applied: false, reason: 'not_found', order: null, changed: false };
+    const eski = cur.trackingNumber || null;
+    const yeni = no || null;
+    if (eski === yeni) return { applied: false, reason: 'no_change', order: cur, changed: false };
+    const next = { ...cur, trackingNumber: yeni, shipping: { carrier: 'hepsijet', updatedBy: actor } };
+    orders.set(id, next);
+    return { applied: true, order: next, changed: Boolean(yeni) };
+  },
   syncUserOrderStatus: async (uid, orderId, status, label) => {
     const u = users.get(uid);
     if (!u) return { applied: false, reason: 'user_not_found' };
@@ -93,7 +106,7 @@ const fakeStore = {
     return { applied: true, order: orders.get(id) };
   },
   appendOrderToUserProfile: async () => {},
-  queueMail: async () => {},
+  queueMail: async (to, subject, html) => { mails.push({ to, subject, html }); },
   recordEventOnce: async () => true
 };
 
@@ -209,6 +222,78 @@ console.log('\n5) geç gelen ödeme bildirimi sevkiyatı geri almamalı');
     currency: 'TL', test_mode: '1'
   }, { source: 'test' });
   check('durum korundu', orders.get('EFM260818AAAAAA').status, before);
+}
+
+/* ─── Kargo takip numarası + HepsiJET bildirimi ─── */
+console.log('\nX) kargo takip numarası ve müşteri bildirimi');
+{
+  tokenIdentity = { uid: 'u1', email: 'patron@efemiletisim.com', emailVerified: true };
+  mails.length = 0;
+
+  // Numara yazılır ve müşteriye e-posta gider
+  const ilk = await call(adminOrders, {
+    method: 'POST',
+    body: { orderId: 'EFM260818AAAAAA', trackingNumber: '1234567890' }
+  });
+  check('takip numarası kaydedildi', ilk.res.statusCode, 200);
+  check('numara döndü', ilk.json.trackingNumber, '1234567890');
+  check('takip linki döndü', ilk.json.trackingUrl, 'https://hepsijet.com/coklu-gonderi-takibi/1234567890');
+  check('siparişe yazıldı', orders.get('EFM260818AAAAAA').trackingNumber, '1234567890');
+  check('taşıyıcı kaydedildi', orders.get('EFM260818AAAAAA').shipping.carrier, 'hepsijet');
+  check('müşteriye e-posta gitti', ilk.json.mailed, true);
+  check('e-posta doğru adrese', mails.length && mails[0].to, 'ali@example.com');
+  check('konuda sipariş no var', mails[0].subject.includes('EFM260818AAAAAA'), true);
+  check('gövdede takip linki var',
+    mails[0].html.includes('https://hepsijet.com/coklu-gonderi-takibi/1234567890'), true);
+
+  // Aynı numara tekrar: ikinci e-posta GİTMEMELİ
+  mails.length = 0;
+  const tekrar = await call(adminOrders, {
+    method: 'POST',
+    body: { orderId: 'EFM260818AAAAAA', trackingNumber: '1234567890' }
+  });
+  check('aynı numarada e-posta tekrarlanmaz', tekrar.json.mailed, false);
+  check('sebep bildirildi', tekrar.json.mailSkipReason, 'no_change');
+  check('ikinci e-posta yok', mails.length, 0);
+
+  // Numara değişirse yeni bildirim gider
+  mails.length = 0;
+  const degisti = await call(adminOrders, {
+    method: 'POST',
+    body: { orderId: 'EFM260818AAAAAA', trackingNumber: '9876543210' }
+  });
+  check('yeni numarada e-posta gider', degisti.json.mailed, true);
+  check('e-posta sayısı', mails.length, 1);
+
+  // Numara silinirse e-posta gitmez
+  mails.length = 0;
+  const silindi = await call(adminOrders, {
+    method: 'POST',
+    body: { orderId: 'EFM260818AAAAAA', trackingNumber: '' }
+  });
+  check('numara kaldırıldı', silindi.json.trackingNumber, null);
+  check('silmede e-posta gitmez', mails.length, 0);
+
+  // Geçersiz girdiler
+  const kotuNo = await call(adminOrders, {
+    method: 'POST', body: { orderId: 'EFM260818AAAAAA', trackingNumber: '<<<>>>' }
+  });
+  check('geçersiz karakterli numara reddedilir', kotuNo.res.statusCode, 400);
+
+  /* Biçimi geçerli (EFM + 6 hane + 6 hex) ama defterde olmayan numara */
+  const yokSiparis = await call(adminOrders, {
+    method: 'POST', body: { orderId: 'EFM260818CCCCCC', trackingNumber: '111' }
+  });
+  check('olmayan sipariş 404', yokSiparis.res.statusCode, 404);
+
+  // Yetkisiz kullanıcı takip numarası yazamaz
+  tokenIdentity = { uid: 'u9', email: 'rastgele@gmail.com', emailVerified: true };
+  const yabanci = await call(adminOrders, {
+    method: 'POST', body: { orderId: 'EFM260818BBBBBB', trackingNumber: '222' }
+  });
+  check('yetkisiz kullanıcı 403', yabanci.res.statusCode, 403);
+  check('sipariş değişmedi', orders.get('EFM260818BBBBBB').trackingNumber, undefined);
+  tokenIdentity = { uid: 'u1', email: 'patron@efemiletisim.com', emailVerified: true };
 }
 
 console.log(`\n${passed} test geçti, ${failed} test başarısız.\n`);

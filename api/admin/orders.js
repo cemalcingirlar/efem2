@@ -16,6 +16,7 @@
      users/{uid}.orders[] içindeki kopya → müşteri profil.html'de görsün    */
 
 const { methodNotAllowed, json, fail, parseBody, rateLimit, clientIp, logPaymentEvent } = require('../_lib/http');
+const { shipmentMailSubject, shipmentMailHtml, trackingUrl } = require('../_lib/shipping');
 const { requireAdmin } = require('../_lib/admin-auth');
 const { isValidOrderId, formatTry } = require('../_lib/orders');
 const store = require('../_lib/store');
@@ -49,6 +50,10 @@ function adminOrderView(order) {
     invoice:       order.invoice || null,
     delivery:      order.delivery || 'kargo',
     eftReceiptNo:  order.eftReceiptNo || null,
+    /* Kargo takip numarası panelde gösterilir ve kaydedildikten sonra
+       listede görünmelidir. */
+    trackingNumber: order.trackingNumber || null,
+    shipping:      order.shipping || null,
     items: (order.items || []).map(i => ({
       id: i.id, sku: i.sku || null, name: i.name,
       color: i.color || '', size: i.size || '',
@@ -89,6 +94,13 @@ module.exports = async (req, res) => {
   }
 
   if (req.method === 'GET') return listHandler(req, res);
+
+  /* Aynı uç iki işi görür: durum güncelleme ve kargo takip numarası.
+     Gövdede `trackingNumber` alanı varsa takip akışına gider. */
+  const body = parseBody(req);
+  if (Object.prototype.hasOwnProperty.call(body, 'trackingNumber')) {
+    return trackingHandler(req, res, auth.admin);
+  }
   return updateHandler(req, res, auth.admin);
 };
 
@@ -163,6 +175,77 @@ async function updateHandler(req, res, admin) {
     applied: result.applied,
     profileSynced: profileSync.applied,
     profileSyncReason: profileSync.reason || null
+  });
+}
+
+/* Kargo takip numarası kaydı + müşteriye HepsiJET takip e-postası.
+   POST { orderId, trackingNumber }  → { ok, trackingNumber, mailed }
+
+   Numara boş gönderilirse takip bilgisi kaldırılır (yanlış girilmiş olabilir)
+   ve e-posta gönderilmez. */
+async function trackingHandler(req, res, admin) {
+  const body    = parseBody(req);
+  const orderId = String(body.orderId || '');
+  const ham     = String(body.trackingNumber == null ? '' : body.trackingNumber).trim();
+
+  if (!isValidOrderId(orderId)) {
+    return fail(res, 400, 'invalid_order', 'Sipariş numarası geçersiz.');
+  }
+
+  /* Takip numarası taşıyıcının sistemine girilecek bir referans; serbest
+     metin olarak saklanır ama boşluk/kontrol karakteri temizlenir. */
+  const takipNo = ham.replace(/[^A-Za-z0-9-]/g, '').slice(0, 40);
+  if (ham && !takipNo) {
+    return fail(res, 400, 'invalid_tracking', 'Takip numarası yalnız harf, rakam ve tire içerebilir.');
+  }
+
+  let result;
+  try {
+    result = await store.setOrderTracking(orderId, takipNo || null, admin.email);
+  } catch (err) {
+    console.error('[admin] takip no yazılamadı (%s): %s', orderId, err.message);
+    return fail(res, 503, 'tracking_failed', 'Takip numarası kaydedilemedi.');
+  }
+
+  if (!result.applied && result.reason === 'not_found') {
+    return fail(res, 404, 'not_found', 'Sipariş bulunamadı.');
+  }
+
+  /* E-posta YALNIZ numara gerçekten değiştiğinde ve dolu olduğunda gider;
+     aynı numara tekrar kaydedilirse müşteriye ikinci bildirim gitmez.
+     Gönderim başarısız olursa yönetici işlemi bloklanmaz — numara zaten
+     yazıldı, sonuç `mailed: false` ile bildirilir. */
+  let mailed = false;
+  const order = result.order;
+  const alici = order && ((order.buyer && order.buyer.email) || order.customerEmail);
+
+  if (result.changed && alici) {
+    try {
+      await store.queueMail(alici, shipmentMailSubject(order), shipmentMailHtml(order));
+      mailed = true;
+    } catch (err) {
+      console.error('[admin] kargo e-postası kuyruğa yazılamadı (%s): %s', orderId, err.message);
+    }
+  }
+
+  logPaymentEvent({
+    event: 'admin_order_tracking',
+    orderId,
+    applied: result.applied,
+    changed: result.changed,
+    mailed,
+    carrier: 'hepsijet',
+    actor: admin.email
+  });
+
+  return json(res, 200, {
+    ok: true,
+    orderId,
+    trackingNumber: takipNo || null,
+    trackingUrl: takipNo ? trackingUrl(takipNo) : null,
+    applied: result.applied,
+    mailed,
+    mailSkipReason: result.changed ? (alici ? null : 'no_email') : 'no_change'
   });
 }
 

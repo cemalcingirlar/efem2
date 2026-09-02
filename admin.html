@@ -1305,6 +1305,8 @@ async function adminLogout() {
    INIT
 ════════════════════════════ */
 document.addEventListener('DOMContentLoaded', async () => {
+  // Panel pasif ürünleri de listelemeli (bkz. js/data.js → HIDE_INACTIVE)
+  setHideInactive(false);
   // Enter ile giriş
   document.getElementById('admin-password')?.addEventListener('keydown', e => {
     if (e.key === 'Enter') adminLogin();
@@ -1442,7 +1444,7 @@ function renderDashboard() {
           ${recentItems.slice(0,5).map(p => `
             <tr>
               <td><div class="product-name-cell">
-                <div class="name">${p.name}</div>
+                <div class="name">${p.name}${p.active === false ? ` <span class="badge badge-error" style="font-size:0.6875rem;vertical-align:middle">Satışta değil</span>` : ''}</div>
                 <div class="brand">${p.brand}</div>
               </div></td>
               <td>${p.categoryLabel}</td>
@@ -1546,7 +1548,7 @@ function renderProductsTable(products) {
       </td>
       <td>
         <div class="product-name-cell">
-          <div class="name">${p.name}</div>
+          <div class="name">${p.name}${p.active === false ? ` <span class="badge badge-error" style="font-size:0.6875rem;vertical-align:middle">Satışta değil</span>` : ''}</div>
           <div class="brand">${p.brand}</div>
         </div>
       </td>
@@ -1566,15 +1568,7 @@ function renderProductsTable(products) {
         </span>
       </td>
       <td onclick="event.stopPropagation()">
-        <div class="action-btns">
-          <button class="action-btn edit" onclick="openEditModal(${p.id})"><svg class="icon" viewBox="0 0 24 24"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3Z"/><path d="M13 6l3 3"/></svg> Düzenle</button>
-          ${source === 'admin' ? `
-            <button class="action-btn delete" onclick="askDelete(${p.id}, '${safeName}')"><svg class="icon" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><path d="M10 11v6M14 11v6"/></svg> Sil</button>
-          ` : ''}
-          ${source === 'edited' ? `
-            <button class="action-btn edit" onclick="askResetOverride(${p.id}, '${safeName}')" title="Orijinale sıfırla"><svg class="icon" viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14-5.2M20 12a8 8 0 0 1-14 5.2"/><path d="M18 3v4h-4"/><path d="M6 21v-4h4"/></svg> Sıfırla</button>
-          ` : ''}
-        </div>
+        <div class="action-btns">${productActionButtons(p, source)}</div>
       </td>
     </tr>`;
   }).join('');
@@ -1962,7 +1956,10 @@ async function refreshServerProducts() {
     const data = await adminFetch('/api/admin/products');
     serverProductIds = new Set((data.products || []).map(p => Number(p.id)));
     staticProductIds = new Set((data.staticIds || []).map(Number));
-    setServerProducts(data.products || []);
+    /* Panel pasif ürünleri de görmeli: gizli liste boş geçilir ve
+       vitrin filtresi kapatılır, aksi halde satıştan kaldırılan ürün
+       panelde de kaybolur ve geri alınamazdı. */
+    setServerProducts(data.products || [], []);
   } catch (err) {
     console.warn('[admin] sunucu ürün listesi alınamadı:', err.message);
     showToast('Ürün listesi sunucudan alınamadı: ' + err.message, 'error');
@@ -2139,6 +2136,99 @@ async function saveProduct() {
 ════════════════════════════ */
 let confirmTargetId     = null;
 let confirmTargetAction = null; // 'delete' | 'reset'
+
+/* ─── Satıştan kaldırma / satışa alma ───
+   Katalogdaki 54 ürün kod içinde (js/data.js → BASE_PRODUCTS) tanımlı;
+   Firestore kaydını silmek onları GERİ GETİRİR ("orijinale sıfırla"). Üretimi
+   biten ürünü gerçekten vitrinden çıkarmanın yolu `active: false` yazmaktır:
+
+   - /api/catalog pasif ürünü listeden çıkarır ve id'sini `hiddenIds` ile
+     bildirir; js/data.js statik kaydı da bu listeye bakarak eler.
+   - Ödeme kataloğu (api/_lib/catalog-store.js → getProduct) pasif ürünü
+     null döner, yani sepette kalmış olsa bile sipariş edilemez.
+
+   Panelden eklenen (statik katalogda olmayan) ürünlerde ayrıca gerçek silme
+   vardır — o kayıt Firestore'dan tamamen kalkar. */
+
+function isHiddenProduct(id) {
+  const p = PRODUCTS.find(x => x.id === id);
+  return Boolean(p && p.active === false);
+}
+
+/* Ürünün panelden kaydedilebilir tam kopyasını üretir; yalnız `active`
+   değiştirilerek geri yazılır, diğer alanlar olduğu gibi korunur. */
+function productSavePayload(p, active) {
+  return {
+    id:            p.id,
+    name:          p.name,
+    category:      p.category,
+    brand:         p.brand,
+    price:         p.price,
+    originalPrice: p.originalPrice || null,
+    stock:         p.stock,
+    badge:         p.badge || null,
+    featured:      !!p.featured,
+    desc:          p.desc || '',
+    specs:         p.specs || [],
+    images:        p.images || [],
+    colorImages:   p.colorImages || {},
+    variants:      (p.variants || []).map(v => ({
+                     sku: v.sku, color: v.color, size: v.size || '', stock: Number(v.stock) || 0
+                   })),
+    sizeLabel:     p.sizeLabel || null,
+    active:        active
+  };
+}
+
+async function setProductActive(id, active) {
+  const p = PRODUCTS.find(x => x.id === id);
+  if (!p) { showToast('Ürün bulunamadı.', 'error'); return; }
+
+  const soru = active
+    ? `"${p.name}" yeniden satışa alınsın mı?`
+    : `"${p.name}" satıştan kaldırılsın mı?\n\nÜrün vitrinde görünmez ve sipariş edilemez. İstediğiniz zaman geri alabilirsiniz.`;
+  if (!confirm(soru)) return;
+
+  try {
+    await adminFetch('/api/admin/products', {
+      method: 'POST',
+      body: JSON.stringify({ product: productSavePayload(p, active) })
+    });
+    showToast(active ? `"${p.name}" satışa alındı.` : `"${p.name}" satıştan kaldırıldı.`, active ? 'success' : 'warning');
+    await refreshServerProducts();
+  } catch (err) {
+    showToast('İşlem başarısız: ' + err.message, 'error');
+  }
+}
+
+function askDeactivate(id) { return setProductActive(id, false); }
+function askReactivate(id) { return setProductActive(id, true); }
+
+/* Ürün satırındaki aksiyon butonları.
+   - Panelden eklenen ürün  → Sil (kalıcı)
+   - Katalog ürünü          → Satıştan Kaldır / Satışa Al
+   - Düzenlenmiş katalog ürünü → ayrıca Sıfırla */
+function productActionButtons(p, source) {
+  const safeName = escapeAdminHtml(p.name).replace(/'/g, "\\'");
+  const gizli = p.active === false;
+  const parcalar = [
+    `<button class="action-btn edit" onclick="openEditModal(${p.id})"><svg class="icon" viewBox="0 0 24 24"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3Z"/><path d="M13 6l3 3"/></svg> Düzenle</button>`
+  ];
+
+  if (gizli) {
+    parcalar.push(`<button class="action-btn edit" onclick="askReactivate(${p.id})" title="Yeniden satışa al"><svg class="icon" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6"/></svg> Satışa Al</button>`);
+  } else {
+    parcalar.push(`<button class="action-btn delete" onclick="askDeactivate(${p.id})" title="Vitrinden kaldır (geri alınabilir)"><svg class="icon" viewBox="0 0 24 24"><path d="M3 3l18 18"/><path d="M10.6 5.1A9.6 9.6 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.1"/><path d="M6.2 6.2A17 17 0 0 0 2 12s3.5 7 10 7a9.7 9.7 0 0 0 4.2-.9"/></svg> Satıştan Kaldır</button>`);
+  }
+
+  if (source === 'admin') {
+    parcalar.push(`<button class="action-btn delete" onclick="askDelete(${p.id}, '${safeName}')" title="Kalıcı olarak sil"><svg class="icon" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/><path d="M10 11v6M14 11v6"/></svg> Sil</button>`);
+  } else if (source === 'edited') {
+    parcalar.push(`<button class="action-btn edit" onclick="askResetOverride(${p.id}, '${safeName}')" title="Orijinale sıfırla"><svg class="icon" viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14-5.2M20 12a8 8 0 0 1-14 5.2"/><path d="M18 3v4h-4"/><path d="M6 21v-4h4"/></svg> Sıfırla</button>`);
+  }
+
+  return parcalar.join('');
+}
 
 function askDelete(id, name) {
   confirmTargetId     = id;

@@ -3,6 +3,40 @@
 Bu dosya projede yapılan her ekleme, değişiklik ve kaldırmayı kayıt altına alır.
 En yeni kayıtlar en üstte.
 
+## 2026-09-02 (devam 2)
+
+### Ürünü satıştan kaldırma, hukuki sayfalardaki taslak notunun kaldırılması
+- Add: `admin.html` → ürün satırlarına **Satıştan Kaldır** / **Satışa Al** butonları.
+  Üretimi biten veya tedarik edilemeyen ürün vitrinden çıkarılabiliyor, istenince
+  geri alınabiliyor. Satıştan kaldırılan ürün panelde "Satışta değil" rozetiyle
+  listelenmeye devam ediyor.
+  **Neden silme değil:** katalogdaki 54 ürün kod içinde (`js/data.js` →
+  `BASE_PRODUCTS`) tanımlı. Firestore kaydını silmek onları geri getiriyordu —
+  mevcut "Sil" butonu bu yüzden yalnız panelden eklenen ürünlerde görünüyordu ve
+  katalog ürünü için silme seçeneği hiç yoktu. Doğru yol `active: false` yazmak.
+- Change: Panelden eklenen (statik katalogda olmayan) ürünlerde kalıcı **Sil**
+  butonu duruyor; katalog ürünlerinde "Satıştan Kaldır" + gerektiğinde "Sıfırla".
+  Aksiyon butonları tek yerden üretiliyor (`productActionButtons`).
+- Add: `api/catalog.js` → yanıta `hiddenIds` eklendi. İstemci statik listeyi bu
+  yanıtın üzerine bindirdiği için, pasif ürünü yanıttan çıkarmak yetmiyordu:
+  statik kayıt ayakta kalıyor ve ürün vitrinde görünmeye devam ediyordu.
+- Add: `js/data.js` → `HIDDEN_IDS` + `HIDE_INACTIVE` anahtarı. `buildProducts()`
+  vitrinde hem `hiddenIds` listesindeki hem `active === false` olan ürünleri eler;
+  `getProductById` de bulamadığı için doğrudan URL ile ürün sayfası açılamaz.
+  Admin paneli açılışta `setHideInactive(false)` çağırır — yönetici ürünü göremezse
+  yeniden satışa alamazdı.
+- Note: Ödeme tarafı zaten korumalıydı — `api/_lib/catalog-store.js` → `getProduct`
+  pasif ürün için `null` döner, yani sepette kalmış olsa bile sipariş edilemez.
+- Add: `scripts/test-stock.mjs` → satıştan kaldırma testleri (toplam 34 test):
+  `active` alanının şemada korunması, pasif ürünün ödeme kataloğundan düşmesi,
+  satıştan kaldırmanın stok bilgisini silmemesi.
+
+- Remove: Hukuki sayfalardaki "Bu belge taslak niteliğindedir, hukuki danışmanlık
+  alınması önerilir." uyarısı kaldırıldı (`mesafeli-satis-sozlesmesi.html`,
+  `on-bilgilendirme-formu.html`, `iptal-iade.html`, `gizlilik-kvkk.html`) —
+  metinler avukat onayından geçti. Kullanılmayan `.legal-draft-note` kuralı da
+  `css/pages.css`'ten çıkarıldı.
+
 ## 2026-09-02 (devam)
 
 ### Admin'de renk/beden düzenleme, sipariş sonrası stok düşme

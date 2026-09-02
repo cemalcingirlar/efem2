@@ -26,7 +26,7 @@ module.exports = async (req, res) => {
   if (req.method !== 'GET') return methodNotAllowed(res, ['GET']);
 
   if (!store.isStoreConfigured()) {
-    return send(res, { ok: true, source: 'static', count: 0, products: [] });
+    return send(res, { ok: true, source: 'static', count: 0, products: [], hiddenIds: [] });
   }
 
   let products;
@@ -35,11 +35,18 @@ module.exports = async (req, res) => {
   } catch (err) {
     /* Katalog okunamazsa site çökmemeli: istemci statik listeyle devam eder. */
     console.error('[catalog] ürünler okunamadı: %s', err.message);
-    return send(res, { ok: true, source: 'static', count: 0, products: [], degraded: true });
+    return send(res, { ok: true, source: 'static', count: 0, products: [], hiddenIds: [], degraded: true });
   }
 
   const active = products.filter(p => p.active !== false);
-  return send(res, { ok: true, source: 'firestore', count: active.length, products: active });
+
+  /* Satıştan kaldırılan ürünlerin id'leri ayrıca bildirilir.
+     Neden gerekli: istemci (js/data.js) statik BASE_PRODUCTS üzerine bu
+     listeyi biner. Pasif ürün yanıttan çıkarılınca statik kayıt ayakta
+     kalır ve ürün vitrinde görünmeye devam ederdi. */
+  const hiddenIds = products.filter(p => p.active === false).map(p => Number(p.id));
+
+  return send(res, { ok: true, source: 'firestore', count: active.length, products: active, hiddenIds });
 };
 
 function send(res, payload) {

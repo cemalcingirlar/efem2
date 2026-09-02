@@ -203,5 +203,35 @@ console.log('\n7) geçersiz girdi');
   check('negatif qty stoğu artırmaz', oku(6).variants[0].stock, 4);
 }
 
+console.log('\n8) satıştan kaldırma — ödeme kataloğu pasif ürünü vermez');
+{
+  const catalogStore = require('../api/_lib/catalog-store.js');
+
+  /* active:false olan Firestore kaydı statik kaydın ÜZERİNE biner; böylece
+     kod içinde tanımlı bir ürün de satıştan kaldırılabilir. */
+  const pasif = catalogStore.normalizeProduct({
+    id: 1, name: 'Kaldırılmış', priceKurus: 100000, active: false,
+    variants: [{ sku: 'A', color: 'Siyah' }]
+  });
+  check('normalizeProduct active:false taşır', pasif.active, false);
+
+  const aktif = catalogStore.normalizeProduct({ id: 2, name: 'Satılan', priceKurus: 100000, variants: [] });
+  check('active verilmezse ürün satıştadır', aktif.active, true);
+}
+
+console.log('\n9) ürün şeması active alanını korur');
+{
+  const temel = {
+    id: 1, name: 'Watch', category: 'saat', brand: 'Apple', price: 100,
+    images: ['assets/images/products/a.jpg'],
+    variants: [{ sku: 'A', color: 'Siyah', stock: 3 }]
+  };
+
+  check('active:false yazılabilir', normalizeAdminProduct({ ...temel, active: false }).product.active, false);
+  check('active:true geri alınabilir', normalizeAdminProduct({ ...temel, active: true }).product.active, true);
+  check('active verilmezse satışta', normalizeAdminProduct({ ...temel }).product.active, true);
+  check('satıştan kaldırmak stoğu silmez', normalizeAdminProduct({ ...temel, active: false }).product.variants[0].stock, 3);
+}
+
 console.log(`\n${passed} test geçti, ${failed} test başarısız.`);
 process.exit(failed ? 1 : 0);

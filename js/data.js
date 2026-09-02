@@ -1774,6 +1774,21 @@ const CATALOG_CACHE_TTL = 5 * 60 * 1000;
 
 let SERVER_PRODUCTS = readCatalogCache();
 
+/* Yönetici tarafından satıştan kaldırılan ürünlerin id'leri.
+   Sunucu bu ürünleri katalog yanıtından çıkarır; statik BASE_PRODUCTS'ta
+   kayıtları durduğu için ayrıca burada elenmeleri gerekir. */
+let HIDDEN_IDS = readHiddenCache();
+
+/* Vitrin pasif ürünü gizler; ADMIN PANELİ gizlemez — yönetici ürünü
+   göremezse yeniden satışa alamaz. Panel açılışta setHideInactive(false)
+   çağırır. */
+let HIDE_INACTIVE = true;
+
+function setHideInactive(deger) {
+  HIDE_INACTIVE = deger !== false;
+  refreshProducts();
+}
+
 function readCatalogCache() {
   try {
     const raw = JSON.parse(sessionStorage.getItem(CATALOG_CACHE_KEY));
@@ -1783,9 +1798,18 @@ function readCatalogCache() {
   } catch { return []; }
 }
 
+function readHiddenCache() {
+  try {
+    const raw = JSON.parse(sessionStorage.getItem(CATALOG_CACHE_KEY));
+    if (!raw || !Array.isArray(raw.hiddenIds)) return [];
+    if (Date.now() - raw.savedAt > CATALOG_CACHE_TTL) return [];
+    return raw.hiddenIds;
+  } catch { return []; }
+}
+
 function writeCatalogCache(products) {
   try {
-    sessionStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify({ savedAt: Date.now(), products }));
+    sessionStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify({ savedAt: Date.now(), products, hiddenIds: HIDDEN_IDS }));
   } catch { /* özel mod / kota: önbellek olmadan da çalışır */ }
 }
 
@@ -1798,6 +1822,12 @@ function buildProducts() {
     // Firestore kaydı eksiksizdir; statik kaydın üzerine tamamen biner.
     merged.set(id, { ...merged.get(id), ...p, id });
   }
+  // Satıştan kaldırılanlar vitrinde listeden tamamen çıkar
+  if (HIDE_INACTIVE) {
+    for (const id of HIDDEN_IDS) merged.delete(Number(id));
+    for (const [id, p] of merged) if (p && p.active === false) merged.delete(id);
+  }
+
   return [...merged.values()];
 }
 
@@ -1820,6 +1850,7 @@ const productsReady = (async function loadServerCatalog() {
     if (!data || !Array.isArray(data.products)) return PRODUCTS;
 
     SERVER_PRODUCTS = data.products;
+    HIDDEN_IDS      = Array.isArray(data.hiddenIds) ? data.hiddenIds.map(Number) : [];
     writeCatalogCache(data.products);
     refreshProducts();
     document.dispatchEvent(new CustomEvent('products:updated', { detail: { count: data.products.length } }));
@@ -1831,8 +1862,9 @@ const productsReady = (async function loadServerCatalog() {
 
 /* Admin paneli bir ürünü kaydettikten sonra listeyi elindeki taze veriyle
    günceller; ayrı bir tur atmaya gerek kalmaz. */
-function setServerProducts(list) {
+function setServerProducts(list, hidden) {
   SERVER_PRODUCTS = Array.isArray(list) ? list : [];
+  if (Array.isArray(hidden)) HIDDEN_IDS = hidden.map(Number);
   writeCatalogCache(SERVER_PRODUCTS);
   refreshProducts();
 }

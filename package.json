@@ -15,7 +15,8 @@
     "test:admin": "node scripts/test-admin-orders.mjs && node scripts/test-admin-catalog.mjs",
     "test:admin:orders": "node scripts/test-admin-orders.mjs",
     "test:admin:catalog": "node scripts/test-admin-catalog.mjs",
-    "test": "npm run test:payment && npm run test:admin"
+    "test": "npm run test:payment && npm run test:admin && npm run test:stock",
+    "test:stock": "node scripts/test-stock.mjs"
   },
   "dependencies": {
     "firebase-admin": "^12.7.0"

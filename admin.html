@@ -731,6 +731,9 @@
         <div class="admin-card">
           <div class="admin-card-header">
             <span class="admin-card-title"><svg class="icon icon-sm" viewBox="0 0 24 24" style="color:var(--warning)"><path d="M12 3l10 18H2L12 3Z"/><path d="M12 9v5"/><circle cx="12" cy="17.3" r="0.3" fill="currentColor" stroke="none"/></svg> Düşük Stok Uyarısı</span>
+            <button class="btn btn-ghost btn-sm" onclick="openBulkStockDialog()" title="Stoğu 0 görünen varyantlı ürünleri toplu doldur">
+              <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4-9-4Z"/><path d="M3 7v10l9 4 9-4V7"/></svg> Toplu Stok
+            </button>
           </div>
           <div id="low-stock-list">
             <div class="admin-empty-loading">
@@ -993,15 +996,41 @@
           <!-- Varyant stokları — renk/beden seçeneği olan üründe stok varyant
                başına tutulur (sunucu ürün stoğunu varyant toplamından türetir),
                bu yüzden üstteki "Stok Adedi" alanı o ürünlerde salt okunurdur. -->
+          <!-- Varyant editörü — renk / kordon bedeni / stok.
+               Stok VARYANT BAŞINA tutulur; sunucu ürün stoğunu varyant
+               stoklarının toplamından türetir (api/_lib/product-schema.js),
+               bu yüzden üstteki "Stok Adedi" varyantlı üründe salt okunurdur.
+               Her satırın `sku` değeri sepetin satır anahtarıdır: benzersiz
+               olmalı ve sipariş geçmişini bozmamak için değiştirilmemelidir. -->
           <div id="variant-stock-block" style="display:none;margin-bottom:16px">
             <div class="admin-section-label">
-              <svg class="icon" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4-9-4Z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg> Varyant Stokları
+              <svg class="icon" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4-9-4Z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg> Renk / Beden ve Stok
             </div>
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-              <input type="number" min="0" class="form-input" id="variant-bulk-stock" placeholder="10" style="max-width:120px">
-              <button type="button" class="btn btn-ghost btn-sm" onclick="applyBulkVariantStock()">Tümüne uygula</button>
+
+            <div id="variant-editor-head" style="display:grid;grid-template-columns:1fr 110px 110px 40px;gap:8px;padding:0 0 6px;font-size:0.75rem;color:var(--text-muted);font-weight:600">
+              <span>Renk</span><span>Beden</span><span>Stok</span><span></span>
             </div>
             <div id="variant-stock-list"></div>
+
+            <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:12px">
+              <button type="button" class="btn btn-ghost btn-sm" onclick="addVariantRow()">
+                <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Seçenek Ekle
+              </button>
+              <span style="flex:1"></span>
+              <input type="number" min="0" class="form-input" id="variant-bulk-stock" placeholder="10" style="max-width:110px">
+              <button type="button" class="btn btn-ghost btn-sm" onclick="applyBulkVariantStock()">Tümüne uygula</button>
+            </div>
+            <div id="variant-warning" style="display:none;font-size:0.8125rem;color:var(--error);margin-top:8px"></div>
+          </div>
+
+          <!-- Varyantsız ürüne ilk seçeneği eklemek için -->
+          <div id="variant-add-first" style="margin-bottom:16px">
+            <button type="button" class="btn btn-ghost btn-sm" onclick="addVariantRow()">
+              <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Renk / Beden seçeneği ekle
+            </button>
+            <div style="font-size:0.75rem;color:var(--text-muted);margin-top:6px">
+              Seçenek eklerseniz stok her seçenek için ayrı tutulur ve müşteri sepete eklerken seçim yapar.
+            </div>
           </div>
 
           <!-- Görünüm -->
@@ -1967,7 +1996,7 @@ function openEditModal(id) {
   document.getElementById('p-price').value            = product.price;
   document.getElementById('p-original-price').value   = product.originalPrice || '';
   document.getElementById('p-stock').value            = product.stock;
-  renderVariantStocks(product.variants || []);
+  renderVariantStocks(product.variants || [], product.stock);
   document.getElementById('p-badge').value            = product.badge || '';
   document.getElementById('p-badge-label').value      = product.badgeLabel || '';
   document.getElementById('p-rating').value           = product.rating;
@@ -2053,6 +2082,10 @@ async function saveProduct() {
     if (k && v) specs.push({ key: k, value: v });
   });
 
+  // Varyantlar: renk zorunlu, aynı renk+beden iki kez olamaz
+  const variantSonuc = collectVariantStocks();
+  if (!variantSonuc.ok) { showToast(variantSonuc.error, 'error'); return; }
+
   const existing = editMode && editProductId ? PRODUCTS.find(p => p.id === editProductId) : null;
 
   /* Yeni ürün numarası: mevcut en büyük id + 1 (100'ün altına inmez, kod
@@ -2071,7 +2104,7 @@ async function saveProduct() {
     images:        image ? [image] : (existing?.images || []),
     // Formda düzenlenmeyen alanlar korunur
     colorImages:   existing?.colorImages || {},
-    variants:      collectVariantStocks(existing?.variants || []),
+    variants:      variantSonuc.variants,
     sizeLabel:     existing?.sizeLabel || null,
     active:        true
   };
@@ -2458,81 +2491,209 @@ function updateBadgeLabel() {
 function updateCategoryLabel() { /* otomatik */ }
 
 /* ═════════════════════════════════════════
-   VARYANT STOKLARI
+   VARYANT EDİTÖRÜ (renk / beden / stok)
    ═════════════════════════════════════════
-   Sunucu (api/_lib/product-schema.js) varyantlı üründe ürün stoğunu
-   varyant stoklarının TOPLAMINDAN türetir; tekil "Stok Adedi" alanına
-   yazılan değeri yok sayar. Bu yüzden varyantlı üründe stok burada,
-   varyant başına düzenlenir. */
+   Stok VARYANT BAŞINA tutulur: sunucu (api/_lib/product-schema.js) varyantlı
+   üründe ürün stoğunu varyant stoklarının TOPLAMINDAN türetir ve tekil
+   "Stok Adedi" alanını yok sayar. Bu yüzden stok burada düzenlenir.
+
+   sku sepetin satır anahtarıdır (js/cart.js → cartLineKey) ve sipariş
+   kayıtlarında saklanır; mevcut bir satırın kodu değiştirilirse eski
+   siparişlerle bağ kopar. Bu yüzden kod alanı düzenlenemez, yalnız gösterilir. */
 
 let currentVariants = [];
+let variantSeq = 0;
 
-function renderVariantStocks(variants) {
-  currentVariants = Array.isArray(variants) ? variants.map(v => ({ ...v })) : [];
+function escapeAttr(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function variantRowHtml(v) {
+  const kod = v.sku || '';
+  return [
+    '<div class="variant-row" data-row="' + v._row + '"',
+    '     style="display:grid;grid-template-columns:1fr 110px 110px 40px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)">',
+    '  <div>',
+    '    <input type="text" class="form-input variant-color" placeholder="Siyah" value="' + escapeAttr(v.color) + '" oninput="onVariantEdited()">',
+    '    <div style="font-size:0.6875rem;color:var(--text-muted);margin-top:3px">Kod: ' + (escapeAttr(kod) || '(kaydedince atanır)') + '</div>',
+    '  </div>',
+    '  <input type="text" class="form-input variant-size" placeholder="S/M" value="' + escapeAttr(v.size) + '" oninput="onVariantEdited()">',
+    '  <input type="number" min="0" class="form-input variant-stock-input" data-sku="' + escapeAttr(kod) + '" value="' + Math.max(0, Number(v.stock) || 0) + '" oninput="onVariantEdited()">',
+    '  <button type="button" class="btn-icon" title="Bu seçeneği sil" onclick="removeVariantRow(\'' + v._row + '\')" style="color:var(--error)">',
+    '    <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/></svg>',
+    '  </button>',
+    '</div>'
+  ].join('');
+}
+
+/* Ürün açılırken varyantları çizer.
+   Firestore'daki eski kayıtlarda varyant stoğu olmayabilir (alan sonradan
+   eklendi); o durumda ürünün toplam stoğu satırlara eşit paylaştırılır ki
+   panel yanlışlıkla 0 göstermesin. */
+function renderVariantStocks(variants, urunStok) {
+  const gelen   = Array.isArray(variants) ? variants : [];
+  const stoksuz = gelen.length > 0 && gelen.every(v => !Number.isFinite(Number(v.stock)));
+  const pay     = stoksuz && Number(urunStok) > 0 ? Math.floor(Number(urunStok) / gelen.length) : 0;
+
+  currentVariants = gelen.map(v => ({
+    sku:   v.sku || '',
+    color: v.color || '',
+    size:  v.size || '',
+    stock: Number.isFinite(Number(v.stock)) ? Math.max(0, Number(v.stock)) : pay,
+    _row:  'v' + (++variantSeq)
+  }));
+
+  paintVariantEditor();
+}
+
+function paintVariantEditor() {
   const blok  = document.getElementById('variant-stock-block');
+  const ilk   = document.getElementById('variant-add-first');
   const liste = document.getElementById('variant-stock-list');
   const stok  = document.getElementById('p-stock');
   const hint  = document.getElementById('p-stock-hint');
   if (!blok || !liste || !stok) return;
 
-  if (!currentVariants.length) {
-    blok.style.display = 'none';
-    liste.innerHTML = '';
-    stok.readOnly = false;
-    stok.style.background = '';
-    if (hint) hint.style.display = 'none';
-    return;
-  }
+  const varMi = currentVariants.length > 0;
+  blok.style.display = varMi ? 'block' : 'none';
+  if (ilk) ilk.style.display = varMi ? 'none' : 'block';
 
-  blok.style.display = 'block';
-  stok.readOnly = true;
-  stok.style.background = 'var(--surface-2, rgba(0,0,0,.04))';
+  stok.readOnly = varMi;
+  stok.style.background = varMi ? 'var(--surface-2, rgba(0,0,0,.04))' : '';
   if (hint) {
-    hint.style.display = 'block';
-    hint.textContent = 'Varyant stoklarının toplamı — aşağıdan düzenleyin.';
+    hint.style.display = varMi ? 'block' : 'none';
+    hint.textContent = 'Seçeneklerin stok toplamı — aşağıdan düzenleyin.';
   }
 
-  liste.innerHTML = currentVariants.map((v, i) => {
-    const etiket = [v.color, v.size].filter(Boolean).join(' · ') || v.sku;
-    return `
-      <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border)">
-        <div style="flex:1;min-width:0">
-          <div style="font-weight:600;font-size:0.875rem">${etiket}</div>
-          <div style="font-size:0.75rem;color:var(--text-muted)">Kod: ${v.sku}</div>
-        </div>
-        <input type="number" min="0" class="form-input variant-stock-input" data-sku="${v.sku}"
-               value="${Number(v.stock) || 0}" style="max-width:110px" oninput="syncVariantStockTotal()">
-      </div>`;
-  }).join('');
-
-  syncVariantStockTotal();
+  liste.innerHTML = currentVariants.map(variantRowHtml).join('');
+  onVariantEdited();
 }
 
-/* Varyant kutularının toplamını üstteki Stok Adedi alanına yazar. */
-function syncVariantStockTotal() {
-  const girisler = document.querySelectorAll('.variant-stock-input');
-  if (!girisler.length) return;
-  let toplam = 0;
-  girisler.forEach(el => { toplam += Math.max(0, parseInt(el.value) || 0); });
-  document.getElementById('p-stock').value = toplam;
+/* Satırlardaki değerleri currentVariants'a yazar, toplamı ve uyarıyı tazeler. */
+function onVariantEdited() {
+  document.querySelectorAll('.variant-row').forEach(row => {
+    const v = currentVariants.find(x => x._row === row.dataset.row);
+    if (!v) return;
+    v.color = row.querySelector('.variant-color').value.trim();
+    v.size  = row.querySelector('.variant-size').value.trim();
+    v.stock = Math.max(0, parseInt(row.querySelector('.variant-stock-input').value) || 0);
+  });
+
+  if (currentVariants.length) {
+    document.getElementById('p-stock').value = currentVariants.reduce((s, v) => s + v.stock, 0);
+  }
+
+  /* Aynı renk+beden ikilisi iki kez olamaz: sepet satırları bu ikiliyle
+     ayrıştığı için müşteri hangisini aldığını seçemezdi. */
+  const uyari = document.getElementById('variant-warning');
+  if (!uyari) return;
+  const anahtar  = currentVariants.map(v => (v.color + '|' + v.size).toLowerCase());
+  const mesajlar = [];
+  if (currentVariants.some(v => !v.color)) mesajlar.push('Renk alanı boş bırakılamaz.');
+  if (anahtar.some((a, i) => anahtar.indexOf(a) !== i)) mesajlar.push('Aynı renk/beden birden fazla kez girilmiş.');
+  uyari.textContent = mesajlar.join(' ');
+  uyari.style.display = mesajlar.length ? 'block' : 'none';
 }
 
-/* "Tümüne uygula": tek değeri bütün varyantlara yazar. */
+function addVariantRow() {
+  currentVariants.push({ sku: '', color: '', size: '', stock: 0, _row: 'v' + (++variantSeq) });
+  paintVariantEditor();
+}
+
+function removeVariantRow(rowId) {
+  currentVariants = currentVariants.filter(v => v._row !== rowId);
+  paintVariantEditor();
+}
+
+/* "Tümüne uygula": tek değeri bütün seçeneklere yazar. */
 function applyBulkVariantStock() {
   const kutu = document.getElementById('variant-bulk-stock');
-  const deger = Math.max(0, parseInt(kutu.value) || 0);
   if (!kutu.value.trim()) { showToast('Önce bir stok adedi girin.', 'warning'); return; }
+  const deger = Math.max(0, parseInt(kutu.value) || 0);
   document.querySelectorAll('.variant-stock-input').forEach(el => { el.value = deger; });
-  syncVariantStockTotal();
-  showToast(`Tüm varyantlara ${deger} adet uygulandı.`, 'success');
+  onVariantEdited();
+  showToast('Tüm seçeneklere ' + deger + ' adet uygulandı.', 'success');
 }
 
-/* Kaydederken varyantları formdaki stoklarla birlikte döndürür. */
-function collectVariantStocks(fallback) {
-  const girisler = [...document.querySelectorAll('.variant-stock-input')];
-  if (!girisler.length) return fallback;
-  const stoklar = new Map(girisler.map(el => [el.dataset.sku, Math.max(0, parseInt(el.value) || 0)]));
-  return currentVariants.map(v => ({ ...v, stock: stoklar.has(v.sku) ? stoklar.get(v.sku) : (Number(v.stock) || 0) }));
+/* Kaydetmeden önce doğrular ve kaydedilecek varyant dizisini üretir.
+   Dönüş: { ok: true, variants } | { ok: false, error } */
+function collectVariantStocks() {
+  onVariantEdited();
+  if (!currentVariants.length) return { ok: true, variants: [] };
+
+  if (currentVariants.some(v => !v.color)) {
+    return { ok: false, error: 'Her seçenekte renk zorunludur.' };
+  }
+  const anahtar = currentVariants.map(v => (v.color + '|' + v.size).toLowerCase());
+  if (anahtar.some((a, i) => anahtar.indexOf(a) !== i)) {
+    return { ok: false, error: 'Aynı renk/beden iki kez girilemez.' };
+  }
+
+  /* Yeni satıra kod üretilir; mevcut satırların kodu ASLA değişmez çünkü
+     sipariş kayıtları o kodu saklıyor. */
+  const kullanilan = new Set(currentVariants.map(v => v.sku).filter(Boolean));
+  const urunId = (editMode && editProductId) ? editProductId : 'Y';
+  let sayac = 1;
+
+  const variants = currentVariants.map(v => {
+    let sku = v.sku;
+    if (!sku) {
+      do { sku = urunId + '-V' + (sayac++); } while (kullanilan.has(sku));
+      kullanilan.add(sku);
+    }
+    return { sku: sku, color: v.color, size: v.size || '', stock: v.stock };
+  });
+
+  return { ok: true, variants: variants };
+}
+
+/* ─── Toplu stok doldurma ───
+   Varyant stoğu, ürün şemasına stok alanı eklenmeden önce kaydedilen
+   Firestore kayıtlarında yok; o ürünler panelde/vitrinde "Tükendi"
+   görünür. Bu araç seçilen ürünlerin TÜM varyantlarına aynı adedi yazar.
+   Kaydetme normal /api/admin/products ucundan geçer — ayrı bir yazma
+   yolu açılmaz, doğrulama aynı kalır. */
+async function openBulkStockDialog() {
+  const bos = PRODUCTS.filter(p => Array.isArray(p.variants) && p.variants.length && !p.stock);
+  const hedef = bos.length ? bos : PRODUCTS.filter(p => Array.isArray(p.variants) && p.variants.length);
+
+  const mesaj = bos.length
+    ? `Stoğu 0 görünen ${bos.length} varyantlı ürün var. Her seçeneğe kaç adet yazılsın?`
+    : `Stoğu 0 olan ürün yok. Yine de ${hedef.length} varyantlı ürünün TÜM seçeneklerine adet yazmak isterseniz sayı girin.`;
+
+  const girdi = prompt(mesaj, '10');
+  if (girdi === null) return;
+  const adet = Math.max(0, parseInt(girdi) || 0);
+  if (!adet) { showToast('Geçerli bir adet girin.', 'error'); return; }
+  if (!confirm(`${hedef.length} ürünün her seçeneğine ${adet} adet yazılacak. Onaylıyor musunuz?`)) return;
+
+  let basarili = 0, hatali = 0;
+  for (const p of hedef) {
+    try {
+      await adminFetch('/api/admin/products', {
+        method: 'POST',
+        body: JSON.stringify({ product: {
+          id: p.id, name: p.name, category: p.category, brand: p.brand,
+          price: p.price, originalPrice: p.originalPrice || null,
+          stock: adet * p.variants.length,
+          badge: p.badge || null, featured: !!p.featured, desc: p.desc || '',
+          specs: p.specs || [], images: p.images || [],
+          colorImages: p.colorImages || {},
+          variants: p.variants.map(v => ({ sku: v.sku, color: v.color, size: v.size || '', stock: adet })),
+          sizeLabel: p.sizeLabel || null, active: true
+        } })
+      });
+      basarili++;
+    } catch (err) {
+      hatali++;
+      console.error('[toplu stok] %s: %s', p.id, err.message);
+    }
+  }
+
+  showToast(`${basarili} ürün güncellendi${hatali ? `, ${hatali} üründe hata` : ''}.`, hatali ? 'warning' : 'success');
+  await refreshServerProducts();
 }
 
 function stockBadge(stock) {

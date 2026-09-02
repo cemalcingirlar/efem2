@@ -219,6 +219,90 @@ async function saveProduct(product) {
   }, { merge: true });
 }
 
+/* ─── Sipariş ödendiğinde stok düş ───
+   lines: [{ id, sku, qty }] — sipariş kalemleri.
+
+   Stok varyant başına tutulur; ürünün `stock` alanı varyant stoklarının
+   toplamıdır (api/_lib/product-schema.js aynı kuralı uygular). Bu yüzden
+   burada önce ilgili varyant düşülür, sonra ürün toplamı yeniden hesaplanır.
+
+   Transaction kullanılır: aynı ürüne aynı anda gelen iki sipariş stoğu iki
+   kez düşürmelidir, okuma-yazma arası kaybolmamalıdır.
+
+   Stok asla negatife inmez. Yetersiz stok siparişi GERİ ÇEVİRMEZ — ödeme
+   çoktan alınmıştır; eksik kalan miktar `shortages` ile raporlanır ki
+   işletme durumu görebilsin.
+
+   Dönüş: { applied, updated: [...], shortages: [...] }  */
+async function decrementStock(lines) {
+  const store = getStore();
+  if (!store) return { applied: false, updated: [], shortages: [] };
+
+  const gecerli = (Array.isArray(lines) ? lines : [])
+    .map(l => ({ id: Number(l && l.id), sku: l && l.sku ? String(l.sku) : null, qty: Math.max(0, Math.round(Number(l && l.qty) || 0)) }))
+    .filter(l => Number.isInteger(l.id) && l.qty > 0);
+  if (!gecerli.length) return { applied: false, updated: [], shortages: [] };
+
+  // Aynı ürünün birden çok satırı tek dokümanda toplanır
+  const urunBazli = new Map();
+  for (const l of gecerli) {
+    if (!urunBazli.has(l.id)) urunBazli.set(l.id, []);
+    urunBazli.get(l.id).push(l);
+  }
+
+  const updated = [];
+  const shortages = [];
+
+  await store.db.runTransaction(async (tx) => {
+    updated.length = 0;
+    shortages.length = 0;
+
+    const refs  = [...urunBazli.keys()].map(id => store.db.collection('products').doc(String(id)));
+    const snaps = await Promise.all(refs.map(r => tx.get(r)));   // tüm okumalar yazımlardan önce
+
+    const yazilacak = [];
+
+    snaps.forEach((snap, i) => {
+      const id = [...urunBazli.keys()][i];
+      if (!snap.exists) { shortages.push({ id, reason: 'product_not_found' }); return; }
+
+      const urun = snap.data();
+      const variants = Array.isArray(urun.variants) ? urun.variants.map(v => ({ ...v })) : [];
+
+      for (const line of urunBazli.get(id)) {
+        if (variants.length) {
+          const v = line.sku ? variants.find(x => String(x.sku) === line.sku) : variants[0];
+          if (!v) { shortages.push({ id, sku: line.sku, reason: 'variant_not_found' }); continue; }
+          const mevcut = Math.max(0, Number(v.stock) || 0);
+          const dusen  = Math.min(mevcut, line.qty);
+          v.stock = mevcut - dusen;
+          if (dusen < line.qty) shortages.push({ id, sku: line.sku, istenen: line.qty, dusen, reason: 'insufficient_stock' });
+        } else {
+          const mevcut = Math.max(0, Number(urun.stock) || 0);
+          const dusen  = Math.min(mevcut, line.qty);
+          urun.stock = mevcut - dusen;
+          if (dusen < line.qty) shortages.push({ id, istenen: line.qty, dusen, reason: 'insufficient_stock' });
+        }
+      }
+
+      const yeniStok = variants.length
+        ? variants.reduce((s, v) => s + Math.max(0, Number(v.stock) || 0), 0)
+        : Math.max(0, Number(urun.stock) || 0);
+
+      yazilacak.push({ ref: refs[i], variants, stock: yeniStok, hasVariants: variants.length > 0 });
+      updated.push({ id, stock: yeniStok });
+    });
+
+    for (const y of yazilacak) {
+      const patch = { stock: y.stock, updatedAt: store.FieldValue.serverTimestamp() };
+      if (y.hasVariants) patch.variants = y.variants;
+      tx.update(y.ref, patch);
+    }
+  });
+
+  return { applied: updated.length > 0, updated, shortages };
+}
+
 async function deleteProduct(id) {
   const store = getStore();
   if (!store) throw new Error('store_not_configured');
@@ -315,6 +399,7 @@ async function queueMail(to, subject, html) {
 module.exports = {
   getStore,
   isStoreConfigured,
+  decrementStock,
   verifyIdToken,
   createOrder,
   getOrder,

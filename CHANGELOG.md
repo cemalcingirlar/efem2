@@ -3,6 +3,44 @@
 Bu dosya projede yapılan her ekleme, değişiklik ve kaldırmayı kayıt altına alır.
 En yeni kayıtlar en üstte.
 
+## 2026-09-02 (devam)
+
+### Admin'de renk/beden düzenleme, sipariş sonrası stok düşme
+- Add: `admin.html` → ürün modalinde **Renk / Beden ve Stok** editörü. Her seçenek için
+  renk, beden ve stok alanı var; satır eklenip silinebiliyor, "Tümüne uygula" ile tek
+  değer bütün seçeneklere yazılıyor. Daha önce panelde renk/beden hiç görünmüyordu,
+  yalnızca tek bir "Stok Adedi" kutusu vardı. Varyantsız üründe "Renk / Beden seçeneği
+  ekle" butonu çıkıyor; seçenek eklenince stok otomatik olarak varyant başına geçiyor.
+- Add: Doğrulama — renk zorunlu, aynı renk+beden ikilisi iki kez girilemez (sepet
+  satırları bu ikiliyle ayrıştığı için müşteri hangisini aldığını seçemezdi).
+- Change: Varyant `sku`'su sepet satır anahtarı ve sipariş kaydında saklandığı için
+  mevcut satırların kodu düzenlenemiyor, yalnız gösteriliyor; yeni satıra
+  `<ürünId>-V<n>` biçiminde kod üretiliyor.
+- Change: Eski Firestore kayıtlarında varyant stoğu yok (alan sonradan eklendi). Panel
+  böyle bir ürünü açarken ürünün toplam stoğunu satırlara eşit paylaştırıyor, yanlışlıkla
+  0 göstermiyor.
+- Add: `admin.html` → **Toplu Stok** butonu (Düşük Stok Uyarısı kartında). Stoğu 0 görünen
+  varyantlı ürünlerin tüm seçeneklerine tek seferde adet yazar. Kayıt normal
+  `/api/admin/products` ucundan geçer, ayrı bir yazma yolu açılmaz.
+
+- Add: `api/_lib/store.js` → `decrementStock(lines)`. Sipariş ödendiğinde satırdaki
+  `sku`'ya karşılık gelen varyantın stoğunu düşürür, ürün toplamını yeniden hesaplar.
+  Firestore transaction içinde çalışır (tüm okumalar yazımlardan önce), böylece aynı
+  ürüne eşzamanlı gelen iki sipariş stoğu iki kez düşürür.
+- Add: `api/_lib/settle.js` → ödeme `paid` olduğunda `decrementStock` çağrılıyor
+  (`runPaidSideEffects`). Stok düşme ayrı `try` içinde: e-posta kuyruğu hata verse bile
+  stok düşer, stok düşmede hata olsa bile sipariş bildirimleri gider.
+- Change: Stok asla negatife inmez. Yetersiz stok siparişi İPTAL ETMEZ — ödeme çoktan
+  alınmıştır; eksik miktar `shortages` ile `stock_decrement` olayına ve sunucu loguna
+  yazılır ki işletme durumu görebilsin.
+
+- Add: `scripts/test-stock.mjs` (`npm run test:stock`, `npm test` içine alındı) — 28 test.
+  Firestore bellekte taklit edilir; `decrementStock` gerçek koduyla, gerçek transaction
+  sırasıyla çalıştırılır. Kapsam: doğru varyantın düşmesi, toplamın yeniden hesaplanması,
+  negatife inmeme + eksiklik raporu, aynı üründen çok satır, varyantsız ürün, bilinmeyen
+  sku / olmayan ürün, geçersiz girdi. "Varyantlarda stok yoksa ürün stoğu 0 olur" durumu
+  regresyon testi olarak duruyor.
+
 ## 2026-09-02
 
 ### Fix: admin panelinden stok değişikliği kaydedilmiyordu

@@ -163,6 +163,28 @@ async function settleNotification(payload, { source = 'notification' } = {}) {
 }
 
 async function runPaidSideEffects(order) {
+  /* Stok düşme ayrı try içinde: e-posta kuyruğu hata verse bile stok
+     düşmeli, stok düşmede hata olsa bile sipariş bildirimleri gitmeli. */
+  try {
+    const lines  = (order.items || []).map(i => ({ id: i.id, sku: i.sku || null, qty: i.qty }));
+    const sonuc  = await store.decrementStock(lines);
+    if (sonuc.applied) {
+      logPaymentEvent({
+        event: 'stock_decrement',
+        orderId: order.id,
+        updated: sonuc.updated,
+        shortages: sonuc.shortages
+      });
+    }
+    /* Stok yetmediyse sipariş iptal EDİLMEZ (ödeme alındı), ama işletmenin
+       görmesi için uyarı düşülür. */
+    if (sonuc.shortages.length) {
+      console.warn('[settle] stok yetersiz (%s): %s', order.id, JSON.stringify(sonuc.shortages));
+    }
+  } catch (err) {
+    console.error('[settle] stok düşülemedi (%s): %s', order.id, err.message);
+  }
+
   try {
     if (order.userId) {
       await store.appendOrderToUserProfile(order.userId, legacyOrderSummary(order));

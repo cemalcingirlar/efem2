@@ -3,6 +3,33 @@
 Bu dosya projede yapılan her ekleme, değişiklik ve kaldırmayı kayıt altına alır.
 En yeni kayıtlar en üstte.
 
+## 2026-09-02
+
+### Fix: admin panelinden stok değişikliği kaydedilmiyordu
+- Fix: Varyantlı bir üründe yönetici stoğu değiştirdiğinde değer kaydedilmiyor, ürün
+  "Tükendi" görünüyordu. Sebep: `api/_lib/product-schema.js` varyantlı üründe ürün
+  stoğunu **varyant stoklarının toplamından** türetiyor (tekil "Stok Adedi" alanını yok
+  sayıyor), ama `js/data.js` içindeki 114 varyantın hiçbirinde `stock` alanı yoktu →
+  her varyant 0 → toplam 0 → Firestore'a `stock: 0` yazılıyor, `/api/catalog` bunu
+  statik verinin üzerine bindirince ürün stoksuz görünüyordu.
+- Fix: `js/data.js` → 114 varyantın tamamına `stock: 10` eklendi; ürün `stock` alanı
+  varyant toplamına eşitlendi (sunucunun kuralıyla aynı).
+- Add: `admin.html` → **Varyant Stokları** bölümü. Varyantlı üründe her renk/beden için
+  ayrı stok kutusu var, "Tümüne uygula" ile hepsi tek seferde yazılabiliyor; üstteki
+  "Stok Adedi" alanı bu ürünlerde toplamı gösteren salt okunur alana dönüşüyor
+  (`renderVariantStocks`, `syncVariantStockTotal`, `applyBulkVariantStock`,
+  `collectVariantStocks`). Kaydetme artık varyantları formdaki stoklarla gönderiyor —
+  önce `existing.variants` olduğu gibi geri yollanıyordu, bu yüzden stok hiç değişmiyordu.
+- Add: `js/data.js` → `variantStock(product, variant)`. Stok varyant başına tutulduğu
+  için sepet sınırı ve ürün sayfasındaki "Stokta Var" bilgisi artık ürün toplamını değil,
+  **seçilen varyantın** stoğunu okuyor.
+- Change: `urun-detay.html` → renk/beden değişince stok rozeti, "Stok: N adet" satırı ve
+  adet sınırı güncelleniyor; stoğu biten seçenekte "Bu seçenek stokta yok" yazıp
+  Sepete Ekle butonu pasifleşiyor (`refreshStockUI`, `currentVariantStock`).
+- Change: `js/cart.js` → `addToCart` seçilen varyantın stoğunu sınır alıyor, stok 0 ise
+  ekleme reddediliyor. `syncCartWithCatalog` sepetteki satırın stoğunu da tazeliyor;
+  yönetici stoğu düşürdüyse adet aşağı çekiliyor, sıfırlandıysa satır sepetten düşüyor.
+
 ## 2026-08-18 (kurulum teşhisi)
 
 ### `/api/payment/config` artık yapılandırma hatasının SEBEBİNİ söylüyor

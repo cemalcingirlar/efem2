@@ -323,7 +323,7 @@ whenCatalogReady(() => {
 function renderProductDetail(p) {
   const discount = discountPercent(p.originalPrice, p.price);
   const stockHTML = p.stock > 0
-    ? `<span class="stock-status"><span class="stock-dot"></span> Stokta Var (${p.stock} adet)</span>`
+    ? `<span class="stock-status" id="detail-stock-status"><span class="stock-dot"></span> Stokta Var (${variantStock(p, defaultVariant(p))} adet)</span>`
     : `<span class="stock-status"><span class="stock-dot out"></span> Stokta Yok</span>
        <div class="stock-alert-box" id="stock-alert-box">
          <div class="stock-alert-text"><svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 3l10 18H2L12 3Z"/><path d="M12 9v5"/><circle cx="12" cy="17.3" r="0.3" fill="currentColor" stroke="none"/></svg> Stoğa girince e-posta ile haber verelim.</div>
@@ -436,7 +436,7 @@ function renderProductDetail(p) {
               <span class="qty-num" id="detail-qty">1</span>
               <button class="qty-btn" onclick="changeDetailQty(1)">+</button>
             </div>
-            <span style="font-size:0.8125rem;color:var(--text-muted)">Stok: ${p.stock} adet</span>
+            <span style="font-size:0.8125rem;color:var(--text-muted)" id="detail-stock-qty">Stok: ${variantStock(p, defaultVariant(p))} adet</span>
           </div>
           <div class="product-action-btns">
             <button class="btn btn-primary btn-lg" onclick="addSelectedToCart(this)" ${p.stock === 0 ? 'disabled' : ''}>
@@ -558,6 +558,37 @@ function buildVariantPicker(p) {
     </div>`;
 }
 
+/* Seçili renk/bedene karşılık gelen varyantın stoğu. Stok varyant başına
+   tutulduğu için "Stokta Var" bilgisi renk değiştikçe güncellenmelidir. */
+function currentVariantStock() {
+  const v = findVariant(currentProduct, selectedColor, selectedSize);
+  return variantStock(currentProduct, v);
+}
+
+/* Renk/beden değişince stok metnini, adet sınırını ve butonu tazeler. */
+function refreshStockUI() {
+  const stok = currentVariantStock();
+
+  const rozet = document.getElementById('detail-stock-status');
+  if (rozet) {
+    rozet.innerHTML = stok > 0
+      ? `<span class="stock-dot"></span> Stokta Var (${stok} adet)`
+      : `<span class="stock-dot out"></span> Bu seçenek stokta yok`;
+  }
+
+  const satir = document.getElementById('detail-stock-qty');
+  if (satir) satir.textContent = `Stok: ${stok} adet`;
+
+  if (selectedQty > stok) {
+    selectedQty = Math.max(1, stok);
+    const el = document.getElementById('detail-qty');
+    if (el) el.textContent = selectedQty;
+  }
+
+  const btn = document.querySelector('.product-action-btns .btn-primary');
+  if (btn) btn.disabled = stok <= 0;
+}
+
 function pickColor(color) {
   selectedColor = color;
   document.querySelectorAll('#color-options .variant-chip').forEach(b =>
@@ -610,6 +641,8 @@ function syncSizeOptions() {
     else if (eksik.length)  not.textContent = `${selectedColor} rengi yalnızca ${uygun.join(', ')} bedeninde mevcut.`;
     else                    not.textContent = '';
   }
+
+  refreshStockUI();
 }
 
 /* Sepete ekle: seçilen renk/bedene karşılık gelen varyantı bulur */
@@ -653,7 +686,8 @@ function initGallerySwipe(p) {
 }
 
 function changeDetailQty(delta) {
-  selectedQty = Math.max(1, Math.min(selectedQty + delta, currentProduct.stock));
+  const sinir = currentVariantStock();
+  selectedQty = Math.max(1, Math.min(selectedQty + delta, Math.max(1, sinir)));
   document.getElementById('detail-qty').textContent = selectedQty;
 }
 

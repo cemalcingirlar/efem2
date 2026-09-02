@@ -99,11 +99,11 @@ const BASE_PRODUCTS = [
   {
     id: 1,
     variants: [
-      { sku: "1422880", color: "Jet Siyah", size: "S/M" },
-      { sku: "1422884", color: "Roze Altın", size: "S/M" },
-      { sku: "1422885", color: "Roze Altın", size: "M/L" },
-      { sku: "1422882", color: "Uzay Grisi", size: "S/M" },
-      { sku: "1422887", color: "Gümüş", size: "M/L" }
+      { sku: "1422880", color: "Jet Siyah", size: "S/M", stock: 10 },
+      { sku: "1422884", color: "Roze Altın", size: "S/M", stock: 10 },
+      { sku: "1422885", color: "Roze Altın", size: "M/L", stock: 10 },
+      { sku: "1422882", color: "Uzay Grisi", size: "S/M", stock: 10 },
+      { sku: "1422887", color: "Gümüş", size: "M/L", stock: 10 }
     ],
     sizeLabel: "Kordon Bedeni",
     name: "Apple Watch Series 11 42mm GPS",
@@ -115,7 +115,7 @@ const BASE_PRODUCTS = [
     reviewCount: 0,
     badge: "bestseller",
     badgeLabel: "Çok Satan",
-    stock: 10,
+    stock: 50,
     images: ["assets/images/products/apple-watch-11-42-1.png", "assets/images/products/apple-watch-11-42-2.jpg", "assets/images/products/apple-watch-11-42-3.jpg"],
     /* Renk seçilince galeride o rengin görseli gösterilir (Apple resmi görselleri). */
     colorImages: {
@@ -140,10 +140,10 @@ const BASE_PRODUCTS = [
   {
     id: 2,
     variants: [
-      { sku: "1422888", color: "Jet Siyah", size: "S/M" },
-      { sku: "1422889", color: "Jet Siyah", size: "M/L" },
-      { sku: "1422893", color: "Roze Altın", size: "M/L" },
-      { sku: "1422891", color: "Uzay Grisi", size: "M/L" }
+      { sku: "1422888", color: "Jet Siyah", size: "S/M", stock: 10 },
+      { sku: "1422889", color: "Jet Siyah", size: "M/L", stock: 10 },
+      { sku: "1422893", color: "Roze Altın", size: "M/L", stock: 10 },
+      { sku: "1422891", color: "Uzay Grisi", size: "M/L", stock: 10 }
     ],
     sizeLabel: "Kordon Bedeni",
     name: "Apple Watch Series 11 46mm GPS",
@@ -155,7 +155,7 @@ const BASE_PRODUCTS = [
     reviewCount: 0,
     badge: "new",
     badgeLabel: "Yeni",
-    stock: 10,
+    stock: 40,
     images: ["assets/images/products/apple-watch-11-46-1.png", "assets/images/products/apple-watch-11-46-2.jpg", "assets/images/products/apple-watch-11-46-3.jpg"],
     /* Renk seçilince galeride o rengin görseli gösterilir (Apple resmi görselleri). */
     colorImages: {
@@ -180,10 +180,10 @@ const BASE_PRODUCTS = [
   {
     id: 3,
     variants: [
-      { sku: "1422860", color: "Gece Yarısı", size: "S/M" },
-      { sku: "1422861", color: "Gece Yarısı", size: "M/L" },
-      { sku: "1422858", color: "Yıldız Işığı", size: "S/M" },
-      { sku: "1422859", color: "Yıldız Işığı", size: "M/L" }
+      { sku: "1422860", color: "Gece Yarısı", size: "S/M", stock: 10 },
+      { sku: "1422861", color: "Gece Yarısı", size: "M/L", stock: 10 },
+      { sku: "1422858", color: "Yıldız Işığı", size: "S/M", stock: 10 },
+      { sku: "1422859", color: "Yıldız Işığı", size: "M/L", stock: 10 }
     ],
     sizeLabel: "Kordon Bedeni",
     name: "Apple Watch SE 3 40mm GPS",
@@ -195,7 +195,7 @@ const BASE_PRODUCTS = [
     reviewCount: 0,
     badge: "bestseller",
     badgeLabel: "Çok Satan",
-    stock: 10,
+    stock: 40,
     images: ["assets/images/products/apple-watch-se3-40-1.jpg", "assets/images/products/apple-watch-se3-40-2.png", "assets/images/products/apple-watch-se3-40-3.jpg"],
     /* Renk seçilince galeride o rengin görseli gösterilir (Apple resmi görselleri). */
     colorImages: {
@@ -219,10 +219,10 @@ const BASE_PRODUCTS = [
   {
     id: 4,
     variants: [
-      { sku: "1422864", color: "Gece Yarısı", size: "S/M" },
-      { sku: "1422865", color: "Gece Yarısı", size: "M/L" },
-      { sku: "1422862", color: "Yıldız Işığı", size: "S/M" },
-      { sku: "1422863", color: "Yıldız Işığı", size: "M/L" }
+      { sku: "1422864", color: "Gece Yarısı", size: "S/M", stock: 10 },
+      { sku: "1422865", color: "Gece Yarısı", size: "M/L", stock: 10 },
+      { sku: "1422862", color: "Yıldız Işığı", size: "S/M", stock: 10 },
+      { sku: "1422863", color: "Yıldız Işığı", size: "M/L", stock: 10 }
     ],
     sizeLabel: "Kordon Bedeni",
     name: "Apple Watch SE 3 44mm GPS",
@@ -234,7 +234,7 @@ const BASE_PRODUCTS = [
     reviewCount: 0,
     badge: null,
     badgeLabel: null,
-    stock: 10,
+    stock: 40,
     images: ["assets/images/products/apple-watch-se3-44-1.png", "assets/images/products/apple-watch-se3-44-2.jpg", "assets/images/products/apple-watch-se3-44-3.png"],
     /* Renk seçilince galeride o rengin görseli gösterilir (Apple resmi görselleri). */
     colorImages: {
@@ -258,7 +258,7 @@ const BASE_PRODUCTS = [
   {
     id: 5,
     variants: [
-      { sku: "1411754", color: "Jet Siyah", size: "S/M" }
+      { sku: "1411754", color: "Jet Siyah", size: "S/M", stock: 10 }
     ],
     sizeLabel: "Kordon Bedeni",
     name: "Apple Watch Series 10 46mm Alüminyum Cellular",
@@ -294,8 +294,8 @@ const BASE_PRODUCTS = [
   {
     id: 6,
     variants: [
-      { sku: "1411772", color: "Altın", size: "M/L" },
-      { sku: "1411769", color: "Gümüş", size: "M/L" }
+      { sku: "1411772", color: "Altın", size: "M/L", stock: 10 },
+      { sku: "1411769", color: "Gümüş", size: "M/L", stock: 10 }
     ],
     sizeLabel: "Kordon Bedeni",
     name: "Apple Watch Series 10 42mm Titanyum Cellular",
@@ -307,7 +307,7 @@ const BASE_PRODUCTS = [
     reviewCount: 0,
     badge: "new",
     badgeLabel: "Yeni",
-    stock: 10,
+    stock: 20,
     images: ["assets/images/products/apple-watch-s10-42-ti-1.jpg", "assets/images/products/apple-watch-s10-42-ti-2.webp", "assets/images/products/apple-watch-s10-42-ti-3.webp"],
     desc: "Cilalı titanyum kasa, safir kristal ekran ve Milano Loop kayış. Series 10'un en prestijli hali, 42mm gövdede.",
     specs: [
@@ -327,10 +327,10 @@ const BASE_PRODUCTS = [
   {
     id: 7,
     variants: [
-      { sku: "1411775", color: "Altın", size: "S/M" },
-      { sku: "1411768", color: "Altın", size: "M/L" },
-      { sku: "1411773", color: "Natürel Titanyum", size: "S/M" },
-      { sku: "1411774", color: "Gümüş", size: "S/M" }
+      { sku: "1411775", color: "Altın", size: "S/M", stock: 10 },
+      { sku: "1411768", color: "Altın", size: "M/L", stock: 10 },
+      { sku: "1411773", color: "Natürel Titanyum", size: "S/M", stock: 10 },
+      { sku: "1411774", color: "Gümüş", size: "S/M", stock: 10 }
     ],
     sizeLabel: "Kordon Bedeni",
     name: "Apple Watch Series 10 46mm Titanyum Cellular",
@@ -342,7 +342,7 @@ const BASE_PRODUCTS = [
     reviewCount: 0,
     badge: null,
     badgeLabel: null,
-    stock: 10,
+    stock: 40,
     images: ["assets/images/products/apple-watch-s10-46-ti-1.jpg", "assets/images/products/apple-watch-s10-46-ti-2.jpg", "assets/images/products/apple-watch-s10-46-ti-3.jpg"],
     desc: "Series 10 titanyum serisinin 46mm gövdesi; Natural, Gold ve Silver seçenekleriyle. Safir kristal ekran ve Milano Loop kayış standart.",
     specs: [
@@ -362,9 +362,9 @@ const BASE_PRODUCTS = [
   {
     id: 8,
     variants: [
-      { sku: "1401236", color: "Kırmızı", size: "S/M" },
-      { sku: "1401237", color: "Kırmızı", size: "M/L" },
-      { sku: "1401173", color: "Pembe" }
+      { sku: "1401236", color: "Kırmızı", size: "S/M", stock: 10 },
+      { sku: "1401237", color: "Kırmızı", size: "M/L", stock: 10 },
+      { sku: "1401173", color: "Pembe", stock: 10 }
     ],
     sizeLabel: "Kordon Bedeni",
     name: "Apple Watch Series 9 41mm GPS",
@@ -376,7 +376,7 @@ const BASE_PRODUCTS = [
     reviewCount: 0,
     badge: "sale",
     badgeLabel: "%19 İndirim",
-    stock: 10,
+    stock: 30,
     images: ["assets/images/products/apple-watch-s9-41-1.png", "assets/images/products/apple-watch-s9-41-2.jpg", "assets/images/products/apple-watch-s9-41-3.jpg"],
     /* Renk seçilince galeride o rengin görseli gösterilir (Apple resmi görselleri). */
     colorImages: {
@@ -403,7 +403,7 @@ const BASE_PRODUCTS = [
   {
     id: 9,
     variants: [
-      { sku: "1424338", color: "Siyah" }
+      { sku: "1424338", color: "Siyah", stock: 10 }
     ],
     name: "Huawei Watch GT 5 Pro 46mm",
     category: "saat",
@@ -432,7 +432,7 @@ const BASE_PRODUCTS = [
   {
     id: 10,
     variants: [
-      { sku: "1424736", color: "Mor" }
+      { sku: "1424736", color: "Mor", stock: 10 }
     ],
     name: "Huawei Watch GT 6 41mm",
     category: "saat",
@@ -461,7 +461,7 @@ const BASE_PRODUCTS = [
   {
     id: 11,
     variants: [
-      { sku: "1424734", color: "Altın" }
+      { sku: "1424734", color: "Altın", stock: 10 }
     ],
     name: "Huawei Watch GT 6 41mm Altın",
     category: "saat",
@@ -490,8 +490,8 @@ const BASE_PRODUCTS = [
   {
     id: 12,
     variants: [
-      { sku: "1424728", color: "Siyah" },
-      { sku: "1424730", color: "Yeşil" }
+      { sku: "1424728", color: "Siyah", stock: 10 },
+      { sku: "1424730", color: "Yeşil", stock: 10 }
     ],
     name: "Huawei Watch GT 6 46mm",
     category: "saat",
@@ -502,7 +502,7 @@ const BASE_PRODUCTS = [
     reviewCount: 0,
     badge: null,
     badgeLabel: null,
-    stock: 10,
+    stock: 20,
     images: ["assets/images/products/huawei-watch-gt6-46-1.png", "assets/images/products/huawei-watch-gt6-46-2.png", "assets/images/products/huawei-watch-gt6-46-3.jpg"],
     desc: "Watch GT 6 46mm, geniş AMOLED ekranı ve olağanüstü batarya ömrüyle uzun süreli aktiviteler için tasarlandı. Bisiklet gücü ölçümü ve çift bantlı konumlandırma sporcular için ideal.",
     specs: [
@@ -520,8 +520,8 @@ const BASE_PRODUCTS = [
   {
     id: 13,
     variants: [
-      { sku: "1424731", color: "Siyah" },
-      { sku: "1424733", color: "Kahverengi" }
+      { sku: "1424731", color: "Siyah", stock: 10 },
+      { sku: "1424733", color: "Kahverengi", stock: 10 }
     ],
     name: "Huawei Watch GT 6 Pro 46mm",
     category: "saat",
@@ -532,7 +532,7 @@ const BASE_PRODUCTS = [
     reviewCount: 0,
     badge: "new",
     badgeLabel: "Yeni",
-    stock: 10,
+    stock: 20,
     images: ["assets/images/products/huawei-watch-gt6-pro-1.jpg", "assets/images/products/huawei-watch-gt6-pro-2.png", "assets/images/products/huawei-watch-gt6-pro-3.png"],
     desc: "Watch GT 6 Pro, safir kristal ekranı ve titanyum detaylarıyla dayanıklılığı zarafetle birleştirir. EKG desteği ve gelişmiş sağlık sensörleriyle profesyonel takip.",
     specs: [
@@ -550,7 +550,7 @@ const BASE_PRODUCTS = [
   {
     id: 14,
     variants: [
-      { sku: "1424732", color: "Titanyum" }
+      { sku: "1424732", color: "Titanyum", stock: 10 }
     ],
     name: "Huawei Watch GT 6 Pro 46mm Titanyum",
     category: "saat",
@@ -579,9 +579,9 @@ const BASE_PRODUCTS = [
   {
     id: 15,
     variants: [
-      { sku: "1423710", color: "Siyah" },
-      { sku: "1423707", color: "Mor" },
-      { sku: "1423699", color: "Beyaz" }
+      { sku: "1423710", color: "Siyah", stock: 10 },
+      { sku: "1423707", color: "Mor", stock: 10 },
+      { sku: "1423699", color: "Beyaz", stock: 10 }
     ],
     name: "Huawei Watch Fit 4",
     category: "saat",
@@ -592,7 +592,7 @@ const BASE_PRODUCTS = [
     reviewCount: 0,
     badge: "bestseller",
     badgeLabel: "Çok Satan",
-    stock: 10,
+    stock: 30,
     images: ["assets/images/products/huawei-watch-fit4-1.jpg", "assets/images/products/huawei-watch-fit4-2.jpg", "assets/images/products/huawei-watch-fit4-3.jpg"],
     desc: "Watch Fit 4, alüminyum gövdesi ve ince yapısıyla gün boyu rahat kullanım sunar. Geniş AMOLED ekranı ve çift bantlı GPS'iyle koşu, bisiklet ve outdoor aktiviteler için ideal.",
     specs: [
@@ -612,7 +612,7 @@ const BASE_PRODUCTS = [
   {
     id: 16,
     variants: [
-      { sku: "1424310", color: "Beyaz" }
+      { sku: "1424310", color: "Beyaz", stock: 10 }
     ],
     name: "Samsung Galaxy Watch8 Classic 46mm",
     category: "saat",
@@ -642,8 +642,8 @@ const BASE_PRODUCTS = [
   {
     id: 17,
     variants: [
-      { sku: "1434606", color: "Siyah" },
-      { sku: "1434605", color: "Bej" }
+      { sku: "1434606", color: "Siyah", stock: 10 },
+      { sku: "1434605", color: "Bej", stock: 10 }
     ],
     name: "Samsung Galaxy Watch9 40mm",
     category: "saat",
@@ -654,7 +654,7 @@ const BASE_PRODUCTS = [
     reviewCount: 0,
     badge: "new",
     badgeLabel: "Yeni",
-    stock: 10,
+    stock: 20,
     images: ["assets/images/products/samsung-watch9-40-1.png"],
     desc: "Galaxy Watch9, Samsung'un yeni nesil akıllı saati. Super AMOLED ekranı, BioActive sensörü ve Wear OS deneyimiyle sağlık ve verimliliği bileğinize taşır.",
     specs: [
@@ -673,8 +673,8 @@ const BASE_PRODUCTS = [
   {
     id: 18,
     variants: [
-      { sku: "1434610", color: "Siyah" },
-      { sku: "1434612", color: "Gümüş" }
+      { sku: "1434610", color: "Siyah", stock: 10 },
+      { sku: "1434612", color: "Gümüş", stock: 10 }
     ],
     name: "Samsung Galaxy Watch9 44mm",
     category: "saat",
@@ -685,7 +685,7 @@ const BASE_PRODUCTS = [
     reviewCount: 0,
     badge: null,
     badgeLabel: null,
-    stock: 10,
+    stock: 20,
     images: ["assets/images/products/samsung-watch9-44-1.png"],
     desc: "Galaxy Watch9'un 44mm gövdesi; daha geniş ekran, daha büyük batarya. Samsung Pay, çağrı ve bildirim yönetimiyle telefonunuzu cebinizde bırakın.",
     specs: [
@@ -706,8 +706,8 @@ const BASE_PRODUCTS = [
   {
     id: 19,
     variants: [
-      { sku: "1424506", color: "Gece Siyahı" },
-      { sku: "1424505", color: "Mat Gümüş" }
+      { sku: "1424506", color: "Gece Siyahı", stock: 10 },
+      { sku: "1424505", color: "Mat Gümüş", stock: 10 }
     ],
     name: "Xiaomi Redmi Watch 5 Active",
     category: "saat",
@@ -718,7 +718,7 @@ const BASE_PRODUCTS = [
     reviewCount: 0,
     badge: null,
     badgeLabel: null,
-    stock: 10,
+    stock: 20,
     images: ["assets/images/products/xiaomi-redmi-watch5-active-1.jpg", "assets/images/products/xiaomi-redmi-watch5-active-2.png", "assets/images/products/xiaomi-redmi-watch5-active-3.webp"],
     desc: "Redmi Watch 5 Active, geniş ekranı ve Bluetooth arama desteğiyle bütçe dostu bir akıllı saat. 18 güne varan batarya ömrüyle şarj derdini unutun.",
     specs: [
@@ -734,8 +734,8 @@ const BASE_PRODUCTS = [
   {
     id: 20,
     variants: [
-      { sku: "1424507", color: "Siyah" },
-      { sku: "1424508", color: "Açık Altın" }
+      { sku: "1424507", color: "Siyah", stock: 10 },
+      { sku: "1424508", color: "Açık Altın", stock: 10 }
     ],
     name: "Xiaomi Redmi Watch 5 Lite",
     category: "saat",
@@ -746,7 +746,7 @@ const BASE_PRODUCTS = [
     reviewCount: 0,
     badge: null,
     badgeLabel: null,
-    stock: 10,
+    stock: 20,
     images: ["assets/images/products/xiaomi-redmi-watch5-lite-1.jpg", "assets/images/products/xiaomi-redmi-watch5-lite-2.png", "assets/images/products/xiaomi-redmi-watch5-lite-3.webp"],
     desc: "Redmi Watch 5 Lite, AMOLED ekranı ve dahili GPS'iyle spor takibini bir üst seviyeye taşır. Metal gövdesiyle fiyatının üzerinde bir his sunar.",
     specs: [
@@ -762,7 +762,7 @@ const BASE_PRODUCTS = [
   {
     id: 21,
     variants: [
-      { sku: "1434008", color: "Buzul Mavisi" }
+      { sku: "1434008", color: "Buzul Mavisi", stock: 10 }
     ],
     name: "Xiaomi Redmi Watch 6",
     category: "saat",
@@ -790,7 +790,7 @@ const BASE_PRODUCTS = [
   {
     id: 22,
     variants: [
-      { sku: "1424503", color: "Gri" }
+      { sku: "1424503", color: "Gri", stock: 10 }
     ],
     name: "Xiaomi Redmi Watch 3 Active",
     category: "saat",
@@ -823,7 +823,7 @@ const BASE_PRODUCTS = [
   {
     id: 23,
     variants: [
-      { sku: "1424419", color: "Beyaz" }
+      { sku: "1424419", color: "Beyaz", stock: 10 }
     ],
     name: "Apple AirPods 4",
     category: "kulaklik",
@@ -852,7 +852,7 @@ const BASE_PRODUCTS = [
   {
     id: 24,
     variants: [
-      { sku: "1424422", color: "Beyaz" }
+      { sku: "1424422", color: "Beyaz", stock: 10 }
     ],
     name: "Apple AirPods 4 (Aktif Gürültü Engelleme)",
     category: "kulaklik",
@@ -881,7 +881,7 @@ const BASE_PRODUCTS = [
   {
     id: 25,
     variants: [
-      { sku: "1425176", color: "Beyaz" }
+      { sku: "1425176", color: "Beyaz", stock: 10 }
     ],
     name: "Apple AirPods Pro 3",
     category: "kulaklik",
@@ -913,8 +913,8 @@ const BASE_PRODUCTS = [
   {
     id: 26,
     variants: [
-      { sku: "1424324", color: "Siyah" },
-      { sku: "1424323", color: "Bej" }
+      { sku: "1424324", color: "Siyah", stock: 10 },
+      { sku: "1424323", color: "Bej", stock: 10 }
     ],
     name: "Huawei FreeBuds SE 3",
     category: "kulaklik",
@@ -925,7 +925,7 @@ const BASE_PRODUCTS = [
     reviewCount: 0,
     badge: null,
     badgeLabel: null,
-    stock: 10,
+    stock: 20,
     images: ["assets/images/products/huawei-freebuds-se3-1.jpg", "assets/images/products/huawei-freebuds-se3-2.jpg", "assets/images/products/huawei-freebuds-se3-3.jpg"],
     desc: "FreeBuds SE 3, hafif yapısı ve uzun batarya ömrüyle günlük kullanım için tasarlandı. Net çağrı kalitesi ve rahat kulak içi oturuşuyla gün boyu konfor.",
     specs: [
@@ -945,9 +945,9 @@ const BASE_PRODUCTS = [
   {
     id: 27,
     variants: [
-      { sku: "1400813", color: "Siyah" },
-      { sku: "1400810", color: "Mavi" },
-      { sku: "1400812", color: "Mor" }
+      { sku: "1400813", color: "Siyah", stock: 10 },
+      { sku: "1400810", color: "Mavi", stock: 10 },
+      { sku: "1400812", color: "Mor", stock: 10 }
     ],
     name: "JBL Tune 520BT Kablosuz Kulaklık",
     category: "kulaklik",
@@ -958,7 +958,7 @@ const BASE_PRODUCTS = [
     reviewCount: 0,
     badge: "bestseller",
     badgeLabel: "Çok Satan",
-    stock: 10,
+    stock: 30,
     images: ["assets/images/products/jbl-tune-520bt-1.jpg", "assets/images/products/jbl-tune-520bt-2.jpg", "assets/images/products/jbl-tune-520bt-3.jpg"],
     desc: "JBL Tune 520BT, JBL Pure Bass sesi ve 57 saate varan batarya ömrüyle uzun yolculukların kulaklığı. Katlanabilir tasarımı ve çoklu cihaz bağlantısıyla pratik.",
     specs: [
@@ -974,11 +974,11 @@ const BASE_PRODUCTS = [
   {
     id: 28,
     variants: [
-      { sku: "1430503", color: "Siyah" },
-      { sku: "1430501", color: "Beyaz" },
-      { sku: "1430500", color: "Bej" },
-      { sku: "1430502", color: "Mavi" },
-      { sku: "1430504", color: "Lavanta" }
+      { sku: "1430503", color: "Siyah", stock: 10 },
+      { sku: "1430501", color: "Beyaz", stock: 10 },
+      { sku: "1430500", color: "Bej", stock: 10 },
+      { sku: "1430502", color: "Mavi", stock: 10 },
+      { sku: "1430504", color: "Lavanta", stock: 10 }
     ],
     name: "JBL Tune 530BT Kablosuz Kulaklık",
     category: "kulaklik",
@@ -989,7 +989,7 @@ const BASE_PRODUCTS = [
     reviewCount: 0,
     badge: null,
     badgeLabel: null,
-    stock: 10,
+    stock: 50,
     images: ["assets/images/products/jbl-tune-530bt-1.png", "assets/images/products/jbl-tune-530bt-2.png", "assets/images/products/jbl-tune-530bt-3.png"],
     desc: "Tune 530BT, 5 farklı renk seçeneği ve JBL Pure Bass sesiyle tarzınıza uyum sağlar. Çoklu cihaz bağlantısı sayesinde telefon ve bilgisayar arasında kesintisiz geçiş.",
     specs: [
@@ -1005,7 +1005,7 @@ const BASE_PRODUCTS = [
   {
     id: 29,
     variants: [
-      { sku: "1430508", color: "Siyah" }
+      { sku: "1430508", color: "Siyah", stock: 10 }
     ],
     name: "JBL Tune 680BT NC Kablosuz Kulaklık",
     category: "kulaklik",
@@ -1032,10 +1032,10 @@ const BASE_PRODUCTS = [
   {
     id: 30,
     variants: [
-      { sku: "1430515", color: "Siyah" },
-      { sku: "1430510", color: "Beyaz" },
-      { sku: "1430509", color: "Bej" },
-      { sku: "1430514", color: "Mavi" }
+      { sku: "1430515", color: "Siyah", stock: 10 },
+      { sku: "1430510", color: "Beyaz", stock: 10 },
+      { sku: "1430509", color: "Bej", stock: 10 },
+      { sku: "1430514", color: "Mavi", stock: 10 }
     ],
     name: "JBL Tune 730BT Kablosuz Kulaklık",
     category: "kulaklik",
@@ -1046,7 +1046,7 @@ const BASE_PRODUCTS = [
     reviewCount: 0,
     badge: "sale",
     badgeLabel: "%17 İndirim",
-    stock: 10,
+    stock: 40,
     images: ["assets/images/products/jbl-tune-730bt-1.png", "assets/images/products/jbl-tune-730bt-2.jpg", "assets/images/products/jbl-tune-730bt-3.jpg"],
     desc: "Tune 730BT, kulak çevreleyen tasarımı ve aktif gürültü engellemesiyle sizi sesin içine alır. Uzun batarya ömrü ve hızlı şarj desteğiyle gün boyu müzik.",
     specs: [
@@ -1062,9 +1062,9 @@ const BASE_PRODUCTS = [
   {
     id: 31,
     variants: [
-      { sku: "1424125", color: "Siyah" },
-      { sku: "1424100", color: "Ghost Mor" },
-      { sku: "1424089", color: "Turkuaz" }
+      { sku: "1424125", color: "Siyah", stock: 10 },
+      { sku: "1424100", color: "Ghost Mor", stock: 10 },
+      { sku: "1424089", color: "Turkuaz", stock: 10 }
     ],
     name: "JBL Tune Beam 2 TWS Kulaklık",
     category: "kulaklik",
@@ -1075,7 +1075,7 @@ const BASE_PRODUCTS = [
     reviewCount: 0,
     badge: "new",
     badgeLabel: "Yeni",
-    stock: 10,
+    stock: 30,
     images: ["assets/images/products/jbl-tune-beam2-1.png", "assets/images/products/jbl-tune-beam2-2.png", "assets/images/products/jbl-tune-beam2-3.png"],
     desc: "Tune Beam 2, kişiselleştirilebilir ses profili ve gelişmiş gürültü engellemesiyle günlük kullanımın standardını yükseltir. Ghost serisi şeffaf tasarım seçenekleriyle.",
     specs: [
@@ -1091,12 +1091,12 @@ const BASE_PRODUCTS = [
   {
     id: 32,
     variants: [
-      { sku: "1424112", color: "Siyah" },
-      { sku: "1424111", color: "Beyaz" },
-      { sku: "1424127", color: "Ghost Siyah" },
-      { sku: "1424090", color: "Ghost Bej" },
-      { sku: "1424113", color: "Ghost Mor" },
-      { sku: "1424126", color: "Turkuaz" }
+      { sku: "1424112", color: "Siyah", stock: 10 },
+      { sku: "1424111", color: "Beyaz", stock: 10 },
+      { sku: "1424127", color: "Ghost Siyah", stock: 10 },
+      { sku: "1424090", color: "Ghost Bej", stock: 10 },
+      { sku: "1424113", color: "Ghost Mor", stock: 10 },
+      { sku: "1424126", color: "Turkuaz", stock: 10 }
     ],
     name: "JBL Tune Flex 2 TWS Kulaklık",
     category: "kulaklik",
@@ -1107,7 +1107,7 @@ const BASE_PRODUCTS = [
     reviewCount: 0,
     badge: null,
     badgeLabel: null,
-    stock: 10,
+    stock: 60,
     images: ["assets/images/products/jbl-tune-flex2-1.png", "assets/images/products/jbl-tune-flex2-2.png", "assets/images/products/jbl-tune-flex2-3.png"],
     desc: "Tune Flex 2, değiştirilebilir kulak uçlarıyla hem açık hem kapalı kullanım sunar. 6 renk seçeneğiyle JBL'in en çok yönlü TWS kulaklığı.",
     specs: [
@@ -1123,10 +1123,10 @@ const BASE_PRODUCTS = [
   {
     id: 33,
     variants: [
-      { sku: "1424122", color: "Siyah" },
-      { sku: "1424121", color: "Beyaz" },
-      { sku: "1424101", color: "Mavi" },
-      { sku: "1424087", color: "Pembe" }
+      { sku: "1424122", color: "Siyah", stock: 10 },
+      { sku: "1424121", color: "Beyaz", stock: 10 },
+      { sku: "1424101", color: "Mavi", stock: 10 },
+      { sku: "1424087", color: "Pembe", stock: 10 }
     ],
     name: "JBL Wave Beam 2 TWS Kulaklık",
     category: "kulaklik",
@@ -1137,7 +1137,7 @@ const BASE_PRODUCTS = [
     reviewCount: 0,
     badge: null,
     badgeLabel: null,
-    stock: 10,
+    stock: 40,
     images: ["assets/images/products/jbl-wave-beam2-1.png", "assets/images/products/jbl-wave-beam2-2.jpg", "assets/images/products/jbl-wave-beam2-3.jpg"],
     desc: "Wave Beam 2, JBL Deep Bass sesi ve kompakt kılıfıyla her gün yanınızda. Su ve toz direnciyle spor sırasında da güvenle kullanın.",
     specs: [
@@ -1153,8 +1153,8 @@ const BASE_PRODUCTS = [
   {
     id: 34,
     variants: [
-      { sku: "1424099", color: "Siyah" },
-      { sku: "1424079", color: "Beyaz" }
+      { sku: "1424099", color: "Siyah", stock: 10 },
+      { sku: "1424079", color: "Beyaz", stock: 10 }
     ],
     name: "JBL Wave Buds 2 TWS Kulaklık",
     category: "kulaklik",
@@ -1165,7 +1165,7 @@ const BASE_PRODUCTS = [
     reviewCount: 0,
     badge: "sale",
     badgeLabel: "%18 İndirim",
-    stock: 10,
+    stock: 20,
     images: ["assets/images/products/jbl-wave-buds2-1.png", "assets/images/products/jbl-wave-buds2-2.jpg", "assets/images/products/jbl-wave-buds2-3.png"],
     desc: "Wave Buds 2, kompakt yapısı ve güçlü basıyla günlük kullanımın pratik çözümü. Tek kulaklıkla kullanım desteği sayesinde çağrılarda özgür kalın.",
     specs: [
@@ -1183,8 +1183,8 @@ const BASE_PRODUCTS = [
   {
     id: 35,
     variants: [
-      { sku: "1367269", color: "Siyah" },
-      { sku: "1367271", color: "Beyaz" }
+      { sku: "1367269", color: "Siyah", stock: 10 },
+      { sku: "1367271", color: "Beyaz", stock: 10 }
     ],
     name: "Samsung EO-IC100B Type-C Kulaklık",
     category: "kulaklik",
@@ -1195,7 +1195,7 @@ const BASE_PRODUCTS = [
     reviewCount: 0,
     badge: "sale",
     badgeLabel: "%19 İndirim",
-    stock: 10,
+    stock: 20,
     images: ["assets/images/products/samsung-eo-ic100b-1.png", "assets/images/products/samsung-eo-ic100b-2.jpg", "assets/images/products/samsung-eo-ic100b-3.webp"],
     desc: "AKG tarafından akort edilen Samsung EO-IC100B, USB Type-C bağlantısıyla gecikmesiz ve net ses sunar. Dahili mikrofon ve kumandasıyla çağrılarda pratik kullanım.",
     specs: [
@@ -1210,7 +1210,7 @@ const BASE_PRODUCTS = [
   {
     id: 36,
     variants: [
-      { sku: "1424745", color: "Siyah" }
+      { sku: "1424745", color: "Siyah", stock: 10 }
     ],
     name: "Samsung Galaxy Buds3 FE",
     category: "kulaklik",
@@ -1238,7 +1238,7 @@ const BASE_PRODUCTS = [
   {
     id: 37,
     variants: [
-      { sku: "1430043", color: "Siyah" }
+      { sku: "1430043", color: "Siyah", stock: 10 }
     ],
     name: "Samsung Galaxy Buds4",
     category: "kulaklik",
@@ -1269,8 +1269,8 @@ const BASE_PRODUCTS = [
   {
     id: 38,
     variants: [
-      { sku: "1430045", color: "Siyah" },
-      { sku: "1430046", color: "Beyaz" }
+      { sku: "1430045", color: "Siyah", stock: 10 },
+      { sku: "1430046", color: "Beyaz", stock: 10 }
     ],
     name: "Samsung Galaxy Buds4 Pro",
     category: "kulaklik",
@@ -1281,7 +1281,7 @@ const BASE_PRODUCTS = [
     reviewCount: 0,
     badge: null,
     badgeLabel: null,
-    stock: 10,
+    stock: 20,
     images: ["assets/images/products/samsung-buds4-pro-1.jpg", "assets/images/products/samsung-buds4-pro-2.jpg", "assets/images/products/samsung-buds4-pro-3.jpg"],
     desc: "Galaxy Buds4 Pro, Samsung'un amiral gemisi kulaklığı. Hi-Fi ses, güçlü gürültü engelleme ve 360 Audio ile sürükleyici bir dinleme deneyimi.",
     specs: [
@@ -1303,9 +1303,9 @@ const BASE_PRODUCTS = [
   {
     id: 39,
     variants: [
-      { sku: "1424254", color: "Siyah" },
-      { sku: "1418684", color: "Beyaz" },
-      { sku: "1418685", color: "Mavi" }
+      { sku: "1424254", color: "Siyah", stock: 10 },
+      { sku: "1418684", color: "Beyaz", stock: 10 },
+      { sku: "1418685", color: "Mavi", stock: 10 }
     ],
     name: "Xiaomi Redmi Buds 6 Play",
     category: "kulaklik",
@@ -1316,7 +1316,7 @@ const BASE_PRODUCTS = [
     reviewCount: 0,
     badge: "bestseller",
     badgeLabel: "Çok Satan",
-    stock: 10,
+    stock: 30,
     images: ["assets/images/products/xiaomi-redmi-buds6-play-1.jpg", "assets/images/products/xiaomi-redmi-buds6-play-2.jpg", "assets/images/products/xiaomi-redmi-buds6-play-3.png"],
     desc: "Redmi Buds 6 Play, uygun fiyatına rağmen güçlü bası ve uzun batarya ömrü sunar. Kablosuz kulaklığa ilk adım için en pratik seçenek.",
     specs: [
@@ -1332,9 +1332,9 @@ const BASE_PRODUCTS = [
   {
     id: 40,
     variants: [
-      { sku: "1434004", color: "Siyah" },
-      { sku: "1434006", color: "Beyaz" },
-      { sku: "1434007", color: "Yeşil" }
+      { sku: "1434004", color: "Siyah", stock: 10 },
+      { sku: "1434006", color: "Beyaz", stock: 10 },
+      { sku: "1434007", color: "Yeşil", stock: 10 }
     ],
     name: "Xiaomi Redmi Buds 8",
     category: "kulaklik",
@@ -1345,7 +1345,7 @@ const BASE_PRODUCTS = [
     reviewCount: 0,
     badge: "new",
     badgeLabel: "Yeni",
-    stock: 10,
+    stock: 30,
     images: ["assets/images/products/xiaomi-redmi-buds8-1.jpg", "assets/images/products/xiaomi-redmi-buds8-2.jpg"],
     desc: "Redmi Buds 8, yeni nesil sürücüsü ve aktif gürültü engellemesiyle Redmi kulaklık ailesinin standart modelini bir üst seviyeye taşıyor.",
     specs: [
@@ -1363,9 +1363,9 @@ const BASE_PRODUCTS = [
   {
     id: 41,
     variants: [
-      { sku: "1431551", color: "Siyah" },
-      { sku: "1431552", color: "Beyaz" },
-      { sku: "1431550", color: "Mavi" }
+      { sku: "1431551", color: "Siyah", stock: 10 },
+      { sku: "1431552", color: "Beyaz", stock: 10 },
+      { sku: "1431550", color: "Mavi", stock: 10 }
     ],
     name: "Xiaomi Redmi Buds 8 Active",
     category: "kulaklik",
@@ -1376,7 +1376,7 @@ const BASE_PRODUCTS = [
     reviewCount: 0,
     badge: null,
     badgeLabel: null,
-    stock: 10,
+    stock: 30,
     images: ["assets/images/products/xiaomi-redmi-buds8-active-1.png", "assets/images/products/xiaomi-redmi-buds8-active-2.png", "assets/images/products/xiaomi-redmi-buds8-active-3.jpg"],
     desc: "Redmi Buds 8 Active, hafif yapısı ve dengeli sesiyle günlük kullanım için ideal. Düşük gecikme modu sayesinde oyunlarda ses–görüntü uyumu korunur.",
     specs: [
@@ -1393,8 +1393,8 @@ const BASE_PRODUCTS = [
   {
     id: 42,
     variants: [
-      { sku: "1429167", color: "Siyah" },
-      { sku: "1429169", color: "Beyaz" }
+      { sku: "1429167", color: "Siyah", stock: 10 },
+      { sku: "1429169", color: "Beyaz", stock: 10 }
     ],
     name: "Xiaomi Redmi Buds 8 Lite",
     category: "kulaklik",
@@ -1405,7 +1405,7 @@ const BASE_PRODUCTS = [
     reviewCount: 0,
     badge: "sale",
     badgeLabel: "%18 İndirim",
-    stock: 10,
+    stock: 20,
     images: ["assets/images/products/xiaomi-redmi-buds8-lite-1.jpg", "assets/images/products/xiaomi-redmi-buds8-lite-2.png", "assets/images/products/xiaomi-redmi-buds8-lite-3.jpg"],
     desc: "Redmi Buds 8 Lite, kompakt kılıfı ve rahat oturuşuyla gün boyu taşımaya uygun. Net çağrı kalitesi ve hızlı eşleşme özelliğiyle pratik.",
     specs: [
@@ -1422,9 +1422,9 @@ const BASE_PRODUCTS = [
   {
     id: 43,
     variants: [
-      { sku: "1431549", color: "Obsidyen Siyah" },
-      { sku: "1431547", color: "Bulut Beyazı" },
-      { sku: "1431548", color: "Buzul Mavisi" }
+      { sku: "1431549", color: "Obsidyen Siyah", stock: 10 },
+      { sku: "1431547", color: "Bulut Beyazı", stock: 10 },
+      { sku: "1431548", color: "Buzul Mavisi", stock: 10 }
     ],
     name: "Xiaomi Redmi Buds 8 Pro",
     category: "kulaklik",
@@ -1435,7 +1435,7 @@ const BASE_PRODUCTS = [
     reviewCount: 0,
     badge: "sale",
     badgeLabel: "%17 İndirim",
-    stock: 10,
+    stock: 30,
     images: ["assets/images/products/xiaomi-redmi-buds8-pro-1.jpg", "assets/images/products/xiaomi-redmi-buds8-pro-2.jpg", "assets/images/products/xiaomi-redmi-buds8-pro-3.jpg"],
     desc: "Redmi Buds 8 Pro, 55dB'ye varan aktif gürültü engellemesi ve 3 mikrofonlu yapay zekâ destekli çağrı filtresiyle serinin amiral gemisi. Kılıfla birlikte 33 saate varan kullanım.",
     specs: [
@@ -1457,7 +1457,7 @@ const BASE_PRODUCTS = [
   {
     id: 44,
     variants: [
-      { sku: "1424409", color: "Beyaz" }
+      { sku: "1424409", color: "Beyaz", stock: 10 }
     ],
     name: "Apple 20W USB-C Güç Adaptörü",
     category: "aksesuar",
@@ -1483,7 +1483,7 @@ const BASE_PRODUCTS = [
   {
     id: 45,
     variants: [
-      { sku: "1426785", color: "Beyaz" }
+      { sku: "1426785", color: "Beyaz", stock: 10 }
     ],
     name: "Apple 35W Çift USB-C Portlu Güç Adaptörü",
     category: "aksesuar",
@@ -1510,7 +1510,7 @@ const BASE_PRODUCTS = [
   {
     id: 46,
     variants: [
-      { sku: "1430850", color: "Bright Guava" }
+      { sku: "1430850", color: "Bright Guava", stock: 10 }
     ],
     name: "Apple Crossbody Strap – Bright Guava",
     category: "aksesuar",
@@ -1537,7 +1537,7 @@ const BASE_PRODUCTS = [
   {
     id: 47,
     variants: [
-      { sku: "1424405", color: "Beyaz" }
+      { sku: "1424405", color: "Beyaz", stock: 10 }
     ],
     name: "Apple Watch Manyetik Hızlı Şarj Kablosu (USB-C, 1m)",
     category: "aksesuar",
@@ -1563,8 +1563,8 @@ const BASE_PRODUCTS = [
   {
     id: 48,
     variants: [
-      { sku: "1400929", color: "Siyah" },
-      { sku: "1400928", color: "Beyaz" }
+      { sku: "1400929", color: "Siyah", stock: 10 },
+      { sku: "1400928", color: "Beyaz", stock: 10 }
     ],
     name: "Samsung 25W USB-C Hızlı Şarj Adaptörü",
     category: "aksesuar",
@@ -1575,7 +1575,7 @@ const BASE_PRODUCTS = [
     reviewCount: 0,
     badge: "sale",
     badgeLabel: "%17 İndirim",
-    stock: 10,
+    stock: 20,
     images: ["assets/images/products/samsung-25w-adapter-1.jpg", "assets/images/products/samsung-25w-adapter-2.jpg", "assets/images/products/samsung-25w-adapter-3.png"],
     desc: "Samsung 25W Süper Hızlı Şarj adaptörü, uyumlu Galaxy cihazlarınızı kısa sürede şarj eder. PPS desteğiyle akıllı güç yönetimi sağlar.",
     specs: [
@@ -1590,7 +1590,7 @@ const BASE_PRODUCTS = [
   {
     id: 49,
     variants: [
-      { sku: "1422348", color: "Siyah" }
+      { sku: "1422348", color: "Siyah", stock: 10 }
     ],
     name: "Samsung EP-T4511 45W USB-C Şarj Adaptörü",
     category: "aksesuar",
@@ -1616,7 +1616,7 @@ const BASE_PRODUCTS = [
   {
     id: 50,
     variants: [
-      { sku: "1387575", color: "Siyah" }
+      { sku: "1387575", color: "Siyah", stock: 10 }
     ],
     name: "Samsung EP-T6530N Üçlü Şarj Adaptörü",
     category: "aksesuar",
@@ -1647,7 +1647,7 @@ const BASE_PRODUCTS = [
   {
     id: 51,
     variants: [
-      { sku: "1432160", color: "Siyah" }
+      { sku: "1432160", color: "Siyah", stock: 10 }
     ],
     name: "Huawei WiFi Mesh X3 Pro",
     category: "ses",
@@ -1675,7 +1675,7 @@ const BASE_PRODUCTS = [
   {
     id: 52,
     variants: [
-      { sku: "1433138", color: "Mavi" }
+      { sku: "1433138", color: "Mavi", stock: 10 }
     ],
     name: "JBL Go 5 Bluetooth Hoparlör",
     category: "ses",
@@ -1702,7 +1702,7 @@ const BASE_PRODUCTS = [
   {
     id: 53,
     variants: [
-      { sku: "1433141", color: "Siyah" }
+      { sku: "1433141", color: "Siyah", stock: 10 }
     ],
     name: "JBL PartyBox Club 120 Bluetooth Hoparlör",
     category: "ses",
@@ -1729,7 +1729,7 @@ const BASE_PRODUCTS = [
   {
     id: 54,
     variants: [
-      { sku: "1433821", color: "Gri" }
+      { sku: "1433821", color: "Gri", stock: 10 }
     ],
     name: "Xiaomi Smart Projector L1",
     category: "ses",
@@ -1914,6 +1914,17 @@ function variantLabel(variant, product) {
   if (variant.color) parcalar.push(variant.color);
   if (variant.size)  parcalar.push(variant.size);
   return parcalar.join(' · ');
+}
+
+/* Satılabilir stok: stok VARYANT BAŞINA tutulur. product.stock varyantların
+   toplamıdır (sunucu api/_lib/product-schema.js içinde böyle türetir), tek
+   bir rengin kaç adet kaldığını göstermez — bu yüzden sepet sınırı ve ürün
+   sayfasındaki "Stokta Var" bilgisi buradan okunmalıdır. */
+function variantStock(product, variant) {
+  if (variant && Number.isFinite(Number(variant.stock))) return Math.max(0, Number(variant.stock));
+  if (!getVariants(product).length) return Math.max(0, Number(product?.stock) || 0);
+  // Varyant verildi ama stoğu yoksa (eski kayıt) ürün toplamına düş
+  return Math.max(0, Number(product?.stock) || 0);
 }
 
 /* Tek seçenekli ürünlerde otomatik seçilecek varyant */

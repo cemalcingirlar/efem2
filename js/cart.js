@@ -50,12 +50,21 @@ function addToCart(productId, quantity = 1, variant = null) {
     return false;
   }
 
+  /* Stok varyant başınadır; product.stock varyantların toplamıdır ve
+     tek bir rengin kaç adet kaldığını göstermez. Bu yüzden sınır
+     seçilen varyantın stoğudur. */
+  const stok = variantStock(product, secili);
+  if (stok <= 0) {
+    showToast('Seçtiğiniz seçenek şu anda stokta yok.', 'warning');
+    return false;
+  }
+
   const cart = getCart();
   const key  = cartLineKey(product.id, secili?.sku);
   const idx  = findCartLine(cart, key);
 
   if (idx >= 0) {
-    cart[idx].qty = Math.min(cart[idx].qty + quantity, product.stock);
+    cart[idx].qty = Math.min(cart[idx].qty + quantity, stok);
   } else {
     cart.push({
       id:       product.id,
@@ -63,8 +72,8 @@ function addToCart(productId, quantity = 1, variant = null) {
       category: product.categoryLabel,
       price:    product.price,
       image:    product.images[0],
-      qty:      Math.min(quantity, product.stock),
-      stock:    product.stock,
+      qty:      Math.min(quantity, stok),
+      stock:    stok,
       sku:      secili?.sku  || null,
       color:    secili?.color || null,
       size:     secili?.size  || null
@@ -129,7 +138,21 @@ function syncCartWithCatalog() {
     if (variants.length && item.sku && !variants.some(v => v.sku === item.sku)) continue;
 
     if (item.price !== product.price || item.name !== product.name) repriced++;
-    next.push({ ...item, name: product.name, price: product.price, image: product.images[0] });
+
+    /* Stok da tazelenir: yönetici panelden varyant stoğunu düşürdüyse
+       sepetteki adet yeni sınırın üstünde kalmamalı. */
+    const v    = variants.find(x => x.sku === item.sku) || null;
+    const stok = variantStock(product, v);
+    if (stok <= 0) continue;                      // bu seçenek tükendi
+
+    next.push({
+      ...item,
+      name:  product.name,
+      price: product.price,
+      image: product.images[0],
+      stock: stok,
+      qty:   Math.min(item.qty, stok)
+    });
   }
 
   const removed = cart.length - next.length;

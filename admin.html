@@ -971,6 +971,11 @@
               <label class="form-label">Marka <span class="required">*</span></label>
               <input type="text" class="form-input" id="p-brand" placeholder="Apple, Samsung, Sony...">
             </div>
+            <div class="form-group">
+              <label class="form-label">Barkod</label>
+              <input type="text" class="form-input" id="p-barcode" placeholder="8697654321098" maxlength="40">
+              <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px">EAN/UPC veya firma içi kod — kasa ve stok eşleştirmesi için.</div>
+            </div>
           </div>
 
           <!-- Fiyat & Stok -->
@@ -1449,7 +1454,7 @@ function renderDashboard() {
             <tr>
               <td><div class="product-name-cell">
                 <div class="name">${p.name}${p.active === false ? ` <span class="badge badge-error" style="font-size:0.6875rem;vertical-align:middle">Satışta değil</span>` : ''}</div>
-                <div class="brand">${p.brand}</div>
+                <div class="brand">${p.brand}${p.barcode ? ` · <span style="font-family:ui-monospace,monospace">${escapeAdminHtml(p.barcode)}</span>` : ''}</div>
               </div></td>
               <td>${p.categoryLabel}</td>
               <td><strong>${formatPrice(p.price)}</strong></td>
@@ -1553,7 +1558,7 @@ function renderProductsTable(products) {
       <td>
         <div class="product-name-cell">
           <div class="name">${p.name}${p.active === false ? ` <span class="badge badge-error" style="font-size:0.6875rem;vertical-align:middle">Satışta değil</span>` : ''}</div>
-          <div class="brand">${p.brand}</div>
+          <div class="brand">${p.brand}${p.barcode ? ` · <span style="font-family:ui-monospace,monospace">${escapeAdminHtml(p.barcode)}</span>` : ''}</div>
         </div>
       </td>
       <td>${p.categoryLabel}</td>
@@ -1994,6 +1999,7 @@ function openEditModal(id) {
   document.getElementById('p-name').value             = product.name;
   document.getElementById('p-category').value         = product.category;
   document.getElementById('p-brand').value            = product.brand;
+  document.getElementById('p-barcode').value          = product.barcode || '';
   document.getElementById('p-price').value            = product.price;
   document.getElementById('p-original-price').value   = product.originalPrice || '';
   document.getElementById('p-stock').value            = product.stock;
@@ -2028,7 +2034,7 @@ function closeModal() {
 }
 
 function clearModal() {
-  ['p-name','p-brand','p-price','p-original-price','p-stock',
+  ['p-name','p-brand','p-barcode','p-price','p-original-price','p-stock',
    'p-badge-label','p-image','p-image-url','p-desc'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
@@ -2058,6 +2064,7 @@ async function saveProduct() {
   const name     = document.getElementById('p-name').value.trim();
   const category = document.getElementById('p-category').value;
   const brand    = document.getElementById('p-brand').value.trim();
+  const barcode  = document.getElementById('p-barcode').value.trim();
   const price    = parseFloat(document.getElementById('p-price').value);
   const origP    = parseFloat(document.getElementById('p-original-price').value) || null;
   const stock    = parseInt(document.getElementById('p-stock').value) || 0;
@@ -2095,7 +2102,7 @@ async function saveProduct() {
 
   const payload = {
     id:            existing ? existing.id : nextId,
-    name, category, brand, price,
+    name, category, brand, price, barcode,
     originalPrice: origP,
     stock,
     badge,
@@ -2167,6 +2174,7 @@ function productSavePayload(p, active) {
     name:          p.name,
     category:      p.category,
     brand:         p.brand,
+    barcode:       p.barcode || '',
     price:         p.price,
     originalPrice: p.originalPrice || null,
     stock:         p.stock,
@@ -2918,7 +2926,7 @@ async function openBulkStockDialog() {
       await adminFetch('/api/admin/products', {
         method: 'POST',
         body: JSON.stringify({ product: {
-          id: p.id, name: p.name, category: p.category, brand: p.brand,
+          id: p.id, name: p.name, category: p.category, brand: p.brand, barcode: p.barcode || '',
           price: p.price, originalPrice: p.originalPrice || null,
           stock: adet * p.variants.length,
           badge: p.badge || null, featured: !!p.featured, desc: p.desc || '',

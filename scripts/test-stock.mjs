@@ -233,5 +233,20 @@ console.log('\n9) ürün şeması active alanını korur');
   check('satıştan kaldırmak stoğu silmez', normalizeAdminProduct({ ...temel, active: false }).product.variants[0].stock, 3);
 }
 
+console.log('\n10) barkod alanı');
+{
+  const temel = {
+    id: 1, name: 'Watch', category: 'saat', brand: 'Apple', price: 100,
+    images: ['assets/images/products/a.jpg'], variants: [{ sku: 'A', color: 'Siyah', stock: 1 }]
+  };
+
+  check('EAN-13 korunur', normalizeAdminProduct({ ...temel, barcode: '8697654321098' }).product.barcode, '8697654321098');
+  check('firma içi kod korunur', normalizeAdminProduct({ ...temel, barcode: 'EFM-2026-001' }).product.barcode, 'EFM-2026-001');
+  check('barkod yoksa boş', normalizeAdminProduct({ ...temel }).product.barcode, '');
+  check('tehlikeli karakterler temizlenir', normalizeAdminProduct({ ...temel, barcode: '<img src=x>123' }).product.barcode, 'img srcx123');
+  check('40 karakterle sınırlı', normalizeAdminProduct({ ...temel, barcode: '1'.repeat(80) }).product.barcode.length <= 40, true);
+  check('barkod stok/fiyatı etkilemez', normalizeAdminProduct({ ...temel, barcode: '999' }).product.stock, 1);
+}
+
 console.log(`\n${passed} test geçti, ${failed} test başarısız.`);
 process.exit(failed ? 1 : 0);

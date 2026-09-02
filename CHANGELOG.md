@@ -3,6 +3,33 @@
 Bu dosya projede yapılan her ekleme, değişiklik ve kaldırmayı kayıt altına alır.
 En yeni kayıtlar en üstte.
 
+## 2026-09-02 (devam 4)
+
+### Ürün sayfasında kaybolan renk/kordon seçicisi, barkod alanı
+- Fix: Stoğu panelden değiştirilen ürünlerde ürün sayfasındaki **renk/kordon seçicisi
+  kayboluyordu** — müşteri hangi seçeneği aldığını belirleyemiyordu. Sebep zinciri:
+  `api/_lib/product-schema.js` kaydederken `variants` alanını HER ZAMAN yazar (seçenek
+  yoksa boş dizi olarak); panelde varyant düzenleme yokken kaydedilen ürünler
+  Firestore'a `variants: []` ile gitti; `js/data.js` → `buildProducts()` Firestore
+  kaydını statik kaydın üzerine tamamen bindirdiği için katalogdaki renk/beden tanımı
+  siliniyordu.
+- Change: `buildProducts()` artık **boş varyant listesinin katalog tanımını silmesine
+  izin vermiyor**. Sunucu kaydında seçenek yoksa ve statik katalogda varsa, renk/beden
+  kimliği statikten geri alınır. Varyantların `stock` alanı bilerek atlanır: o kayıtta
+  varyant bazlı stok yok, tek bir ürün toplamı var — `variantStock()` stoksuz varyantta
+  ürün stoğuna düştüğü için müşteriye gerçek adet gösterilir. Panelden varyant stokları
+  girilip kaydedildiğinde bu köprüye gerek kalmaz.
+
+- Add: **Barkod** alanı (`api/_lib/product-schema.js` → `barcode`). Ürün yönetimi
+  ekranında Marka'nın yanında; EAN/UPC veya firma içi kod girilebiliyor, ürün
+  listesinde marka satırının yanında tek aralıklı yazı tipiyle görünüyor.
+  Serbest metin: yalnız harf, rakam, tire ve boşluk kabul edilir (40 karakter sınırı),
+  fiyat/stok gibi kritik bir alan değildir. Satıştan kaldırma ve toplu stok
+  işlemlerinde de korunur (`productSavePayload`).
+- Add: `scripts/test-stock.mjs` → barkod testleri (toplam 40 test): EAN-13 ve firma içi
+  kodun korunması, boş bırakılabilmesi, tehlikeli karakterlerin temizlenmesi,
+  uzunluk sınırı, stok/fiyatı etkilememesi.
+
 ## 2026-09-02 (devam 3)
 
 ### Stok ekranında renk/beden hazır gelsin, elle giriş son çare olsun

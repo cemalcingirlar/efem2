@@ -1819,8 +1819,28 @@ function buildProducts() {
   for (const p of SERVER_PRODUCTS) {
     const id = Number(p.id);
     if (!Number.isInteger(id)) continue;
-    // Firestore kaydı eksiksizdir; statik kaydın üzerine tamamen biner.
-    merged.set(id, { ...merged.get(id), ...p, id });
+
+    const statik   = merged.get(id);
+    const birlesik = { ...statik, ...p, id };
+
+    /* Renk/beden tanımını BOŞ varyant listesi silmesin.
+       Panelde varyant düzenleme yokken kaydedilen ürünler Firestore'a
+       `variants: []` ile yazıldı; bu kayıt statik tanımın üzerine binince
+       ürün sayfasındaki renk/kordon seçicisi kayboluyordu (müşteri hangi
+       seçeneği aldığını belirleyemiyordu). Böyle bir kayıtta kimlik
+       statik katalogdan geri alınır.
+
+       Stok alanı bilerek atılır: o kayıtta varyant bazlı stok yok, tek bir
+       ürün toplamı var. Stoksuz varyantta variantStock() ürün stoğuna
+       düştüğü için müşteriye gerçek adet gösterilir. Yönetici panelden
+       varyant stoklarını girip kaydedince bu köprüye gerek kalmaz. */
+    const sunucuVaryant = Array.isArray(p.variants) ? p.variants : [];
+    const statikVaryant = Array.isArray(statik && statik.variants) ? statik.variants : [];
+    if (!sunucuVaryant.length && statikVaryant.length) {
+      birlesik.variants = statikVaryant.map(v => ({ sku: v.sku, color: v.color, size: v.size }));
+    }
+
+    merged.set(id, birlesik);
   }
   // Satıştan kaldırılanlar vitrinde listeden tamamen çıkar
   if (HIDE_INACTIVE) {

@@ -148,6 +148,11 @@ function normalizeAdminProduct(raw, { existing = null } = {}) {
       specs:         normalizeSpecs(raw.specs),
       variants,
       sizeLabel:     clean(raw.sizeLabel, 40) || null,
+      /* Barkod: işletmenin kendi stok/kasa sistemiyle eşleştirmesi için.
+         Serbest metin — EAN-13, UPC veya firma içi kod olabilir. Yalnız
+         harf, rakam, tire ve boşluk kabul edilir; fiyat/stok gibi kritik
+         bir alan değil, sadece kayıt amaçlıdır. */
+      barcode:       clean(raw.barcode, 40).replace(/[^A-Za-z0-9 -]/g, ''),
       rating:        0,
       reviewCount:   0,
       featured:      raw.featured === true,

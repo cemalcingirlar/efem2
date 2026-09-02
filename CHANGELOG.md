@@ -3,6 +3,27 @@
 Bu dosya projede yapılan her ekleme, değişiklik ve kaldırmayı kayıt altına alır.
 En yeni kayıtlar en üstte.
 
+## 2026-09-02 (devam 3)
+
+### Stok ekranında renk/beden hazır gelsin, elle giriş son çare olsun
+- Fix: Panelde ürünün renk/kordon seçenekleri görünmüyordu. Sebep: editör yalnız
+  Firestore kaydındaki `variants` alanına bakıyordu; varyant alanı eklenmeden önce
+  kaydedilmiş ürünlerde bu alan boş olduğu için editör boş açılıyordu — oysa aynı
+  ürün vitrinde renk/beden gösteriyordu (statik katalogdan). Artık Firestore kaydı
+  boşsa seçenekler **kod içindeki katalog tanımından** (`js/data.js` →
+  `BASE_PRODUCTS`) doldurulur ve "Seçenekler katalog tanımından getirildi" notu
+  gösterilir; stok girilip kaydedilince kalıcı olur.
+- Change: `admin.html` → renk ve beden artık **hazır listeden seçiliyor**, serbest
+  metin değil. Liste sırası: (1) bu ürünün katalogdaki kendi renkleri, (2) katalogdaki
+  diğer renkler, (3) renk paletindeki kalan adlar (`knownColors` / `knownSizes`).
+  Elle giriş yalnız listede olmayan bir seçenek için, en sondaki "Diğer (elle gir)…"
+  ile açılıyor.
+- Add: Renk seçiminin yanında canlı renk noktası; seçim değişince güncelleniyor.
+- Add: **Katalogdan Getir** butonu — yanlışlıkla silinen seçenekleri katalog
+  tanımından geri ekler, listede zaten olanları tekrarlamaz (`restoreCatalogVariants`).
+- Change: Beden alanına "Beden yok" seçeneği eklendi; bedensiz varyant (ör. Apple
+  Watch Series 9 "Pembe") artık listeden seçilebiliyor.
+
 ## 2026-09-02 (devam 2)
 
 ### Ürünü satıştan kaldırma, hukuki sayfalardaki taslak notunun kaldırılması

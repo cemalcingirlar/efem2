@@ -1006,8 +1006,9 @@
             <div class="admin-section-label">
               <svg class="icon" viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4-9-4Z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg> Renk / Beden ve Stok
             </div>
+            <div id="variant-source-note" style="display:none;font-size:0.8125rem;color:var(--primary);background:var(--primary-light);padding:8px 12px;border-radius:var(--radius-md);margin-bottom:10px"></div>
 
-            <div id="variant-editor-head" style="display:grid;grid-template-columns:1fr 110px 110px 40px;gap:8px;padding:0 0 6px;font-size:0.75rem;color:var(--text-muted);font-weight:600">
+            <div id="variant-editor-head" style="display:grid;grid-template-columns:1fr 130px 100px 40px;gap:8px;padding:0 0 6px;font-size:0.75rem;color:var(--text-muted);font-weight:600">
               <span>Renk</span><span>Beden</span><span>Stok</span><span></span>
             </div>
             <div id="variant-stock-list"></div>
@@ -1015,6 +1016,9 @@
             <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:12px">
               <button type="button" class="btn btn-ghost btn-sm" onclick="addVariantRow()">
                 <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Seçenek Ekle
+              </button>
+              <button type="button" class="btn btn-ghost btn-sm" onclick="restoreCatalogVariants()" title="Katalogda tanımlı renk/beden seçeneklerini listeye ekle">
+                <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14-5.2M20 12a8 8 0 0 1-14 5.2"/><path d="M18 3v4h-4"/><path d="M6 21v-4h4"/></svg> Katalogdan Getir
               </button>
               <span style="flex:1"></span>
               <input type="number" min="0" class="form-input" id="variant-bulk-stock" placeholder="10" style="max-width:110px">
@@ -2587,12 +2591,19 @@ function updateCategoryLabel() { /* otomatik */ }
    üründe ürün stoğunu varyant stoklarının TOPLAMINDAN türetir ve tekil
    "Stok Adedi" alanını yok sayar. Bu yüzden stok burada düzenlenir.
 
+   Renk ve beden HAZIR listeden seçilir; elle giriş yalnız listede olmayan
+   bir seçenek için son çare olarak vardır ("Diğer…"). Liste sırası:
+     1) bu ürünün katalogdaki kendi renkleri (en olası seçim)
+     2) katalogdaki diğer ürünlerde geçen renkler
+     3) renk paletindeki (COLOR_SWATCHES) kalan adlar
+
    sku sepetin satır anahtarıdır (js/cart.js → cartLineKey) ve sipariş
    kayıtlarında saklanır; mevcut bir satırın kodu değiştirilirse eski
-   siparişlerle bağ kopar. Bu yüzden kod alanı düzenlenemez, yalnız gösterilir. */
+   siparişlerle bağ kopar. Bu yüzden kod düzenlenemez, yalnız gösterilir. */
 
 let currentVariants = [];
 let variantSeq = 0;
+const MANUEL = '__elle__';
 
 function escapeAttr(s) {
   return String(s == null ? '' : s)
@@ -2600,16 +2611,95 @@ function escapeAttr(s) {
     .replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+/* Ürünün katalogdaki (kod içindeki) tanımı — varyant sözlüğünün ilk kaynağı */
+function staticProduct(id) {
+  return (typeof BASE_PRODUCTS !== 'undefined')
+    ? BASE_PRODUCTS.find(p => p.id === Number(id))
+    : null;
+}
+
+/* Hazır renk listesi: önce bu ürünün kendi renkleri, sonra katalogdaki
+   diğerleri, sonra palet. Tekrarlar elenir. */
+function knownColors(productId) {
+  const sirali = [];
+  const ekle = (c) => { if (c && !sirali.includes(c)) sirali.push(c); };
+
+  const kendi = staticProduct(productId);
+  if (kendi) (kendi.variants || []).forEach(v => ekle(v.color));
+
+  const havuz = new Set();
+  const tara = (liste) => (liste || []).forEach(p => (p.variants || []).forEach(v => v.color && havuz.add(v.color)));
+  tara(typeof PRODUCTS !== 'undefined' ? PRODUCTS : []);
+  tara(typeof BASE_PRODUCTS !== 'undefined' ? BASE_PRODUCTS : []);
+  [...havuz].sort((a, b) => a.localeCompare(b, 'tr')).forEach(ekle);
+
+  if (typeof COLOR_SWATCHES !== 'undefined') {
+    Object.keys(COLOR_SWATCHES).sort((a, b) => a.localeCompare(b, 'tr')).forEach(ekle);
+  }
+  return sirali;
+}
+
+/* Hazır beden listesi: önce bu ürünün kendi bedenleri, sonra katalogdakiler */
+function knownSizes(productId) {
+  const sirali = [];
+  const ekle = (s) => { if (s && !sirali.includes(s)) sirali.push(s); };
+
+  const kendi = staticProduct(productId);
+  if (kendi) (kendi.variants || []).forEach(v => ekle(v.size));
+
+  const havuz = new Set();
+  const tara = (liste) => (liste || []).forEach(p => (p.variants || []).forEach(v => v.size && havuz.add(v.size)));
+  tara(typeof PRODUCTS !== 'undefined' ? PRODUCTS : []);
+  tara(typeof BASE_PRODUCTS !== 'undefined' ? BASE_PRODUCTS : []);
+  [...havuz].sort((a, b) => a.localeCompare(b, 'tr')).forEach(ekle);
+
+  return sirali;
+}
+
+function secenekler(liste, secili, bosEtiket) {
+  const bilinen = liste.includes(secili);
+  const parcalar = [];
+  if (bosEtiket) {
+    parcalar.push('<option value=""' + (!secili ? ' selected' : '') + '>' + bosEtiket + '</option>');
+  }
+  liste.forEach(x => {
+    parcalar.push('<option value="' + escapeAttr(x) + '"' + (x === secili ? ' selected' : '') + '>' + escapeAttr(x) + '</option>');
+  });
+  // Listede olmayan mevcut değer kaybolmasın
+  if (secili && !bilinen) {
+    parcalar.push('<option value="' + escapeAttr(secili) + '" selected>' + escapeAttr(secili) + ' (özel)</option>');
+  }
+  parcalar.push('<option value="' + MANUEL + '">Diğer (elle gir)…</option>');
+  return parcalar.join('');
+}
+
 function variantRowHtml(v) {
-  const kod = v.sku || '';
+  const kod     = v.sku || '';
+  const renkler = knownColors(editProductId);
+  const bedenler = knownSizes(editProductId);
+  const nokta   = (typeof colorSwatch === 'function') ? colorSwatch(v.color) : '#9CA3AF';
+
   return [
     '<div class="variant-row" data-row="' + v._row + '"',
-    '     style="display:grid;grid-template-columns:1fr 110px 110px 40px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)">',
+    '     style="display:grid;grid-template-columns:1fr 130px 100px 40px;gap:8px;align-items:start;padding:8px 0;border-bottom:1px solid var(--border)">',
     '  <div>',
-    '    <input type="text" class="form-input variant-color" placeholder="Siyah" value="' + escapeAttr(v.color) + '" oninput="onVariantEdited()">',
-    '    <div style="font-size:0.6875rem;color:var(--text-muted);margin-top:3px">Kod: ' + (escapeAttr(kod) || '(kaydedince atanır)') + '</div>',
+    '    <div style="display:flex;align-items:center;gap:8px">',
+    '      <span class="variant-dot-preview" style="width:16px;height:16px;border-radius:50%;flex-shrink:0;border:1px solid var(--border);background:' + nokta + '"></span>',
+    '      <select class="form-select variant-color-select" onchange="onVariantSelect(this, \'color\')" style="flex:1">',
+    '        ' + secenekler(renkler, v.color, null),
+    '      </select>',
+    '    </div>',
+    '    <input type="text" class="form-input variant-color-manual" placeholder="Renk adını yazın" value=""',
+    '           style="display:none;margin-top:6px" oninput="onVariantEdited()">',
+    '    <div style="font-size:0.6875rem;color:var(--text-muted);margin-top:4px">Kod: ' + (escapeAttr(kod) || '(kaydedince atanır)') + '</div>',
     '  </div>',
-    '  <input type="text" class="form-input variant-size" placeholder="S/M" value="' + escapeAttr(v.size) + '" oninput="onVariantEdited()">',
+    '  <div>',
+    '    <select class="form-select variant-size-select" onchange="onVariantSelect(this, \'size\')">',
+    '      ' + secenekler(bedenler, v.size, 'Beden yok'),
+    '    </select>',
+    '    <input type="text" class="form-input variant-size-manual" placeholder="Beden" value=""',
+    '           style="display:none;margin-top:6px" oninput="onVariantEdited()">',
+    '  </div>',
     '  <input type="number" min="0" class="form-input variant-stock-input" data-sku="' + escapeAttr(kod) + '" value="' + Math.max(0, Number(v.stock) || 0) + '" oninput="onVariantEdited()">',
     '  <button type="button" class="btn-icon" title="Bu seçeneği sil" onclick="removeVariantRow(\'' + v._row + '\')" style="color:var(--error)">',
     '    <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/></svg>',
@@ -2618,12 +2708,33 @@ function variantRowHtml(v) {
   ].join('');
 }
 
+/* "Diğer…" seçilince elle giriş kutusunu açar, aksi halde gizler. */
+function onVariantSelect(el, alan) {
+  const row    = el.closest('.variant-row');
+  const manuel = row.querySelector('.variant-' + alan + '-manual');
+  if (el.value === MANUEL) {
+    manuel.style.display = 'block';
+    manuel.focus();
+  } else {
+    manuel.style.display = 'none';
+    manuel.value = '';
+  }
+  onVariantEdited();
+}
+
 /* Ürün açılırken varyantları çizer.
-   Firestore'daki eski kayıtlarda varyant stoğu olmayabilir (alan sonradan
-   eklendi); o durumda ürünün toplam stoğu satırlara eşit paylaştırılır ki
-   panel yanlışlıkla 0 göstermesin. */
+   `variants` boşsa (Firestore kaydı varyant alanı eklenmeden önce yazılmışsa)
+   kod içindeki katalog tanımından doldurulur — vitrinde renk/beden görünüp
+   panelde görünmemesinin sebebi buydu. */
 function renderVariantStocks(variants, urunStok) {
-  const gelen   = Array.isArray(variants) ? variants : [];
+  let gelen = Array.isArray(variants) ? variants : [];
+  let katalogdan = false;
+
+  if (!gelen.length) {
+    const kod = staticProduct(editProductId);
+    if (kod && (kod.variants || []).length) { gelen = kod.variants; katalogdan = true; }
+  }
+
   const stoksuz = gelen.length > 0 && gelen.every(v => !Number.isFinite(Number(v.stock)));
   const pay     = stoksuz && Number(urunStok) > 0 ? Math.floor(Number(urunStok) / gelen.length) : 0;
 
@@ -2635,15 +2746,16 @@ function renderVariantStocks(variants, urunStok) {
     _row:  'v' + (++variantSeq)
   }));
 
-  paintVariantEditor();
+  paintVariantEditor(katalogdan);
 }
 
-function paintVariantEditor() {
+function paintVariantEditor(katalogdan) {
   const blok  = document.getElementById('variant-stock-block');
   const ilk   = document.getElementById('variant-add-first');
   const liste = document.getElementById('variant-stock-list');
   const stok  = document.getElementById('p-stock');
   const hint  = document.getElementById('p-stock-hint');
+  const not   = document.getElementById('variant-source-note');
   if (!blok || !liste || !stok) return;
 
   const varMi = currentVariants.length > 0;
@@ -2657,6 +2769,13 @@ function paintVariantEditor() {
     hint.textContent = 'Seçeneklerin stok toplamı — aşağıdan düzenleyin.';
   }
 
+  if (not) {
+    not.style.display = katalogdan ? 'block' : 'none';
+    not.textContent = katalogdan
+      ? 'Seçenekler katalog tanımından getirildi. Stokları girip kaydedince kalıcı olur.'
+      : '';
+  }
+
   liste.innerHTML = currentVariants.map(variantRowHtml).join('');
   onVariantEdited();
 }
@@ -2666,9 +2785,21 @@ function onVariantEdited() {
   document.querySelectorAll('.variant-row').forEach(row => {
     const v = currentVariants.find(x => x._row === row.dataset.row);
     if (!v) return;
-    v.color = row.querySelector('.variant-color').value.trim();
-    v.size  = row.querySelector('.variant-size').value.trim();
+
+    const renkSec = row.querySelector('.variant-color-select').value;
+    v.color = renkSec === MANUEL
+      ? row.querySelector('.variant-color-manual').value.trim()
+      : renkSec;
+
+    const bedenSec = row.querySelector('.variant-size-select').value;
+    v.size = bedenSec === MANUEL
+      ? row.querySelector('.variant-size-manual').value.trim()
+      : bedenSec;
+
     v.stock = Math.max(0, parseInt(row.querySelector('.variant-stock-input').value) || 0);
+
+    const nokta = row.querySelector('.variant-dot-preview');
+    if (nokta && typeof colorSwatch === 'function') nokta.style.background = colorSwatch(v.color);
   });
 
   if (currentVariants.length) {
@@ -2681,7 +2812,7 @@ function onVariantEdited() {
   if (!uyari) return;
   const anahtar  = currentVariants.map(v => (v.color + '|' + v.size).toLowerCase());
   const mesajlar = [];
-  if (currentVariants.some(v => !v.color)) mesajlar.push('Renk alanı boş bırakılamaz.');
+  if (currentVariants.some(v => !v.color)) mesajlar.push('Renk seçilmeyen satır var.');
   if (anahtar.some((a, i) => anahtar.indexOf(a) !== i)) mesajlar.push('Aynı renk/beden birden fazla kez girilmiş.');
   uyari.textContent = mesajlar.join(' ');
   uyari.style.display = mesajlar.length ? 'block' : 'none';
@@ -2689,12 +2820,34 @@ function onVariantEdited() {
 
 function addVariantRow() {
   currentVariants.push({ sku: '', color: '', size: '', stock: 0, _row: 'v' + (++variantSeq) });
-  paintVariantEditor();
+  paintVariantEditor(false);
 }
 
 function removeVariantRow(rowId) {
   currentVariants = currentVariants.filter(v => v._row !== rowId);
-  paintVariantEditor();
+  paintVariantEditor(false);
+}
+
+/* Katalogdaki tüm seçenekleri tek tıkla geri getirir (yanlışlıkla silinmişse). */
+function restoreCatalogVariants() {
+  const kod = staticProduct(editProductId);
+  if (!kod || !(kod.variants || []).length) {
+    showToast('Bu ürünün katalogda tanımlı seçeneği yok.', 'warning');
+    return;
+  }
+  const mevcut = new Map(currentVariants.map(v => [(v.color + '|' + v.size).toLowerCase(), v]));
+  let eklenen = 0;
+  kod.variants.forEach(v => {
+    const k = ((v.color || '') + '|' + (v.size || '')).toLowerCase();
+    if (mevcut.has(k)) return;
+    currentVariants.push({
+      sku: v.sku || '', color: v.color || '', size: v.size || '',
+      stock: 0, _row: 'v' + (++variantSeq)
+    });
+    eklenen++;
+  });
+  paintVariantEditor(false);
+  showToast(eklenen ? eklenen + ' seçenek katalogdan eklendi.' : 'Katalogdaki tüm seçenekler zaten listede.', eklenen ? 'success' : 'warning');
 }
 
 /* "Tümüne uygula": tek değeri bütün seçeneklere yazar. */
@@ -2714,7 +2867,7 @@ function collectVariantStocks() {
   if (!currentVariants.length) return { ok: true, variants: [] };
 
   if (currentVariants.some(v => !v.color)) {
-    return { ok: false, error: 'Her seçenekte renk zorunludur.' };
+    return { ok: false, error: 'Her seçenekte renk seçilmelidir.' };
   }
   const anahtar = currentVariants.map(v => (v.color + '|' + v.size).toLowerCase());
   if (anahtar.some((a, i) => anahtar.indexOf(a) !== i)) {

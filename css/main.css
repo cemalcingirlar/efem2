@@ -338,7 +338,11 @@ p { color: var(--text-secondary); }
 }
 
 .breadcrumb a:hover { color: var(--primary); }
+/* Ayraç aydınlık temada kenarlık rengiyle uyumlu; koyu temada aynı değişken
+   zeminden ayırt edilemeyecek kadar koyu kalıyor (1.6:1) ve breadcrumb
+   parçaları birbirine yapışık okunuyordu. */
 .breadcrumb .sep { color: var(--border-dark); }
+:root[data-theme="dark"] .breadcrumb .sep { color: var(--text-muted); }
 .breadcrumb .current { color: var(--text-primary); font-weight: 500; }
 
 /* ─── Badge ─── */

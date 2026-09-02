@@ -763,6 +763,24 @@
 
 .category-card:hover img { transform: scale(1.08); }
 
+/* Karanlık modda kategori görselleri ───────────────────────────────
+   Akıllı Saatler ve Kulaklıklar kartlarındaki çizimler açık (krem)
+   zeminli; koyu temada iki parlak blok gibi duruyor ve görseli olmayan
+   (gradyan zeminli) diğer kartlarla aynı sete ait görünmüyorlardı.
+   Görsel karartılıp üstteki katman güçlendirilerek dört kart aynı
+   koyuluğa getirilir. Aydınlık temada hiçbir şey değişmez. */
+:root[data-theme="dark"] .category-card img {
+  filter: brightness(0.42) saturate(0.85) contrast(1.05);
+}
+
+:root[data-theme="dark"] .category-overlay {
+  background: linear-gradient(to top, rgba(10,13,19,0.92) 0%, rgba(10,13,19,0.55) 60%, rgba(10,13,19,0.35) 100%);
+}
+
+:root[data-theme="dark"] .category-card:hover img {
+  filter: brightness(0.55) saturate(1) contrast(1.05);
+}
+
 .category-overlay {
   position: absolute;
   inset: 0;

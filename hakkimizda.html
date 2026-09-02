@@ -28,7 +28,7 @@
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/pages.css">  <style>
     .about-hero {
-      background: linear-gradient(135deg, var(--surface-2) 0%, #E2E8F0 100%);
+      background: linear-gradient(135deg, var(--surface-2) 0%, var(--surface) 100%);
       padding: 80px 20px;
       text-align: center;
       border-bottom: 1px solid var(--border);
@@ -36,7 +36,7 @@
     .about-hero h1 {
       font-size: 2.5rem;
       font-weight: 800;
-      color: var(--secondary);
+      color: var(--text-primary);
       margin-bottom: 16px;
       letter-spacing: -0.02em;
     }
@@ -58,6 +58,17 @@
       box-shadow: var(--shadow-sm);
     }
     .sketch-frame img { display: block; width: 100%; height: auto; max-height: 340px; object-fit: cover; }
+
+    /* Çizim krem zeminli; koyu temada parlak bir blok gibi duruyordu.
+       Çerçeve yüzey rengine çekilir, çizim de aynı koyulukta kalması
+       için karartılır. Aydınlık temada hiçbir şey değişmez. */
+    :root[data-theme="dark"] .sketch-frame {
+      background: var(--surface);
+      border-color: var(--border);
+    }
+    :root[data-theme="dark"] .sketch-frame img {
+      filter: brightness(0.55) saturate(0.9);
+    }
     .about-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -66,7 +77,7 @@
     }
     .about-text h2 {
       font-size: 1.75rem;
-      color: var(--secondary);
+      color: var(--text-primary);
       margin-bottom: 24px;
     }
     .about-text p {
@@ -100,14 +111,14 @@
       margin-top: 8px;
     }
     .partners-section {
-      background: white;
+      background: var(--surface);
       padding: 64px 20px;
       text-align: center;
       border-top: 1px solid var(--border);
     }
     .partners-section h3 {
       font-size: 1.25rem;
-      color: var(--secondary);
+      color: var(--text-primary);
       margin-bottom: 32px;
     }
     .partners-grid {
@@ -145,7 +156,7 @@
       padding: 12px 24px;
       border-radius: 99px;
       font-weight: 700;
-      color: var(--secondary);
+      color: var(--text-primary);
       font-size: 0.9375rem;
     }
     .company-info {
@@ -153,7 +164,7 @@
       padding: 64px 20px;
     }
     .info-card {
-      background: white;
+      background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 16px;
       padding: 32px;
@@ -163,7 +174,7 @@
     .info-card h4 {
       font-size: 1.125rem;
       margin-bottom: 24px;
-      color: var(--secondary);
+      color: var(--text-primary);
       display: flex;
       align-items: center;
       gap: 8px;
@@ -184,7 +195,7 @@
     }
     .info-val {
       font-weight: 700;
-      color: var(--secondary);
+      color: var(--text-primary);
     }
     
     @media (max-width: 768px) {
@@ -324,7 +335,7 @@
       <div>
         <div style="background:var(--surface-2); border-radius: 24px; padding: 40px; text-align: center; border: 1px solid var(--border);">
           <img src="assets/logos/vodafone.svg" alt="Vodafone" style="height:44px;width:auto;margin:0 auto 24px;display:block">
-          <h3 style="color:var(--secondary); font-size:1.5rem; margin-bottom: 12px;">Vodafone İş Ortağı</h3>
+          <h3 style="color:var(--text-primary); font-size:1.5rem; margin-bottom: 12px;">Vodafone İş Ortağı</h3>
           <p style="color:var(--text-muted); font-size: 1.0625rem;">
             Güçlü altyapımız ve güvenilir hizmet anlayışımızla Vodafone ayrıcalıklarını mağazalarımızda sizlerle buluşturuyoruz.
           </p>

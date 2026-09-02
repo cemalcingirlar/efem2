@@ -3,6 +3,39 @@
 Bu dosya projede yapılan her ekleme, değişiklik ve kaldırmayı kayıt altına alır.
 En yeni kayıtlar en üstte.
 
+## 2026-09-02 (devam 7)
+
+### Karanlık mod düzeltmeleri
+- Fix: **Hakkımızda sayfasında başlıklar okunmuyordu.** Sayfa içi stil bloğu metin rengi
+  için tema değişkeni yerine marka rengi `var(--secondary)` (koyu lacivert) kullanıyordu;
+  bu renk temaya göre değişmediği için koyu zeminde kontrast **1.09:1**'e düşüyor,
+  "Hikayemiz", "Güvenilir Teknoloji Ortağınız" gibi başlıklar görünmez oluyordu.
+  Metin renkleri `var(--text-primary)` ile değiştirildi.
+- Fix: `hakkimizda.html` → `.partners-section` ve `.info-card` zemini düz `white` yazılmıştı;
+  koyu temada iki parlak beyaz blok olarak duruyordu. `var(--surface)` yapıldı.
+  `.about-hero` gradyanındaki sabit `#E2E8F0` de yüzey değişkenine çevrildi.
+- Fix: `hakkimizda.html` → `.sketch-frame` krem zeminliydi (`#FAF7F0`); koyu temada
+  yüzey rengine çekildi ve içindeki çizim karartıldı.
+- Fix: **Ana sayfadaki kategori kartları birbirini tutmuyordu.** Akıllı Saatler ve
+  Kulaklıklar kartları açık (krem) zeminli çizimler kullanıyor, Aksesuarlar ve Ses & Diğer
+  ise koyu gradyan zemin kullanıyordu; koyu temada ikisi parlak, ikisi koyu görünüyordu.
+  Koyu temada görseller karartılıp üstteki katman güçlendirildi, dört kart aynı koyuluğa
+  getirildi (`css/components.css`). Aydınlık temada hiçbir şey değişmedi.
+- Fix: `css/main.css` → breadcrumb ayracı (`›`) koyu temada `--border-dark` rengiyle
+  zeminden ayırt edilemiyordu (1.61:1); parçalar birbirine yapışık okunuyordu.
+  Koyu temada `--text-muted` kullanılıyor.
+
+### Ana sayfa hero sayaçları
+- Fix: Sayaçlar elle yazılmıştı ve katalog büyüyünce yanlış kalmıştı: **"18+ Ürün Çeşidi"**
+  (katalogda 54 ürün var) ve **"10+ Marka"** (5 marka var). Artık katalogdan hesaplanıyor.
+- Remove: **"5⭐ Müşteri Puanı"** sayacı kaldırıldı. Sitede hiç müşteri değerlendirmesi yok
+  (ürün kartlarında bilerek "Henüz değerlendirilmedi" yazıyor); olmayan bir puanı ana
+  sayfada reklam etmek yanıltıcı olurdu. Yerine "2 Yıl Resmi Garanti" kondu.
+
+Tarama yöntemi: her sayfa koyu temada yüklenip metin/zemin kontrast oranı ve karanlıkta
+parlayan geniş zeminler ölçüldü. Ödeme, sepet, ürün listesi, ürün detay, hesap, profil ve
+hukuki sayfalarda bulgu çıkmadı.
+
 ## 2026-09-02 (devam 6)
 
 ### Ürün yönetiminde barkod ile arama

@@ -153,16 +153,16 @@
           </div>
           <div class="hero-stats">
             <div class="hero-stat">
-              <div class="num">18+</div>
+              <div class="num" id="stat-product-count">—</div>
               <div class="label">Ürün Çeşidi</div>
             </div>
             <div class="hero-stat">
-              <div class="num">10+</div>
+              <div class="num" id="stat-brand-count">—</div>
               <div class="label">Marka</div>
             </div>
             <div class="hero-stat">
-              <div class="num">5⭐</div>
-              <div class="label">Müşteri Puanı</div>
+              <div class="num">2 Yıl</div>
+              <div class="label">Resmi Garanti</div>
             </div>
             <div class="hero-stat">
               <div class="num">%0</div>
@@ -570,6 +570,13 @@
   // Öne çıkan ürünleri yükle (sunucu katalogu geldikten sonra)
   whenCatalogReady(() => {
     injectOrganizationSchema();
+
+    /* Hero sayaçları katalogdan doldurulur. Elle yazılan rakamlar katalog
+       büyüyünce yanlış kalıyordu (18+ ürün yazarken katalogda 54 ürün vardı). */
+    const urunSayaci  = document.getElementById('stat-product-count');
+    const markaSayaci = document.getElementById('stat-brand-count');
+    if (urunSayaci)  urunSayaci.textContent  = PRODUCTS.length + '+';
+    if (markaSayaci) markaSayaci.textContent = new Set(PRODUCTS.map(p => p.brand)).size + '';
 
     // Öne çıkanlar şeridi: katalog büyüdükçe şişmemesi için 8 ürünle sınırlı
     const featured = getFeaturedProducts().slice(0, 8);

@@ -753,7 +753,7 @@
         </div>
         <div class="admin-flex-gap-12-center">
           <input type="text" class="admin-search" id="product-search"
-                 placeholder="Ürün ara..." oninput="filterTable(this.value)">
+                 placeholder="Ürün adı, marka veya barkod ara…" oninput="filterTable()">
           <select id="cat-filter" class="sort-select" onchange="filterTable()" style="padding:10px 14px">
             <option value="all">Tümü</option>
             <option value="saat">Akıllı Saatler</option>
@@ -763,6 +763,7 @@
           </select>
           <button class="btn btn-primary" onclick="openAddModal()"><svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Ürün Ekle</button>
         </div>
+        <div id="search-hint" style="display:none;font-size:0.8125rem;color:var(--primary);background:var(--primary-light);padding:8px 12px;border-radius:var(--radius-md);margin:0 24px 12px"></div>
       </div>
       <div class="admin-content" style="padding-top:24px">
         <div class="admin-card">
@@ -1455,6 +1456,7 @@ function renderDashboard() {
               <td><div class="product-name-cell">
                 <div class="name">${p.name}${p.active === false ? ` <span class="badge badge-error" style="font-size:0.6875rem;vertical-align:middle">Satışta değil</span>` : ''}</div>
                 <div class="brand">${p.brand}${p.barcode ? ` · <span style="font-family:ui-monospace,monospace">${escapeAdminHtml(p.barcode)}</span>` : ''}</div>
+          ${aramaVaryantEslesme.has(p.id) ? `<div style="font-size:0.6875rem;color:var(--primary);font-weight:600;margin-top:2px">Eşleşen seçenek: ${escapeAdminHtml(aramaVaryantEslesme.get(p.id))}</div>` : ''}
               </div></td>
               <td>${p.categoryLabel}</td>
               <td><strong>${formatPrice(p.price)}</strong></td>
@@ -1559,6 +1561,7 @@ function renderProductsTable(products) {
         <div class="product-name-cell">
           <div class="name">${p.name}${p.active === false ? ` <span class="badge badge-error" style="font-size:0.6875rem;vertical-align:middle">Satışta değil</span>` : ''}</div>
           <div class="brand">${p.brand}${p.barcode ? ` · <span style="font-family:ui-monospace,monospace">${escapeAdminHtml(p.barcode)}</span>` : ''}</div>
+          ${aramaVaryantEslesme.has(p.id) ? `<div style="font-size:0.6875rem;color:var(--primary);font-weight:600;margin-top:2px">Eşleşen seçenek: ${escapeAdminHtml(aramaVaryantEslesme.get(p.id))}</div>` : ''}
         </div>
       </td>
       <td>${p.categoryLabel}</td>
@@ -1583,15 +1586,70 @@ function renderProductsTable(products) {
   }).join('');
 }
 
+/* Arama sırasında hangi varyantın eşleştiği — barkod okutulduğunda
+   yöneticinin hangi renk/bedeni taradığını görmesi için tabloda gösterilir.
+   Anahtar: ürün id'si, değer: eşleşen varyantın etiketi. */
+let aramaVaryantEslesme = new Map();
+
+/* Barkod okuyucu kodu tek parça yazar, insan ise boşluk/tire ile yazabilir.
+   Karşılaştırmadan önce iki taraf da sadeleştirilir ki "8697 6543" ile
+   "86976543" aynı sayılsın. */
+function normalizeKod(deger) {
+  return String(deger == null ? '' : deger).toLowerCase().replace(/[\s\-_.]/g, '');
+}
+
 function filterTable() {
-  const q   = (document.getElementById('product-search')?.value || '').toLowerCase();
+  const ham = (document.getElementById('product-search')?.value || '').trim();
+  const q   = ham.toLowerCase();
+  const kod = normalizeKod(ham);
   const cat = document.getElementById('cat-filter')?.value || 'all';
+
+  aramaVaryantEslesme = new Map();
+
   const filtered = PRODUCTS.filter(p => {
-    const matchQ   = !q || p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q);
     const matchCat = cat === 'all' || p.category === cat;
-    return matchQ && matchCat;
+    if (!matchCat) return false;
+    if (!q) return true;
+
+    // Ad / marka
+    if (p.name.toLowerCase().includes(q) || (p.brand || '').toLowerCase().includes(q)) return true;
+
+    if (!kod) return false;
+
+    /* ÖNCE varyant barkodu / Malzeme kodu: barkod okutmanın asıl
+       kullanıldığı yer burası, her renk/beden ayrı kod taşır. Ürün
+       barkodundan önce bakılır ki okutulan kodun HANGİ seçeneğe ait
+       olduğu her zaman gösterilebilsin (ürün barkodu ilk varyantınkiyle
+       aynı olabiliyor). */
+    const eslesen = (p.variants || []).find(v =>
+      normalizeKod(v.barcode).includes(kod) || normalizeKod(v.sku).includes(kod)
+    );
+    if (eslesen) {
+      aramaVaryantEslesme.set(p.id, [eslesen.color, eslesen.size].filter(Boolean).join(' · ') || eslesen.sku);
+      return true;
+    }
+
+    // Ürün seviyesi barkod (varyantsız ürünler ve genel arama için)
+    return normalizeKod(p.barcode).includes(kod);
   });
+
   renderProductsTable(filtered);
+
+  /* Barkod okutulduğunda tek sonuç kalırsa doğrudan ürünü aç: elle
+     tıklamaya gerek kalmaz, okuyucudan sonraki adım hazır olur. */
+  const bilgi = document.getElementById('search-hint');
+  if (bilgi) {
+    if (ham && filtered.length === 0) {
+      bilgi.textContent = `"${ham}" için ürün, barkod veya malzeme kodu eşleşmedi.`;
+      bilgi.style.display = 'block';
+    } else if (aramaVaryantEslesme.size) {
+      const ilk = filtered.find(p => aramaVaryantEslesme.has(p.id));
+      bilgi.textContent = `Kod eşleşti: ${ilk.name} — ${aramaVaryantEslesme.get(ilk.id)}`;
+      bilgi.style.display = 'block';
+    } else {
+      bilgi.style.display = 'none';
+    }
+  }
 }
 
 /* ════════════════════════════

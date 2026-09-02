@@ -3,6 +3,29 @@
 Bu dosya projede yapılan her ekleme, değişiklik ve kaldırmayı kayıt altına alır.
 En yeni kayıtlar en üstte.
 
+## 2026-09-02 (devam 6)
+
+### Ürün yönetiminde barkod ile arama
+- Add: `admin.html` → `filterTable()` artık ürün adı ve markanın yanı sıra **barkod ve
+  Malzeme kodu (sku)** üzerinden de arıyor. Arama kutusunun yer tutucusu güncellendi.
+- Change: Arama ÖNCE varyant barkodlarına bakar, sonra ürün seviyesindeki barkoda.
+  Sıra önemli: ürün barkodu ilk varyantınkiyle aynı olabildiği için, önce ürüne
+  bakılsaydı okutulan kodun hangi seçeneğe ait olduğu gösterilemezdi.
+- Add: Barkod eşleşince hangi renk/bedenin okutulduğu iki yerde gösterilir — arama
+  kutusunun altındaki bilgi şeridinde ve ürün satırında ("Eşleşen seçenek: Roze Altın · M/L").
+  Barkod okutan yönetici hangi varyantı taradığını görmeden karar veremezdi.
+- Add: `normalizeKod()` — karşılaştırmadan önce boşluk, tire, alt çizgi ve nokta atılır.
+  Barkod okuyucu kodu tek parça yazar, insan ise "1422 882" gibi yazabilir; ikisi de aynı
+  ürünü bulmalı.
+- Add: Sonuç bulunamayınca "… için ürün, barkod veya malzeme kodu eşleşmedi." uyarısı;
+  boş tablo karşısında aramanın çalışıp çalışmadığı belirsiz kalıyordu.
+- Note: Kategori filtresi ile birlikte çalışır — seçili kategori dışındaki bir barkod
+  okutulursa sonuç boş döner (filtre bilinçli olarak korunur).
+
+Doğrulama: katalogdaki **114 varyant barkodunun tamamı** tek tek aratıldı; hepsi doğru
+ürünü buluyor ve doğru varyantı gösteriyor. Kısmi kod, boşluklu yazım, ürün barkodu,
+ad/marka araması ve kategori filtresiyle birleşimi ayrıca denendi.
+
 ## 2026-09-02 (devam 5)
 
 ### Kargo takip e-postası, varyant barkodları, sipariş ekranı düzeltmeleri

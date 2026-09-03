@@ -3,6 +3,33 @@
 Bu dosya projede yapılan her ekleme, değişiklik ve kaldırmayı kayıt altına alır.
 En yeni kayıtlar en üstte.
 
+## 2026-09-03 (devam 2)
+
+### Kart ödemesi kapalıysa sebebi artık görünüyor
+- Durum tespiti: Canlıda checkout "Kart ile ödeme şu anda kullanılamıyor" diyor ve
+  EFT'ye düşüyor. `https://efemiletisim.com/api/payment/config` → `cardEnabled: false`,
+  `mode: null`, buna karşılık `serviceAccount.parsed: true` (`projectId: efemiletisim`)
+  ve `orderApiEnabled: true`. Yani sipariş defteri hazır, **PayTR kimlik bilgileri
+  eksik**: `paytrConfig()` üçlüden biri yoksa `null` döndürüyor ve kart kapalı kalıyor.
+  Bu kasıtlı "fail closed" davranışı — hata değil, eksik yapılandırma.
+- Add: `api/_lib/env.js` → `paytrDiagnostics()`. Üç değişkenin hangisinin tanımlı,
+  hangisinin eksik olduğunu söyler. Değerlerin **hiçbir parçası dönmez**; mevcut
+  `serviceAccountDiagnostics()` ile aynı desen. Ayrıca sık yapılan iki hatayı yakalar:
+  değeri tırnak içinde yapıştırmak ve başında/sonunda boşluk bırakmak — ikisinde de
+  değişken "var" görünür ama PayTR imzası tutmaz.
+- Add: `/api/payment/config` yanıtına `paytr` alanı eklendi. Artık "kart kapalı" mesajının
+  sebebi tek istekle görülüyor:
+  `"paytr": { "present": ["PAYTR_MERCHANT_ID"], "missing": ["PAYTR_MERCHANT_KEY", "PAYTR_MERCHANT_SALT"], "ok": false }`
+- Doc: `docs/PAYTR-ENTEGRASYON.md` bölüm 8'e teşhis adımı eklendi (hangi değişken eksik,
+  `suspicious` ne demek, ekledikten sonra redeploy gerektiği).
+- Test: `scripts/test-payment-flow.mjs` → 11. bölüm, 12 test. Üçü tamamken `ok: true`;
+  salt silinince eksik alanın **adıyla** bildirildiği ve kart/taksidin kapandığı; üçü de
+  yokken üçünün listelendiği; tırnaklı değerin şüpheli işaretlendiği doğrulanıyor.
+  Ayrıca yanıt gövdesinin `merchant_key`/`merchant_salt` değerlerinden hiçbir parça
+  içermediği sınanıyor. 56 → 68 test.
+- Müşteriye gösterilen mesaj değişmedi: yapılandırma eksikken kart ödemesi açılmaz,
+  checkout EFT/havale sunar, sahte başarı üretilmez.
+
 ## 2026-09-03 (devam)
 
 ### Taksit tablosu — kompakt görünüm ve kart seçimi

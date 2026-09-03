@@ -221,12 +221,47 @@ telekomünikasyon ürünleri için ne diyor — ikisini de teyit edin.
 | Belirti | Olası neden |
 |---|---|
 | `cardEnabled: false` kaldı | `PAYTR_*` üçlüsünden biri veya `FIREBASE_SERVICE_ACCOUNT` eksik ya da deploy yenilenmedi |
+| Checkout'ta "Kart ile ödeme şu anda kullanılamıyor" | Aynı sebep. **Hangi değişkenin eksik olduğunu görmek için** aşağıya bakın |
 | PayTR `status: failed`, "Zorunlu alan degeri gecersiz: ..." | İlgili alan boş/geçersiz gidiyor; `PAYTR_DEBUG_ON=1` ile ayrıntıyı görün |
 | `paytr_token` hatası | `merchant_key`/`merchant_salt` yanlış veya alan sırası bozulmuş |
 | Ödeme alınıyor ama sipariş `awaiting_payment` | Panelde Bildirim URL tanımsız/yanlış |
 | `notify_bad_hash` logları | Panelde başka mağazanın anahtarları ya da salt yanlış |
 | Sipariş `pending_review`'da takılıyor | Tahsil edilen tutar sipariş tutarıyla uyuşmuyor — logdaki `problems` alanına bakın |
 | iframe açılmıyor | CSP'de `frame-src https://www.paytr.com` eksik (bkz. `vercel.json`) |
+
+
+### "Kart ile ödeme şu anda kullanılamıyor" — hangi değişken eksik?
+
+Bu mesaj kasıtlı bir davranıştır ("fail closed"): yapılandırma eksikken kart
+ödemesi açılmaz, checkout EFT/havaleye düşer, hiçbir koşulda sahte başarı üretilmez.
+Sebebi öğrenmek için:
+
+```bash
+curl -s https://efemiletisim.com/api/payment/config
+```
+
+Yanıttaki `paytr` alanı sebebi adıyla söyler — **değerlerin hiçbir parçası dönmez**:
+
+```json
+"paytr": {
+  "present": ["PAYTR_MERCHANT_ID"],
+  "missing": ["PAYTR_MERCHANT_KEY", "PAYTR_MERCHANT_SALT"],
+  "ok": false
+}
+```
+
+| Alan | Anlamı |
+|---|---|
+| `missing` boş değil | O değişkenler Vercel Production ortamında tanımlı değil |
+| `suspicious` var | Değer tanımlı ama tırnak içinde yapıştırılmış ya da başında/sonunda boşluk var; PayTR imzası tutmaz |
+| `serviceAccount.parsed: false` | `FIREBASE_SERVICE_ACCOUNT` okunamıyor; `reason` alanı aşamayı söyler |
+
+Değişkeni ekledikten sonra **yeni bir deploy** gerekir: Vercel ortam değişkenleri
+derleme anında değil çalışma anında okunur, ama mevcut sunucu örnekleri eski değerle
+ayakta kalabilir. Vercel → Deployments → son deploy → Redeploy.
+
+Yerelde aynı sorgu `http://localhost:3000/api/payment/config` ile çalışır; yerel
+değerler `.env.local` dosyasından okunur (bkz. `dev-server.js`).
 
 ---
 

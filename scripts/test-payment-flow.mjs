@@ -351,6 +351,72 @@ console.log('\n10) taksit — vitrin ile ödeme adımı aynı şeyi söylemeli')
   if (oncekiMax === undefined) delete process.env.PAYTR_MAX_INSTALLMENT; else process.env.PAYTR_MAX_INSTALLMENT = oncekiMax;
 }
 
+console.log('\n11) kart ödemesi kapalıysa sebebi görünür');
+{
+  /* "Kart ile ödeme şu anda kullanılamıyor" mesajı merchant_id, key veya salt
+     eksikken çıkıyor; hangisi olduğu görünmediği için kurulum hatası el
+     yordamıyla aranıyordu. Teşhis SADECE durumu söyler, değer döndürmez. */
+  const config = require('../api/payment/config.js');
+  const yedek = {
+    id:   process.env.PAYTR_MERCHANT_ID,
+    key:  process.env.PAYTR_MERCHANT_KEY,
+    salt: process.env.PAYTR_MERCHANT_SALT
+  };
+
+  // a) Üçü tamamken kart açık
+  {
+    const c = await call(config, { method: 'GET' });
+    check('üçü tamamken ok', c.json?.paytr?.ok, true);
+    check('eksik yok', c.json?.paytr?.missing, []);
+    check('kart ödemesi açık', c.json?.cardEnabled, true);
+  }
+
+  // b) Salt eksik → sebep adıyla bildirilir
+  {
+    delete process.env.PAYTR_MERCHANT_SALT;
+    const c = await call(config, { method: 'GET' });
+    check('salt eksikken ok false', c.json?.paytr?.ok, false);
+    check('eksik olan alan adıyla söylenir', c.json?.paytr?.missing, ['PAYTR_MERCHANT_SALT']);
+    check('kart ödemesi kapalı', c.json?.cardEnabled, false);
+    check('taksit de kapalı', c.json?.installmentsEnabled, false);
+    process.env.PAYTR_MERCHANT_SALT = yedek.salt;
+  }
+
+  // c) Hiçbiri yok → üçü de listelenir
+  {
+    delete process.env.PAYTR_MERCHANT_ID;
+    delete process.env.PAYTR_MERCHANT_KEY;
+    delete process.env.PAYTR_MERCHANT_SALT;
+    const c = await call(config, { method: 'GET' });
+    check('üçü de eksik listelenir', c.json?.paytr?.missing,
+          ['PAYTR_MERCHANT_ID', 'PAYTR_MERCHANT_KEY', 'PAYTR_MERCHANT_SALT']);
+    check('tanımlı olan yok', c.json?.paytr?.present, []);
+  }
+
+  // d) Tırnak içinde yapıştırma yakalanır (değer "var" görünür ama imza tutmaz)
+  {
+    process.env.PAYTR_MERCHANT_ID   = yedek.id;
+    process.env.PAYTR_MERCHANT_KEY  = '"' + yedek.key + '"';
+    process.env.PAYTR_MERCHANT_SALT = yedek.salt;
+    const c = await call(config, { method: 'GET' });
+    check('tırnaklı değer şüpheli işaretlenir',
+          c.json?.paytr?.suspicious?.[0], { field: 'PAYTR_MERCHANT_KEY', hint: 'tirnak_icinde_yapistirilmis' });
+  }
+
+  // e) Teşhis sırların hiçbir parçasını döndürmez
+  {
+    process.env.PAYTR_MERCHANT_KEY = yedek.key;
+    const c = await call(config, { method: 'GET' });
+    const govde = JSON.stringify(c.json);
+    check('merchant_key gövdede yok', govde.includes(yedek.key), false);
+    check('merchant_salt gövdede yok', govde.includes(yedek.salt), false);
+  }
+
+  process.env.PAYTR_MERCHANT_ID   = yedek.id;
+  process.env.PAYTR_MERCHANT_KEY  = yedek.key;
+  process.env.PAYTR_MERCHANT_SALT = yedek.salt;
+}
+
 await new Promise(resolve => gateway.close(resolve));
 console.log(`\n${passed} test geçti, ${failed} test başarısız.\n`);
 process.exitCode = failed ? 1 : 0;

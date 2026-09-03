@@ -6,7 +6,7 @@
    Sır veya yapılandırma detayı dönmez, yalnızca yetenek bilgisi. */
 
 const { methodNotAllowed, json } = require('../_lib/http');
-const { isCardPaymentEnabled, paytrMode, installmentSettings, serviceAccountDiagnostics } = require('../_lib/env');
+const { isCardPaymentEnabled, paytrMode, installmentSettings, serviceAccountDiagnostics, paytrDiagnostics } = require('../_lib/env');
 const { isStoreConfigured } = require('../_lib/store');
 const { adminEmailsDiagnostics } = require('../_lib/admin-auth');
 
@@ -29,6 +29,9 @@ module.exports = async (req, res) => {
     orderApiEnabled: isStoreConfigured(),
     // Kurulum teşhisi: anahtarın içeriği DEĞİL, yalnız durumu.
     serviceAccount: serviceAccountDiagnostics(),
+    // Kart ödemesi kapalıysa sebebi burada görünür: hangi PayTR
+    // değişkeni eksik. Değerlerin kendisi DÖNMEZ.
+    paytr:          paytrDiagnostics(),
     adminEmails:    adminEmailsDiagnostics(),
     provider: 'paytr'
   });

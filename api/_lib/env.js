@@ -166,6 +166,40 @@ function serviceAccountDiagnostics() {
   return { present: true, parsed: true, projectId: String(parsed.project_id) };
 }
 
+/* ─── PayTR teşhisi ───
+   "Kart ile ödeme şu anda kullanılamıyor" mesajı üç ayrı sebepten çıkabiliyor:
+   merchant_id, merchant_key veya merchant_salt eksik. Hangisi olduğu
+   görünmediği için kurulum hatası el yordamıyla aranıyordu.
+
+   Bu fonksiyon SADECE durumu söyler; değerlerin hiçbir parçası dışarı
+   verilmez. merchant_id gizli bir bilgi değildir (ödeme formunda zaten
+   görünür) ama yine de burada yalnız uzunluğu bildiriliyor — teşhis için
+   yeterli, sızıntı için değersiz.
+
+   present : üç değişkenin tanımlı olanları
+   missing : tanımlı olmayanlar (kart ödemesinin kapalı olma sebebi)          */
+function paytrDiagnostics() {
+  const alanlar = ['PAYTR_MERCHANT_ID', 'PAYTR_MERCHANT_KEY', 'PAYTR_MERCHANT_SALT'];
+  const present = [];
+  const missing = [];
+  const suspicious = [];
+
+  for (const ad of alanlar) {
+    const raw = process.env[ad];
+    if (typeof raw !== 'string' || !raw.trim()) { missing.push(ad); continue; }
+    present.push(ad);
+
+    /* Sık yapılan hata: değeri tırnak içinde yapıştırmak veya sonuna boşluk
+       bırakmak. Değer "var" göründüğü hâlde PayTR imzası tutmaz. */
+    const text = raw.trim();
+    if (/^["']|["']$/.test(text))  suspicious.push({ field: ad, hint: 'tirnak_icinde_yapistirilmis' });
+    else if (raw !== text)         suspicious.push({ field: ad, hint: 'basinda_sonunda_bosluk' });
+  }
+
+  const durum = { present, missing, ok: missing.length === 0 };
+  if (suspicious.length) durum.suspicious = suspicious;
+  return durum;
+}
 function paymentStatusReport() {
   return {
     paytr: Boolean(paytrConfig()),
@@ -192,6 +226,7 @@ module.exports = {
   orderTokenSecret,
   serviceAccount,
   serviceAccountDiagnostics,
+  paytrDiagnostics,
   paymentStatusReport,
   isCardPaymentEnabled
 };

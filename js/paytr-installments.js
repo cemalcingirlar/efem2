@@ -11,7 +11,7 @@
    1) İçerik Güvenliği Politikası (vercel.json) tarafında ek izin gerekmiyor:
       betik `script-src ... https://www.paytr.com` ile yükleniyor, banka
       logoları `img-src 'self' data: https:` ile geliyor. `connect-src`
-      genişletilmedi — gereksiz yere gevşetmemek için.
+      genişletilmedi — yapılandırma sorgusu kendi kaynağımıza ('self') gidiyor.
    2) document.write olmadığı için betik sayfa yüklendikten SONRA da
       çalışır; tutar değiştiğinde (sepette adet değişimi, kupon) tabloyu
       yeniden kurabiliyoruz.
@@ -23,21 +23,23 @@
    Buradaki token GİZLİ DEĞİLDİR: taksit tablosu herkese açık bir sayfada
    gömülü çalışır, yani zaten ziyaretçiye görünür. Ödeme imzasında kullanılan
    PAYTR_MERCHANT_KEY / PAYTR_MERCHANT_SALT ile ilgisi yoktur ve onlar
-   yalnız sunucu ortam değişkeninde durur.                                  */
+   yalnız sunucu ortam değişkeninde durur.
 
-/* DİKKAT — tablo ile ödeme adımı ayrı ayarlardır.
-   Burada gösterilen taksit seçenekleri ödeme sırasında otomatik olarak açılmaz.
-   Ödeme adımında gerçekten sunulacak taksitleri sunucu belirler:
-   api/_lib/env.js → installmentSettings() → PAYTR_NO_INSTALLMENT / PAYTR_MAX_INSTALLMENT.
-   Varsayılan PAYTR_NO_INSTALLMENT=1, yani taksit KAPALI. Bu tabloyu yayında tutacaksanız
-   ortam değişkenini 0 yapıp üst sınırı buradaki `taksit` değeriyle eşitleyin; aksi hâlde
-   müşteri gördüğü taksidi ödeme ekranında bulamaz.
-   Ayrıntı ve mevzuat uyarısı: docs/PAYTR-ENTEGRASYON.md → bölüm 10.                       */
+   ── Tablo ile ödeme adımı neden hep aynı şeyi söyler ──
+   Gösterilecek taksit sayısı burada sabit yazılmaz; /api/payment/config'ten
+   okunur. O uç sunucunun PayTR'ye gerçekten göndereceği ayarı döndürür
+   (api/_lib/env.js → installmentSettings()). Böylece:
+
+     - Kart ödemesi kapalıysa veya taksit kapalıysa tablo hiç gösterilmez.
+     - Üst sınır (PAYTR_MAX_INSTALLMENT) neyse tablo da o kadar taksit gösterir.
+
+   Yani müşteriye vitrinde gösterilen taksit, ödeme ekranında bulacağı
+   taksittir. Ortam değişkeni değişince tablo kendiliğinden uyar; iki yeri
+   elle eşitlemek gerekmez.                                                 */
 
 const PAYTR_TAKSIT = {
   token:      'ba988551db9a3b16c19951991a177777a8a799ae666af296c3f56fc058bab395',
   merchantId: '743825',
-  taksit:     0,   // 0 = sınır yok
   tumu:       1,   // 1 = yalnız avantajlılar değil, tüm seçenekler
   base:       'https://www.paytr.com/odeme/taksit-tablosu/v2'
 };
@@ -45,6 +47,20 @@ const PAYTR_TAKSIT = {
 const PAYTR_TABLO_ID  = 'paytr_taksit_tablosu';
 const PAYTR_BETIK_ID  = 'paytr-taksit-betigi';
 const PAYTR_BOLUM_ID  = 'paytr-taksit-bolumu';
+
+/* Sunucunun taksit ayarı. Sayfa başına bir kez sorulur.
+   Ulaşılamazsa null döner ve tablo gösterilmez ("fail closed"): olmayan bir
+   taksidi reklam etmektense hiç göstermemek doğrudur. */
+let paytrAyarSozu = null;
+
+function paytrAyar() {
+  if (!paytrAyarSozu) {
+    paytrAyarSozu = fetch('/api/payment/config')
+      .then(r => (r.ok ? r.json() : null))
+      .catch(() => null);
+  }
+  return paytrAyarSozu;
+}
 
 /* Tutarı PayTR'nin beklediği sade biçime çevirir: 23459 → "23459.00" */
 function paytrTutarBicimle(tutar) {
@@ -59,12 +75,19 @@ function paytrTutarBicimle(tutar) {
 let paytrIstenenTutar = null;
 let paytrZamanlayici  = null;
 
+function paytrBolumuGizle() {
+  const bolum = document.getElementById(PAYTR_BOLUM_ID);
+  const kutu  = document.getElementById(PAYTR_TABLO_ID);
+  document.getElementById(PAYTR_BETIK_ID)?.remove();
+  if (bolum) bolum.style.display = 'none';
+  if (kutu) { kutu.innerHTML = ''; delete kutu.dataset.cizim; }
+}
+
 /* Tabloyu verilen tutar için (yeniden) kurar.
    Tutar geçersizse veya sıfırsa bölüm gizlenir — PayTR amount=0 için boş
    yanıt döndürüyor, boş bir kutu göstermenin anlamı yok. */
 function renderInstallmentTable(tutar) {
-  const kutu = document.getElementById(PAYTR_TABLO_ID);
-  if (!kutu) return;
+  if (!document.getElementById(PAYTR_TABLO_ID)) return;
 
   paytrIstenenTutar = paytrTutarBicimle(tutar);
 
@@ -74,21 +97,31 @@ function renderInstallmentTable(tutar) {
   paytrZamanlayici = setTimeout(paytrTabloyuKur, 120);
 }
 
-function paytrTabloyuKur() {
-  const bolum = document.getElementById(PAYTR_BOLUM_ID);
-  const kutu  = document.getElementById(PAYTR_TABLO_ID);
+async function paytrTabloyuKur() {
+  const kutu = document.getElementById(PAYTR_TABLO_ID);
   if (!kutu) return;
 
   const miktar = paytrIstenenTutar;
-  if (!miktar) {
-    document.getElementById(PAYTR_BETIK_ID)?.remove();
-    if (bolum) bolum.style.display = 'none';
-    kutu.innerHTML = '';
-    return;
-  }
+  if (!miktar) { paytrBolumuGizle(); return; }
 
-  // Aynı tutar zaten çizilmişse tekrar istek atma
-  if (kutu.dataset.tutar === miktar && kutu.innerHTML.trim()) return;
+  /* Kart ödemesi veya taksit kapalıysa tablo gösterilmez. Bu kontrol
+     olmadan vitrinde 12 taksit yazıp ödeme ekranında tek çekim çıkabilirdi. */
+  const ayar = await paytrAyar();
+  if (!ayar || !ayar.installmentsEnabled) { paytrBolumuGizle(); return; }
+
+  // Tutar bu arada değiştiyse güncel değerle devam et
+  if (paytrIstenenTutar !== miktar) { paytrTabloyuKur(); return; }
+
+  const bolum = document.getElementById(PAYTR_BOLUM_ID);
+
+  /* PAYTR_MAX_INSTALLMENT ile aynı sınır. 0 = sınır yok (PayTR neyi
+     destekliyorsa onu gösterir). */
+  const sinir = Number(ayar.maxInstallment) || 0;
+
+  /* Aynı çizim zaten duruyorsa tekrar istek atma. Anahtara sınır da giriyor:
+     yalnız tutara bakılsaydı üst sınır değiştiğinde eski tablo ekranda kalırdı. */
+  const cizimAnahtari = miktar + '|' + sinir;
+  if (kutu.dataset.cizim === cizimAnahtari && kutu.innerHTML.trim()) return;
 
   // Önceki betiği kaldır: aynı id ile yenisi eklenince tarayıcı tekrar çalıştırır
   document.getElementById(PAYTR_BETIK_ID)?.remove();
@@ -97,7 +130,7 @@ function paytrTabloyuKur() {
   const url = `${PAYTR_TAKSIT.base}?token=${encodeURIComponent(PAYTR_TAKSIT.token)}`
             + `&merchant_id=${encodeURIComponent(PAYTR_TAKSIT.merchantId)}`
             + `&amount=${encodeURIComponent(miktar)}`
-            + `&taksit=${PAYTR_TAKSIT.taksit}&tumu=${PAYTR_TAKSIT.tumu}`;
+            + `&taksit=${sinir}&tumu=${PAYTR_TAKSIT.tumu}`;
 
   const betik = document.createElement('script');
   betik.id    = PAYTR_BETIK_ID;
@@ -107,7 +140,7 @@ function paytrTabloyuKur() {
   /* PayTR'ye ulaşılamazsa sayfa bozulmamalı: bölüm sessizce gizlenir.
      Taksit tablosu bir kolaylık, satın almanın önkoşulu değil. */
   betik.onerror = () => {
-    if (bolum) bolum.style.display = 'none';
+    paytrBolumuGizle();
     console.warn('[taksit] PayTR taksit tablosu yüklenemedi.');
   };
 
@@ -115,7 +148,7 @@ function paytrTabloyuKur() {
     /* Bu betik yüklenirken tutar değiştiyse çizilen tablo eskidir; atılıp
        güncel tutarla yeniden kuruluyor. */
     if (paytrIstenenTutar !== miktar) { paytrTabloyuKur(); return; }
-    kutu.dataset.tutar = miktar;
+    kutu.dataset.cizim = cizimAnahtari;
     // Boş yanıt geldiyse (ör. tutar tablo için çok düşük) bölümü gösterme
     if (bolum) bolum.style.display = kutu.innerHTML.trim() ? 'block' : 'none';
   };

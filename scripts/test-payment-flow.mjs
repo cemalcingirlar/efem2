@@ -302,6 +302,55 @@ console.log('\n9) hız sınırı (kart deneme freni)');
   check('aynı IP\'den ardışık denemeler 429 ile durur', lastStatus, 429);
 }
 
+console.log('\n10) taksit — vitrin ile ödeme adımı aynı şeyi söylemeli');
+{
+  /* Taksit tablosu (js/paytr-installments.js) kaç taksit göstereceğini
+     /api/payment/config'ten okur. Bu bölüm o ucun, sunucunun PayTR'ye
+     gerçekten gönderdiği ayarı bildirdiğini doğruluyor; ikisi ayrışırsa
+     müşteri vitrinde gördüğü taksidi ödeme ekranında bulamaz. */
+  const config    = require('../api/payment/config.js');
+  const oncekiNo  = process.env.PAYTR_NO_INSTALLMENT;
+  const oncekiMax = process.env.PAYTR_MAX_INSTALLMENT;
+
+  // a) Varsayılan: ortam değişkeni yokken taksit kapalı ("fail closed")
+  delete process.env.PAYTR_NO_INSTALLMENT;
+  delete process.env.PAYTR_MAX_INSTALLMENT;
+  {
+    const c = await call(config, { method: 'GET' });
+    check('ayar yokken taksit kapalı bildirilir', c.json?.installmentsEnabled, false);
+    check('ayar yokken üst sınır 0', c.json?.maxInstallment, 0);
+  }
+
+  // b) Taksit açık, üst sınır 12
+  process.env.PAYTR_NO_INSTALLMENT  = '0';
+  process.env.PAYTR_MAX_INSTALLMENT = '12';
+  {
+    const c = await call(config, { method: 'GET' });
+    check('taksit açıkken açık bildirilir', c.json?.installmentsEnabled, true);
+    check('üst sınır 12 bildirilir', c.json?.maxInstallment, 12);
+
+    const r = await call(initialize, { body: ORDER_INPUT });
+    check('PayTR tarafına taksit açık gidiyor', fakePaytr.lastRequest?.no_installment, '0');
+    check('PayTR tarafına üst sınır 12 gidiyor', fakePaytr.lastRequest?.max_installment, '12');
+    check('taksitli istekte de tutar sunucudan', r.json?.totalKurus, EXPECTED_TOTAL_KURUS);
+
+    /* Vitrin ile ödeme adımı aynı sayıyı söylüyor mu? Tablonun okuduğu
+       değer ile PayTR'ye giden değer birebir eşit olmalı. */
+    check('vitrin sınırı = PayTR tarafına giden sınır',
+          String(c.json?.maxInstallment), fakePaytr.lastRequest?.max_installment);
+  }
+
+  // c) Aralık dışı sınır kabul edilmez (0 = sınırsıza düşer)
+  process.env.PAYTR_MAX_INSTALLMENT = '13';
+  {
+    const c = await call(config, { method: 'GET' });
+    check('13 taksit kabul edilmez', c.json?.maxInstallment, 0);
+  }
+
+  if (oncekiNo  === undefined) delete process.env.PAYTR_NO_INSTALLMENT;  else process.env.PAYTR_NO_INSTALLMENT  = oncekiNo;
+  if (oncekiMax === undefined) delete process.env.PAYTR_MAX_INSTALLMENT; else process.env.PAYTR_MAX_INSTALLMENT = oncekiMax;
+}
+
 await new Promise(resolve => gateway.close(resolve));
 console.log(`\n${passed} test geçti, ${failed} test başarısız.\n`);
 process.exitCode = failed ? 1 : 0;

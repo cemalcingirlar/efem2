@@ -241,17 +241,50 @@ telekomünikasyon ürünleri için ne diyor — ikisini de teyit edin.
 - Bildirim işlendiğinde PayTR'ye gövdesi **tam olarak `OK`** olan yanıt dönülür.
 - `merchant_oid` alfanumeriktir; sipariş numarası üretimi bunu garanti eder.
 
-## 10. Taksit tablosu (bilgilendirme bileşeni)
+## 10. Taksit (tablo + ödeme adımı)
 
-PayTR'nin hazır taksit tablosu ürün detay, sepet ve ödeme sayfalarında gösterilir.
-Kod: `js/paytr-installments.js`, stil: `css/components.css` → "PAYTR TAKSİT TABLOSU".
+Taksit **açıktır**, üst sınır **12**. İki parça var ve ikisi tek kaynaktan beslenir:
+
+| Parça | Nerede | Ne yapar |
+|---|---|---|
+| Ödeme adımı | `api/_lib/env.js` → `installmentSettings()` | PayTR'ye `no_installment` / `max_installment` gönderir |
+| Vitrin tablosu | `js/paytr-installments.js` | Ürün, sepet ve ödeme sayfasında taksit tablosunu gösterir |
+
+Vitrindeki tablo taksit sayısını **kendisi bilmez**; `/api/payment/config` ucundan okur.
+O uç da sunucunun PayTR'ye gerçekten göndereceği ayarı döndürür. Sonuç:
+
+- Kart ödemesi kapalıysa veya taksit kapalıysa tablo **hiç gösterilmez**.
+- `PAYTR_MAX_INSTALLMENT` neyse tablo da o kadar taksit gösterir.
+
+Yani müşteriye vitrinde gösterilen taksit, ödeme ekranında bulacağı taksittir.
+Sınırı değiştirmek için **tek bir yeri** değiştirmek yeterlidir: ortam değişkeni.
+
+### Ortam değişkenleri
+
+```
+PAYTR_NO_INSTALLMENT=0     # 0 = taksit açık, 1 = kapalı
+PAYTR_MAX_INSTALLMENT=12   # 1-12 arası üst sınır (0 = sınır yok)
+```
+
+Bunları Vercel → Project → Settings → Environment Variables altında **Production**
+ortamına girin. Kodun kendi varsayılanı kapalıdır: değişken tanımlı değilse taksit
+görünmez ("fail closed"), yani yanlışlıkla açık kalmaz.
+
+Taksidin ayrıca **PayTR mağaza panelinde de tanımlı** olması gerekir. Panelde kapalıyken
+`PAYTR_NO_INSTALLMENT=0` yapmak taksit sunmaz.
+
+> **Mevzuat:** elektronik ve telekomünikasyon ürünlerinde BDDK taksit kısıtları vardır ve
+> kategoriye göre değişir. Buradaki 12 sınırı mağaza sahibinin kendi kategorisi için
+> doğruladığı değerdir. Yeni bir kategori satışa girerse sınır yeniden doğrulanmalıdır.
+
+### Tablo bileşeninin parametreleri
 
 | Parametre | Değer | Anlamı |
 |---|---|---|
 | `token` | `ba98…b395` | Tablo bileşeninin genel anahtarı |
 | `merchant_id` | `743825` | Mağaza numarası |
 | `amount` | sayfaya göre | Ürün fiyatı / sepet toplamı / ödenecek toplam |
-| `taksit` | `0` | Taksit sayısında üst sınır yok |
+| `taksit` | `/api/payment/config` → `maxInstallment` | Üst sınır (sabit yazılmaz) |
 | `tumu` | `1` | Yalnız avantajlı değil, **tüm** seçenekler gösterilir |
 
 Bilinmesi gerekenler:
@@ -265,29 +298,11 @@ Bilinmesi gerekenler:
 - `amount=0` gönderilirse PayTR boş yanıt döndürür; bu durumda bölüm gizlenir.
 - Tutar biçimi esnektir (`1881.38`, `162,10`, `2.640,50` kabul ediliyor); kod her zaman
   nokta ayraçlı iki basamaklı sade biçim üretir (`23459.00`).
-- Taksit sayısını sınırlamak isterseniz `PAYTR_TAKSIT.taksit` değerini değiştirin;
-  yalnız avantajlı seçenekleri göstermek için `tumu` değerini `0` yapın.
+- PayTR'ye ulaşılamazsa bölüm sessizce gizlenir; sayfa bozulmaz.
 
-### ⚠️ Tabloyu açmadan önce: taksit ödeme adımında da açık olmalı
+### Doğrulama
 
-Taksit tablosu ile ödeme adımı **iki ayrı ayardır** ve şu an birbirini tutmuyor:
-
-- Tablo (bu bileşen) 12 taksite kadar seçenek gösteriyor.
-- Ödeme adımı ise `api/_lib/env.js` → `installmentSettings()` üzerinden PayTR'ye
-  `no_installment=1` gönderiyor; **varsayılan taksit kapalı**. `.env` içinde
-  `PAYTR_NO_INSTALLMENT=1`, `PAYTR_MAX_INSTALLMENT=0`.
-
-Bu haliyle müşteri üründe "12 x 2.532,93 TL" görüp ödeme ekranında yalnız tek çekim
-bulur. Bunu düzeltmenin iki yolu var, **birini seçmek zorunlu**:
-
-1. **Taksidi gerçekten açın:** `.env` içinde `PAYTR_NO_INSTALLMENT=0` ve
-   `PAYTR_MAX_INSTALLMENT` = izin verdiğiniz üst sınır (1–12). Aynı sınırı tabloda da
-   uygulayın: `js/paytr-installments.js` → `PAYTR_TAKSIT.taksit`. Taksit ayrıca PayTR
-   panelinde de tanımlı olmalıdır.
-2. **Tabloyu kaldırın:** taksit satmayacaksanız bileşeni sayfalardan çıkarın.
-
-> **Mevzuat uyarısı:** elektronik ve telekomünikasyon ürünlerinde BDDK taksit kısıtları
-> vardır (bazı kategorilerde taksit yasak, bazılarında üst sınırlı). Taksidi açmadan önce
-> sattığınız kategoriler için güncel sınırı doğrulayın. Kod bu sınırı sizin adınıza bilemez;
-> bu yüzden varsayılan kapalı bırakılmıştır.
+`npm run test:payment` içinde 10. bölüm bu tutarlılığı sınar: ayar yokken taksidin kapalı
+bildirildiğini, `0`/`12` verildiğinde hem `/api/payment/config` hem de PayTR'ye giden isteğin
+aynı sınırı söylediğini ve aralık dışı bir değerin (13) kabul edilmediğini doğrular.
 

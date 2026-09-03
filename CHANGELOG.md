@@ -5,20 +5,32 @@ En yeni kayıtlar en üstte.
 
 ## 2026-09-03
 
-### PayTR taksit tablosu
-- Add: `js/paytr-installments.js` — PayTR'nin taksit tablosu bileşeni (`/odeme/taksit-tablosu/v2`)
-  ürün detay, sepet ve ödeme sayfalarına eklendi. `tumu=1` (avantajlılar değil tüm seçenekler),
-  `taksit=0` (üst sınır yok) ile çalışıyor; 9 banka, 12 taksite kadar seçenek dönüyor.
+### PayTR taksit — açıldı (12 taksite kadar)
+- Change: Taksit **açıldı**. `.env.example` → `PAYTR_NO_INSTALLMENT=0`, `PAYTR_MAX_INSTALLMENT=12`.
+  Kodun kendi varsayılanı kapalı kalmaya devam ediyor: değişken tanımlı değilse taksit
+  görünmez ("fail closed"), yani yanlışlıkla açık kalmaz. Değerlerin Vercel Production
+  ortamına girilmesi ve taksidin PayTR mağaza panelinde de tanımlı olması gerekir.
+- Add: `js/paytr-installments.js` — PayTR taksit tablosu (`/odeme/taksit-tablosu/v2`)
+  ürün detay, sepet ve ödeme sayfalarına eklendi. `tumu=1` ile avantajlılar değil tüm
+  seçenekler gösteriliyor; 9 banka, 12 taksite kadar.
+- Tablo taksit sayısını **sabit yazmıyor**, `/api/payment/config` ucundan okuyor. O uç
+  sunucunun PayTR'ye gerçekten göndereceği ayarı döndürüyor. Böylece vitrinde gösterilen
+  taksit ile ödeme ekranındaki taksit ayrışamıyor: kart ödemesi veya taksit kapalıysa tablo
+  hiç görünmüyor, üst sınır değişince tablo kendiliğinden uyuyor. Sınırı değiştirmek için
+  tek bir yer var: ortam değişkeni.
 - Tutar kaynağı: ürün detayda ürün fiyatı, sepette sepet toplamı, ödemede **ödenecek toplam**
   (kupon indirimi düşülmüş hali). Adet değişince ve kupon sunucudan doğrulanınca tablo yenileniyor.
 - Tablo yalnız bilgilendirmedir; tahsil edilecek tutar burada belirlenmez. Ödeme akışında
   sepet sunucuda yeniden fiyatlanmaya devam ediyor, istemciden tutar alınmıyor.
 - Betik tek satırlık bir `innerHTML` ataması yapıyor; `document.write`/`fetch` kullanmadığı için
-  sayfa yüklendikten sonra da yeniden kurulabiliyor. Bu yüzden CSP'de `connect-src`
-  genişletilmedi — mevcut `script-src ... https://www.paytr.com` ve `img-src ... https:` yetiyor.
+  sayfa yüklendikten sonra da yeniden kurulabiliyor. CSP'de `connect-src` genişletilmedi —
+  yapılandırma sorgusu kendi kaynağımıza gidiyor, mevcut `script-src ... https://www.paytr.com`
+  ve `img-src ... https:` yetiyor.
 - Yarış durumu koruması: kupon doğrulaması özet çizimini iki kez tetikliyor. Geç dönen eski
   istek yenisinin üzerine yazmasın diye istekler 120 ms birleştiriliyor ve betik yüklendiğinde
   istenen tutarla karşılaştırılıyor; uyuşmuyorsa tablo yeniden kuruluyor.
+- Fix (geliştirme sırasında yakalandı): yeniden çizim önbelleği yalnız tutara bakıyordu;
+  üst sınır değiştiğinde eski tablo ekranda kalıyordu. Anahtara sınır da eklendi.
 - PayTR'ye ulaşılamazsa veya boş yanıt gelirse bölüm gizleniyor; boş kutu veya hata gösterilmiyor.
   Taksit tablosu bir kolaylık, satın almanın önkoşulu değil.
 - Fix: PayTR'nin verdiği örnek CSS sabit açık renkler kullanıyordu (`#e1e1e1`, `#f7f7f7`,
@@ -26,9 +38,14 @@ En yeni kayıtlar en üstte.
   Stil tema değişkenleriyle yeniden yazıldı (`css/components.css`). Banka logoları beyaz zemin
   için üretildiği için koyu temada ters çevrilmek yerine küçük beyaz bir altlığa oturtuldu —
   marka renkleri bozulmadan görünür kalıyor.
+- Test: `scripts/test-payment-flow.mjs` → 10. bölüm. Ayar yokken taksidin kapalı bildirildiğini,
+  `0`/`12` verildiğinde hem `/api/payment/config` hem PayTR'ye giden isteğin aynı sınırı
+  söylediğini ve aralık dışı bir değerin (13) kabul edilmediğini doğruluyor. 47 → 56 test.
 - Not: Taksit tablosu token'ı **gizli değildir**; herkese açık sayfada gömülü çalışır ve zaten
   ziyaretçiye görünür. Ödeme imzasında kullanılan `PAYTR_MERCHANT_KEY` / `PAYTR_MERCHANT_SALT`
   ile ilgisi yoktur; onlar yalnız sunucu ortam değişkeninde durmaya devam ediyor.
+- Uyarı korundu: elektronik/telekomünikasyon ürünlerinde BDDK taksit kısıtları vardır ve
+  kategoriye göre değişir. 12 sınırı mağaza sahibinin kendi kategorisi için doğruladığı değerdir.
 
 ## 2026-09-02 (devam 7)
 

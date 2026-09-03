@@ -23,6 +23,12 @@ Bozulmaması gereken kurallar:
 
 - Sipariş numarası (`merchant_oid`) **alfanumerik** olmak zorundadır (PayTR kuralı); `newOrderId()` bunu garanti eder.
 
+- Taksit iki yerde değil **tek yerde** ayarlanır: `PAYTR_NO_INSTALLMENT` / `PAYTR_MAX_INSTALLMENT`.
+  Vitrindeki taksit tablosu (`js/paytr-installments.js`) sayıyı sabit yazmaz, `/api/payment/config`
+  üzerinden sunucunun PayTR'ye göndereceği ayarı okur. Tabloya elle taksit sayısı yazılmaz —
+  müşteriye gösterilen taksit ile ödeme adımındaki taksit ayrışamamalı. Ayrıntı:
+  `docs/PAYTR-ENTEGRASYON.md` bölüm 10.
+
 Ödeme kütüphanesini değiştirdikten sonra `npm run test:payment` çalıştırılmalı.
 
 ## Yönetim paneli (ürün · kupon · görsel)

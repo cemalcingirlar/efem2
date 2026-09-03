@@ -1486,10 +1486,12 @@ footer {
 }
 .taksit-bolum-baslik .icon { color: var(--primary); }
 
+/* 12 px metinlerde --text-muted koyu temada 3.8:1 kontrast veriyor (AA sınırı 4.5).
+   Bu iki küçük yazı --text-secondary kullanıyor: koyu temada 7.06:1. */
 .taksit-not {
   margin-top: var(--space-3);
   font-size: 0.75rem;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   line-height: 1.5;
 }
 
@@ -1530,7 +1532,7 @@ footer {
 .taksit-tutari-text {
   float: left;
   width: 126px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
   margin-bottom: 5px;
   font-weight: 600;
 }

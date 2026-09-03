@@ -195,6 +195,7 @@
 <script src="js/data.js"></script>
 <script src="js/cart.js"></script>
 <script type="module" src="js/auth.js"></script>
+<script src="js/paytr-installments.js"></script>
 <script src="js/products.js"></script>
 <script src="js/main.js"></script>
 <script type="module">
@@ -409,6 +410,9 @@ function renderProductDetail(p) {
           </table>
         </div>
 
+        <!-- Taksit tablosu (PayTR) — ürünün kendi fiyatına göre -->
+        ${installmentSectionHtml('Bu ürün için taksit seçenekleri')}
+
         <!-- Kargo bilgisi -->
         <div class="detail-perks">
           <div class="detail-perk">
@@ -465,6 +469,9 @@ function renderProductDetail(p) {
 
   initGallerySwipe(p);
   syncSizeOptions();
+  /* Taksit tablosu ürün fiyatına göre kurulur. Renk/beden seçimi fiyatı
+     değiştirmediği için seçim değişince yeniden kurmaya gerek yok. */
+  renderInstallmentTable(p.price);
   loadProductQuestions(p.id);
 }
 

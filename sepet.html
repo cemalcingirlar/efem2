@@ -128,6 +128,7 @@
 <script src="js/data.js"></script>
 <script src="js/cart.js"></script>
 <script type="module" src="js/auth.js"></script>
+<script src="js/paytr-installments.js"></script>
 <script src="js/products.js"></script>
 <script src="js/main.js"></script>
 <script>
@@ -180,6 +181,9 @@ function renderCartPage() {
           ← Alışverişe Devam Et
         </a>
       </div>
+
+      <!-- Taksit tablosu (PayTR) — sepet toplamına göre -->
+      ${installmentSectionHtml('Sepet toplamı için taksit seçenekleri')}
     </div>
 
     <!-- Sağ: Özet -->
@@ -232,6 +236,11 @@ function renderCartPage() {
 
   // Event listener'ları yeniden bağla
   window.renderCartPage = renderCartPage;
+
+  /* Taksit tablosu sepet TOPLAMINA göre kurulur (kupon indirimi düşülmüş hali).
+     renderCartPage adet değişiminde ve kupon uygulanınca yeniden çalıştığı için
+     tablo da kendiliğinden güncellenir. */
+  renderInstallmentTable(total);
 }
 
 /* Kupon sunucuda doğrulanır (js/cart.js → applyCoupon): bu yüzden akış

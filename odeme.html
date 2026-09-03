@@ -568,6 +568,9 @@
           </div>
           <div class="price-row-note">Tüm fiyatlara KDV dahildir.</div>
         </div>
+        <!-- Taksit tablosu (PayTR) burada oluşturulur; içeriği
+             renderCheckoutSummary() sipariş toplamına göre kurar. -->
+        <div id="taksit-yuvasi"></div>
       </div>
     </div>
   </div>
@@ -579,6 +582,7 @@
 <script src="js/data.js"></script>
 <script src="js/cart.js"></script>
 <script src="js/products.js"></script>
+<script src="js/paytr-installments.js"></script>
 <script src="js/payment.js"></script>
 <script src="js/main.js"></script>
 <script type="module" src="js/auth.js"></script>
@@ -996,6 +1000,15 @@ function renderCheckoutSummary() {
   // Ödeme yükümlülüğü metnindeki tutar da aynı kaynaktan beslenir.
   const obligationTotal = document.getElementById('obligation-total');
   if (obligationTotal) obligationTotal.textContent = formatPrice(total);
+
+  /* Taksit tablosu ödenecek TOPLAM üzerinden gösterilir (kupon düşülmüş).
+     Bu işlev kupon sunucudan doğrulandıktan sonra tekrar çalıştığı için
+     tablo indirimli tutarla yenilenir. */
+  const taksitYuvasi = document.getElementById('taksit-yuvasi');
+  if (taksitYuvasi && !document.getElementById('paytr-taksit-bolumu')) {
+    taksitYuvasi.innerHTML = installmentSectionHtml('Taksit Seçenekleri');
+  }
+  renderInstallmentTable(total);
 }
 
 function setStep(n) {

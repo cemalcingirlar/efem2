@@ -240,3 +240,54 @@ telekomünikasyon ürünleri için ne diyor — ikisini de teyit edin.
 - `hash` doğrulanmayan bildirim hiçbir durumu değiştirmez.
 - Bildirim işlendiğinde PayTR'ye gövdesi **tam olarak `OK`** olan yanıt dönülür.
 - `merchant_oid` alfanumeriktir; sipariş numarası üretimi bunu garanti eder.
+
+## 10. Taksit tablosu (bilgilendirme bileşeni)
+
+PayTR'nin hazır taksit tablosu ürün detay, sepet ve ödeme sayfalarında gösterilir.
+Kod: `js/paytr-installments.js`, stil: `css/components.css` → "PAYTR TAKSİT TABLOSU".
+
+| Parametre | Değer | Anlamı |
+|---|---|---|
+| `token` | `ba98…b395` | Tablo bileşeninin genel anahtarı |
+| `merchant_id` | `743825` | Mağaza numarası |
+| `amount` | sayfaya göre | Ürün fiyatı / sepet toplamı / ödenecek toplam |
+| `taksit` | `0` | Taksit sayısında üst sınır yok |
+| `tumu` | `1` | Yalnız avantajlı değil, **tüm** seçenekler gösterilir |
+
+Bilinmesi gerekenler:
+
+- **Buradaki token gizli değildir.** Tablo herkese açık bir sayfada gömülü çalışır, yani
+  zaten ziyaretçiye görünür. `PAYTR_MERCHANT_KEY` / `PAYTR_MERCHANT_SALT` ile karıştırmayın;
+  onlar ödeme imzasında kullanılır ve **yalnız sunucu ortam değişkeninde** durur.
+- **Tablo tahsilatı belirlemez.** Bilgilendirmedir. Ödeme akışında sepet sunucuda yeniden
+  fiyatlanmaya devam eder; istemciden tutar alınmaz.
+- Sayfada sadece **bir** tablo olabilir: PayTR sabit `id="paytr_taksit_tablosu"` bekliyor.
+- `amount=0` gönderilirse PayTR boş yanıt döndürür; bu durumda bölüm gizlenir.
+- Tutar biçimi esnektir (`1881.38`, `162,10`, `2.640,50` kabul ediliyor); kod her zaman
+  nokta ayraçlı iki basamaklı sade biçim üretir (`23459.00`).
+- Taksit sayısını sınırlamak isterseniz `PAYTR_TAKSIT.taksit` değerini değiştirin;
+  yalnız avantajlı seçenekleri göstermek için `tumu` değerini `0` yapın.
+
+### ⚠️ Tabloyu açmadan önce: taksit ödeme adımında da açık olmalı
+
+Taksit tablosu ile ödeme adımı **iki ayrı ayardır** ve şu an birbirini tutmuyor:
+
+- Tablo (bu bileşen) 12 taksite kadar seçenek gösteriyor.
+- Ödeme adımı ise `api/_lib/env.js` → `installmentSettings()` üzerinden PayTR'ye
+  `no_installment=1` gönderiyor; **varsayılan taksit kapalı**. `.env` içinde
+  `PAYTR_NO_INSTALLMENT=1`, `PAYTR_MAX_INSTALLMENT=0`.
+
+Bu haliyle müşteri üründe "12 x 2.532,93 TL" görüp ödeme ekranında yalnız tek çekim
+bulur. Bunu düzeltmenin iki yolu var, **birini seçmek zorunlu**:
+
+1. **Taksidi gerçekten açın:** `.env` içinde `PAYTR_NO_INSTALLMENT=0` ve
+   `PAYTR_MAX_INSTALLMENT` = izin verdiğiniz üst sınır (1–12). Aynı sınırı tabloda da
+   uygulayın: `js/paytr-installments.js` → `PAYTR_TAKSIT.taksit`. Taksit ayrıca PayTR
+   panelinde de tanımlı olmalıdır.
+2. **Tabloyu kaldırın:** taksit satmayacaksanız bileşeni sayfalardan çıkarın.
+
+> **Mevzuat uyarısı:** elektronik ve telekomünikasyon ürünlerinde BDDK taksit kısıtları
+> vardır (bazı kategorilerde taksit yasak, bazılarında üst sınırlı). Taksidi açmadan önce
+> sattığınız kategoriler için güncel sınırı doğrulayın. Kod bu sınırı sizin adınıza bilemez;
+> bu yüzden varsayılan kapalı bırakılmıştır.
+

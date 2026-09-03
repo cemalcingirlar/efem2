@@ -3,6 +3,33 @@
 Bu dosya projede yapılan her ekleme, değişiklik ve kaldırmayı kayıt altına alır.
 En yeni kayıtlar en üstte.
 
+## 2026-09-03
+
+### PayTR taksit tablosu
+- Add: `js/paytr-installments.js` — PayTR'nin taksit tablosu bileşeni (`/odeme/taksit-tablosu/v2`)
+  ürün detay, sepet ve ödeme sayfalarına eklendi. `tumu=1` (avantajlılar değil tüm seçenekler),
+  `taksit=0` (üst sınır yok) ile çalışıyor; 9 banka, 12 taksite kadar seçenek dönüyor.
+- Tutar kaynağı: ürün detayda ürün fiyatı, sepette sepet toplamı, ödemede **ödenecek toplam**
+  (kupon indirimi düşülmüş hali). Adet değişince ve kupon sunucudan doğrulanınca tablo yenileniyor.
+- Tablo yalnız bilgilendirmedir; tahsil edilecek tutar burada belirlenmez. Ödeme akışında
+  sepet sunucuda yeniden fiyatlanmaya devam ediyor, istemciden tutar alınmıyor.
+- Betik tek satırlık bir `innerHTML` ataması yapıyor; `document.write`/`fetch` kullanmadığı için
+  sayfa yüklendikten sonra da yeniden kurulabiliyor. Bu yüzden CSP'de `connect-src`
+  genişletilmedi — mevcut `script-src ... https://www.paytr.com` ve `img-src ... https:` yetiyor.
+- Yarış durumu koruması: kupon doğrulaması özet çizimini iki kez tetikliyor. Geç dönen eski
+  istek yenisinin üzerine yazmasın diye istekler 120 ms birleştiriliyor ve betik yüklendiğinde
+  istenen tutarla karşılaştırılıyor; uyuşmuyorsa tablo yeniden kuruluyor.
+- PayTR'ye ulaşılamazsa veya boş yanıt gelirse bölüm gizleniyor; boş kutu veya hata gösterilmiyor.
+  Taksit tablosu bir kolaylık, satın almanın önkoşulu değil.
+- Fix: PayTR'nin verdiği örnek CSS sabit açık renkler kullanıyordu (`#e1e1e1`, `#f7f7f7`,
+  `#474747`, `#a2a2a2`); koyu temada tablo parlak bir blok olur, metin okunmazdı.
+  Stil tema değişkenleriyle yeniden yazıldı (`css/components.css`). Banka logoları beyaz zemin
+  için üretildiği için koyu temada ters çevrilmek yerine küçük beyaz bir altlığa oturtuldu —
+  marka renkleri bozulmadan görünür kalıyor.
+- Not: Taksit tablosu token'ı **gizli değildir**; herkese açık sayfada gömülü çalışır ve zaten
+  ziyaretçiye görünür. Ödeme imzasında kullanılan `PAYTR_MERCHANT_KEY` / `PAYTR_MERCHANT_SALT`
+  ile ilgisi yoktur; onlar yalnız sunucu ortam değişkeninde durmaya devam ediyor.
+
 ## 2026-09-02 (devam 7)
 
 ### Karanlık mod düzeltmeleri

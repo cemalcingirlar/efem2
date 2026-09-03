@@ -1006,7 +1006,14 @@ function renderCheckoutSummary() {
      tablo indirimli tutarla yenilenir. */
   const taksitYuvasi = document.getElementById('taksit-yuvasi');
   if (taksitYuvasi && !document.getElementById('paytr-taksit-bolumu')) {
-    taksitYuvasi.innerHTML = installmentSectionHtml('Taksit Seçenekleri');
+    /* Ödeme adımındaki dipnot ürün sayfasındakinden farklı: kart burada
+       değil, PayTR formunda giriliyor. Karta özel seçenekleri o form
+       gösterir — bu projede kart numarası hiçbir zaman toplanmaz. */
+    taksitYuvasi.innerHTML = installmentSectionHtml(
+      'Taksit Seçenekleri',
+      'Kartınızı ödeme adımında güvenli PayTR formuna girdiğinizde, o karta ait ' +
+      'taksit seçenekleri ve varsa kartınıza özel kampanyalar orada listelenir.'
+    );
   }
   renderInstallmentTable(total);
 }

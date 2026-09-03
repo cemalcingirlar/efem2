@@ -10,6 +10,9 @@
   --primary:       #2563EB;
   --primary-dark:  #1D4ED8;
   --primary-light: #DBEAFE;
+  /* Küçük metinde kullanılan mavi. --primary (#2563EB) 11-12 px yazıda
+     yeterli kontrast vermiyor; ana renk korunuyor, yalnız metin tonu ayrı. */
+  --primary-text:  #1D4ED8;
   --secondary:     #0F172A;
   --accent:        #F59E0B;
   --accent-light:  #FEF3C7;
@@ -449,6 +452,7 @@ body { font-family: var(--font-display); }
    Ana mavi (--primary) korunur; yüzey/metin/gölge tonları karanlığa uyarlanır. */
 :root[data-theme="dark"] {
   --primary-light: rgba(37,99,235,0.18);
+  --primary-text:  #93B4FB;
   --accent-light:  rgba(245,158,11,0.16);
 
   --bg:            #0A0D13;

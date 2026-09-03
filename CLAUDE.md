@@ -29,6 +29,16 @@ Bozulmaması gereken kurallar:
   müşteriye gösterilen taksit ile ödeme adımındaki taksit ayrışamamalı. Ayrıntı:
   `docs/PAYTR-ENTEGRASYON.md` bölüm 10.
 
+- Taksit tablosu PayTR'nin ham çıktısını okuyup yeniden çizer (yalnız 3/6/9/12, yan yana).
+  Oranları **birebir aynı** olan kart programları birleştirilir; farklı olanlar asla
+  birleştirilmez, yoksa müşteriye olmayan bir taksit tutarı gösterilir. Tutarlar PayTR
+  metninden alındığı gibi kullanılır, istemcide taksit hesabı yapılmaz.
+  Değiştirdikten sonra `npm run test:installments` çalıştırılmalı.
+
+- Müşterinin kartına özel taksitleri **PayTR'nin kendi formu** gösterir. Bunu bizim
+  tarafımızda yapmak kartın ilk hanelerini (BIN) checkout'ta toplamayı gerektirir;
+  yukarıdaki "checkout'a kart alanı geri eklenmez" kuralı bunu da kapsar.
+
 Ödeme kütüphanesini değiştirdikten sonra `npm run test:payment` çalıştırılmalı.
 
 ## Yönetim paneli (ürün · kupon · görsel)

@@ -277,6 +277,51 @@ Taksidin ayrıca **PayTR mağaza panelinde de tanımlı** olması gerekir. Panel
 > kategoriye göre değişir. Buradaki 12 sınırı mağaza sahibinin kendi kategorisi için
 > doğruladığı değerdir. Yeni bir kategori satışa girerse sınır yeniden doğrulanmalıdır.
 
+### Tablo nasıl gösteriliyor
+
+PayTR'nin ham çıktısı 9 kart programı için 2'den 12'ye kadar **her** taksidi ayrı
+satır olarak, alt alta basıyor: 9 × 11 = 99 satır, yaklaşık 5000 piksel. Üstelik
+dokuz programın oranları çoğu zaman birebir aynı, yani aynı sayılar dokuz kez
+tekrarlanıyor.
+
+`js/paytr-installments.js` çıktıyı okuyup yeniden çiziyor:
+
+- Yalnız **3 / 6 / 9 / 12** taksit gösteriliyor, **yan yana** (`PAYTR_GOSTERILEN`).
+- Oranları **birebir aynı** olan kart programları tek grupta toplanıyor; grubun
+  logoları tablonun altına diziliyor.
+- Oranlar farklıysa gruplar **ayrı** gösteriliyor. Birleştirme yalnız gerçekten
+  aynı olan satırlar için yapılır — mağaza bir banka için özel kampanya
+  tanımlarsa o banka kendi grubunda kalır.
+- Müşteri kart programını seçince yalnız o programın seçenekleri kalıyor.
+
+Tutarlar PayTR'nin döndürdüğü metinden **alındığı gibi** kullanılır; istemcide
+hiçbir taksit hesabı yapılmaz. Üçüncü taraf içeriği olduğu için DOM düğümleri
+`textContent` ile kurulur, `innerHTML` ile değil.
+
+Sonuç: bölüm yüksekliği ~5100 px'ten ~290 px'e indi.
+
+Sütun sayısını **kutunun** genişliği belirler (`@container`), görüntü alanı değil:
+aynı masaüstü genişliğinde tablo ürün sayfasında 565 px, ödeme sayfasının özet
+sütununda 380 px yer kaplıyor. Görüntü alanına bakan bir kural ödeme sayfasında
+4 sütun bırakıp metni taşırıyordu. Varsayılan 2 sütun; konteyner sorgusunu
+desteklemeyen tarayıcıda da hiçbir yerde taşma olmaz.
+
+### Müşterinin kendi kartına ait taksitler
+
+Tablonun üstündeki **Kartınız** şeridinden kart programı (Bonus, Axess, World…)
+seçilebilir; seçilince yalnız o programın oranları kalır. Bu seçim için kart
+numarası **istenmez**.
+
+Gerçek karta özel seçenekleri — kartın hangi bankaya ait olduğu, o karta özel
+kampanyalar — **PayTR'nin kendi ödeme formu** gösterir. Kart bilgisi
+`odeme-guvenli.html` içindeki PayTR iframe'ine girilir; bu projede kart numarası
+hiçbir zaman toplanmaz, taşınmaz, saklanmaz.
+
+> Bunu kendi tarafımızda yapmak, kartın ilk hanelerini (BIN) checkout'ta
+> toplamayı gerektirirdi. `CLAUDE.md` bunu açıkça yasaklıyor: "Checkout'a kart
+> alanı geri eklenmez." Bu yüzden ödeme sayfasındaki dipnot, karta özel
+> seçeneklerin PayTR formunda görüneceğini söyler.
+
 ### Tablo bileşeninin parametreleri
 
 | Parametre | Değer | Anlamı |
@@ -285,7 +330,7 @@ Taksidin ayrıca **PayTR mağaza panelinde de tanımlı** olması gerekir. Panel
 | `merchant_id` | `743825` | Mağaza numarası |
 | `amount` | sayfaya göre | Ürün fiyatı / sepet toplamı / ödenecek toplam |
 | `taksit` | `/api/payment/config` → `maxInstallment` | Üst sınır (sabit yazılmaz) |
-| `tumu` | `1` | Yalnız avantajlı değil, **tüm** seçenekler gösterilir |
+| `tumu` | `1` | Yalnız avantajlı değil, **tüm** seçenekler istenir |
 
 Bilinmesi gerekenler:
 
@@ -302,7 +347,10 @@ Bilinmesi gerekenler:
 
 ### Doğrulama
 
-`npm run test:payment` içinde 10. bölüm bu tutarlılığı sınar: ayar yokken taksidin kapalı
-bildirildiğini, `0`/`12` verildiğinde hem `/api/payment/config` hem de PayTR'ye giden isteğin
-aynı sınırı söylediğini ve aralık dışı bir değerin (13) kabul edilmediğini doğrular.
-
+- `npm run test:payment` → 10. bölüm: ayar yokken taksidin kapalı bildirildiğini,
+  `0`/`12` verildiğinde hem `/api/payment/config` hem de PayTR'ye giden isteğin aynı
+  sınırı söylediğini, aralık dışı bir değerin (13) kabul edilmediğini doğrular.
+- `npm run test:installments` → çıktı okuma ve gruplama: yalnız 3/6/9/12'nin
+  kaldığını, üst sınırın uygulandığını, aynı oranlı kartların birleştiğini ve
+  **farklı oranlıların birleştirilmediğini** doğrular. Son madde önemli: yanlış
+  birleştirme müşteriye olmayan bir taksit tutarı gösterirdi.

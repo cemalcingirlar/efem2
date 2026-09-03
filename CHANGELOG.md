@@ -3,6 +3,45 @@
 Bu dosya projede yapılan her ekleme, değişiklik ve kaldırmayı kayıt altına alır.
 En yeni kayıtlar en üstte.
 
+## 2026-09-03 (devam)
+
+### Taksit tablosu — kompakt görünüm ve kart seçimi
+- Change: **Tablo kısaltıldı: ~5100 px → ~290 px.** PayTR'nin ham çıktısı 9 kart programı
+  için 2'den 12'ye kadar her taksidi ayrı satır olarak alt alta basıyordu (99 satır) ve
+  dokuz programın oranları birebir aynı olduğu için aynı sayılar dokuz kez tekrarlanıyordu.
+  Artık çıktı okunup yeniden çiziliyor: yalnız **3 / 6 / 9 / 12** taksit, **yan yana**.
+- Add: Oranları **birebir aynı** olan kart programları tek grupta toplanıyor; grubun
+  logoları tablonun altında sıralanıyor. Oranlar farklıysa gruplar ayrı gösteriliyor —
+  birleştirme yalnız gerçekten aynı olan satırlar için yapılır. Mağaza bir banka için özel
+  kampanya tanımlarsa o banka kendi grubunda kalır; aksi hâlde müşteriye olmayan bir
+  taksit tutarı gösterilirdi.
+- Add: **Kartınız** şeridi — müşteri kart programını (Bonus, Axess, World…) seçince yalnız
+  o programın oranları kalıyor. Seçim için kart numarası istenmez; PayTR'ye yeni istek de
+  gitmez, eldeki çıktı yeniden çizilir.
+- Move: Ürün detayda tablo sağdaki satın alma sütunundan **galeri sütununa**, küçük
+  görsellerin altına alındı. Ürün sayfası 8038 px'ten 2898 px'e indi.
+- Add: Ödeme sayfasına dipnot: kart bilgisi PayTR formuna girildiğinde o karta ait
+  seçeneklerin orada listeleneceği yazıyor. Karta özel seçenekleri bizim tarafımızda
+  göstermek, kartın ilk hanelerini (BIN) checkout'ta toplamayı gerektirirdi;
+  `CLAUDE.md` bunu yasaklıyor ("Checkout'a kart alanı geri eklenmez"), bu yüzden
+  yapılmadı — kart girildikten sonraki seçenekleri PayTR'nin kendi formu gösterir.
+- Fix: Sütun sayısı artık **kutunun** genişliğine göre belirleniyor (`@container`),
+  görüntü alanına göre değil. Aynı masaüstü genişliğinde tablo ürün sayfasında 565 px,
+  ödeme sayfasının özet sütununda 380 px yer kaplıyor; görüntü alanına bakan kural ödeme
+  sayfasında 4 sütun bırakıyor ve "Toplam 24.869,08 TL" satırını 75 px kutuya sıkıştırıp
+  taşırıyordu (ölçüldü: içerik 111 px). Varsayılan 2 sütun — konteyner sorgusunu
+  desteklemeyen tarayıcıda da hiçbir yerde taşma olmaz.
+- Fix: İki kontrast sorunu. Koyu temada "3 TAKSİT" etiketi `--primary` ile 3.19:1
+  (AA sınırı 4.5), aydınlık temada "Toplam …" satırı 4.34:1 kalıyordu. Yeni bir
+  `--primary-text` değişkeni eklendi (aydınlık `#1D4ED8`, koyu `#93B4FB`) ve hücre zemini
+  `--surface`'a çekildi. **Ana renk `--primary: #2563EB` değişmedi** (CLAUDE.md kuralı);
+  yeni değişken yalnız küçük metin için. Ölçümler: aydınlık 6.70 / 14.63 / 4.76,
+  koyu 8.76 / 16.52 / 7.06.
+- Add: `scripts/test-installments.mjs` (`npm run test:installments`) — 21 test.
+  Yalnız 3/6/9/12'nin kaldığını, üst sınırın uygulandığını, aynı oranlı kartların
+  birleştiğini, **farklı oranlıların birleştirilmediğini**, sıralamayı ve okunamayan
+  satırların çökertmediğini doğrular. `npm test` bu takımı da çalıştırıyor.
+
 ## 2026-09-03
 
 ### PayTR taksit — açıldı (12 taksite kadar)

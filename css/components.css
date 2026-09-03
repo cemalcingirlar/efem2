@@ -1466,12 +1466,15 @@ footer {
    PayTR'nin verdiği örnek stil sabit açık renkler kullanıyordu
    (#e1e1e1 kenarlık, #f7f7f7 zemin, #474747 / #a2a2a2 metin). Bunlar temaya
    göre değişmediği için koyu temada tablo parlak bir blok olarak duruyor ve
-   metin okunmuyordu. Aynı yapı tema değişkenleriyle yeniden yazıldı;
-   sınıf adları PayTR'nin ürettiği HTML ile birebir aynı kalmalı. */
+   metin okunmuyordu. Yapı tema değişkenleriyle yeniden yazıldı.
+
+   PayTR'nin ham çıktısı (9 kart programı x 11 taksit, alt alta) yaklaşık
+   5000 piksel tutuyordu. js/paytr-installments.js çıktıyı okuyup yalnız
+   3/6/9/12 taksidi yan yana çiziyor; aşağıdaki sınıflar o çizime ait. */
 
 .taksit-bolumu {
-  margin-top: var(--space-6);
-  padding-top: var(--space-6);
+  margin-top: var(--space-5);
+  padding-top: var(--space-5);
   border-top: 1px solid var(--border);
 }
 
@@ -1479,15 +1482,15 @@ footer {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 1rem;
+  font-size: 0.9375rem;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: var(--space-4);
+  margin-bottom: var(--space-3);
 }
 .taksit-bolum-baslik .icon { color: var(--primary); }
 
-/* 12 px metinlerde --text-muted koyu temada 3.8:1 kontrast veriyor (AA sınırı 4.5).
-   Bu iki küçük yazı --text-secondary kullanıyor: koyu temada 7.06:1. */
+/* 12 px metinlerde --text-muted koyu temada 3.8:1 kontrast veriyor
+   (AA sınırı 4.5). Küçük yazılar --text-secondary kullanıyor: 7.06:1. */
 .taksit-not {
   margin-top: var(--space-3);
   font-size: 0.75rem;
@@ -1495,65 +1498,122 @@ footer {
   line-height: 1.5;
 }
 
-#paytr_taksit_tablosu {
-  clear: both;
-  font-size: 12px;
-  max-width: 1200px;
-  text-align: center;
-  font-family: inherit;
+/* ─── Kart programı seçici ───
+   Kart NUMARASI istenmez; müşteri yalnız kartının programını seçer. */
+.taksit-kart-secim {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: var(--space-3);
 }
-#paytr_taksit_tablosu::before { display: table; content: " "; }
-#paytr_taksit_tablosu::after  { content: ""; clear: both; display: table; }
 
-.taksit-tablosu-wrapper {
-  margin: 5px;
-  width: 280px;
-  padding: 12px;
-  cursor: default;
+.taksit-kart-secim-etiket {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-right: 2px;
+}
+
+.taksit-kart-dugme {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 6px;
+  min-height: 26px;
+  background: #FFFFFF;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.taksit-kart-dugme:hover  { border-color: var(--primary); }
+.taksit-kart-dugme.secili { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-light); }
+
+/* "Tümü" bir logo değil, metin — tema zeminini kullanır. */
+.taksit-kart-tumu {
+  background: var(--surface-2);
+  color: var(--text-primary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+}
+
+.taksit-kart-dugme .taksit-kart-logo { height: 16px; }
+
+/* ─── Taksit seçenekleri (yan yana) ─── */
+.taksit-grup + .taksit-grup {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px dashed var(--border);
+}
+
+/* Genişliğe göre sütun sayısı. Görüntü alanı değil, KUTUNUN genişliği
+   belirleyici: taksit tablosu ürün sayfasında 565 px, ödeme sayfasının
+   özet sütununda 380 px yer kaplıyor — ikisi de masaüstünde. Görüntü
+   alanına bakan bir kural ödeme sayfasında 4 sütun bırakıp metni taşırıyordu.
+   Varsayılan 2 sütun: konteyner sorgusunu desteklemeyen tarayıcıda da
+   hiçbir yerde taşma olmaz. */
+.taksit-ozet { container-type: inline-size; }
+
+.taksit-secenekler {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+@container (min-width: 430px) {
+  .taksit-secenekler { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+.taksit-secenek {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 6px;
   text-align: center;
-  display: inline-block;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  background: var(--surface);
-  vertical-align: top;
 }
 
-/* Banka logoları beyaz zemin için üretilmiş; koyu temada kaybolmasınlar diye
-   ters çevrilmek yerine açık bir altlığa oturtulur (logo renkleri korunur). */
-.taksit-logo {
-  background: #FFFFFF;
-  border-radius: var(--radius-sm);
-  padding: 6px 8px;
-  margin-bottom: 10px;
-  display: inline-block;
-}
-.taksit-logo img { max-height: 28px; display: block; }
-
-.taksit-tutari-text {
-  float: left;
-  width: 126px;
-  color: var(--text-secondary);
-  margin-bottom: 5px;
-  font-weight: 600;
+.taksit-adet {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  color: var(--primary-text);
 }
 
-.taksit-tutar-wrapper {
-  display: inline-block;
-  background-color: var(--surface-2);
-  border-radius: var(--radius-sm);
-}
-.taksit-tutar-wrapper:hover { background-color: var(--primary-light); }
-
-.taksit-tutari {
-  float: left;
-  width: 126px;
-  padding: 6px 0;
+.taksit-aylik {
+  font-size: 0.875rem;
+  font-weight: 700;
   color: var(--text-primary);
-  border: 2px solid var(--surface);
+  white-space: nowrap;
 }
 
-.taksit-tutari-bold { font-weight: 700; }
-
-@media all and (max-width: 600px) {
-  .taksit-tablosu-wrapper { margin: 5px 0; width: 100%; max-width: 320px; }
+.taksit-toplam {
+  font-size: 0.6875rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
 }
+
+/* ─── Oranların geçerli olduğu kart programları ───
+   Logolar beyaz zemin için üretilmiş; koyu temada ters çevrilmek yerine
+   açık bir altlığa oturtulur (marka renkleri korunur). */
+.taksit-kart-serit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--space-3);
+}
+
+.taksit-kart-serit .taksit-kart-logo {
+  height: 15px;
+  background: #FFFFFF;
+  border-radius: 3px;
+  padding: 3px 5px;
+}
+
+

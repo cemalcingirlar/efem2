@@ -363,6 +363,11 @@ function renderProductDetail(p) {
                onerror="this.src='assets/images/products/placeholder-product.svg'">
         </div>
         ${thumbsHTML ? `<div class="gallery-thumbs">${thumbsHTML}</div>` : ''}
+
+        <!-- Taksit tablosu (PayTR) — ürünün kendi fiyatına göre.
+             Galeri sütununda duruyor: küçük görsellerin altındaki boşluğu
+             dolduruyor ve sağdaki satın alma alanını uzatmıyor. -->
+        ${installmentSectionHtml('Taksit Seçenekleri')}
       </div>
 
       <!-- Detay -->
@@ -409,9 +414,6 @@ function renderProductDetail(p) {
               </tr>`).join('')}
           </table>
         </div>
-
-        <!-- Taksit tablosu (PayTR) — ürünün kendi fiyatına göre -->
-        ${installmentSectionHtml('Bu ürün için taksit seçenekleri')}
 
         <!-- Kargo bilgisi -->
         <div class="detail-perks">

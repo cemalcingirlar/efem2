@@ -357,8 +357,14 @@ console.log('\nSitemap satıştan kaldırılan ürünü bildirmiyor');
      kataloğu okuduğu için TÜM ürünleri listeliyordu. "Satıştan kaldır"
      durumu Firestore'da tutulduğundan, kaldırılmış ürünler de arama
      motorlarına bildiriliyor; tıklayan bot ürün listesine geri atılıyordu
-     (yumuşak 404). Artık canlı katalogdan üretiliyor. */
-  const sitemap = require('../api/sitemap.js');
+     (yumuşak 404). Artık canlı katalogdan üretiliyor.
+
+     Ayrı bir uç değil, /api/catalog'un ikinci çıktı biçimi: Vercel Hobby
+     planı deploy başına 12 fonksiyonla sınırlı ve proje tam sınırdaydı.
+     13'üncü fonksiyon deploy'u komple düşürüyordu. */
+  const sitemap = require('../api/catalog.js');
+  const sitemapCagir = (method = 'GET') =>
+    call(sitemap, { method, query: { format: 'sitemap' } });
 
   const temel = {
     name: 'Sitemap Testi', category: 'saat', brand: 'Test',
@@ -369,7 +375,7 @@ console.log('\nSitemap satıştan kaldırılan ürünü bildirmiyor');
   await call(adminProducts, { method: 'POST', body: { product: { ...temel, id: 9202, active: false } } });
   invalidateCatalog();
 
-  const r = await call(sitemap, { method: 'GET' });
+  const r = await sitemapCagir();
   const xml = r.res.body;
 
   check('HTTP 200', r.res.statusCode, 200);
@@ -383,12 +389,24 @@ console.log('\nSitemap satıştan kaldırılan ürünü bildirmiyor');
   check('sepet/ödeme gibi sayfalar sitemap\'te yok', /sepet\.html|odeme\.html|admin\.html|hesap\.html/.test(xml), false);
 
   // POST kabul edilmez
-  const post = await call(sitemap, { method: 'POST' });
+  const post = await sitemapCagir('POST');
   check('POST 405', post.res.statusCode, 405);
+
+  // HEAD kabul edilir (bazı botlar önce HEAD atar), gövde boş döner
+  const head = await sitemapCagir('HEAD');
+  check('HEAD 200', head.res.statusCode, 200);
+  check('HEAD gövdesiz', head.res.body, '');
+
+  /* format verilmezse aynı uç normal katalog JSON'u döndürmeli:
+     sitemap eklentisi mevcut davranışı bozmamalı. */
+  const jsonYanit = await call(sitemap, { method: 'GET' });
+  check('format yoksa JSON döner', /application\/json/.test(jsonYanit.res.headers['content-type'] || ''), true);
+  check('JSON yanıtta satıştaki ürün var', JSON.parse(jsonYanit.res.body).products.some(p => p.id === 9201), true);
+  check('JSON yanıtta kaldırılan ürün hiddenIds içinde', JSON.parse(jsonYanit.res.body).hiddenIds.includes(9202), true);
 
   /* Sıralama kararlı olmalı: her istekte farklı sıra dönerse arama
      motorları sitemap'i sürekli değişmiş sayar. */
-  const r2 = await call(sitemap, { method: 'GET' });
+  const r2 = await sitemapCagir();
   check('aynı katalog aynı XML', r2.res.body, xml);
 }
 

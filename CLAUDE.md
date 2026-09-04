@@ -53,10 +53,23 @@ Kurulum ve doğrulama listesi: `docs/ADMIN-KURULUMU.md`.
 
 Panel/katalog tarafını değiştirdikten sonra `npm run test:admin` çalıştırılmalı.
 
+## Vercel fonksiyon sınırı — yeni uç eklemeden önce oku
+
+Hobby planında **deploy başına en fazla 12 Serverless Function** var ve proje tam
+sınırda: `api/` altındaki her `.js` (`api/_lib/` hariç) bir fonksiyondur.
+
+13'üncüsü eklendiğinde build başarıyla tamamlanır ama deploy `ERROR` olur
+(`exceeded_serverless_functions_per_deployment`) ve **canlı eski sürümde kalır**.
+Hata sayfada görünmez; site çalışmaya devam ettiği için fark edilmesi zordur.
+
+Yeni bir uç gerekiyorsa önce `find api -name "*.js" -not -path "api/_lib/*" | wc -l`
+ile sayın. Sınırdaysa uç eklemek yerine mevcut bir uca çıktı biçimi ekleyin —
+`/sitemap.xml` bu yüzden `api/catalog.js` içinde `?format=sitemap` olarak duruyor.
+
 ## Sitemap
 
 Sitemap **statik dosya değildir**. `/sitemap.xml` adresi `vercel.json` içindeki
-rewrite ile `/api/sitemap`'e gider ve canlı katalogdan üretilir; satıştan
+rewrite ile `/api/catalog?format=sitemap`'e gider ve canlı katalogdan üretilir; satıştan
 kaldırılmış (`active: false`) ürünler girmez. Sabit sayfa listesi tek yerdedir:
 `api/_lib/sitemap.js`.
 

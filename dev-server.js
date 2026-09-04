@@ -55,7 +55,7 @@ function loadVercelHeaders(file) {
 }
 
 /* Vercel yönlendirmeleri (rewrites). Yerelde uygulanmazsa yerel ile canlı
-   ayrışır: /sitemap.xml canlıda /api/sitemap'e gidiyor, yerelde 404 verirdi.
+   ayrışır: /sitemap.xml canlıda /api/catalog?format=sitemap'e gidiyor, yerelde 404 verirdi.
    Vercel önce dosya sistemine baktığı için burada da aynı sıra korunuyor. */
 function loadVercelRewrites(file) {
   try {

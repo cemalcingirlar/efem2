@@ -19,6 +19,7 @@
 
 import http from 'node:http';
 import crypto from 'node:crypto';
+import fs from 'node:fs';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
@@ -65,7 +66,13 @@ const gateway = http.createServer((req, res) => {
       res.end(JSON.stringify({ status: 'failed', reason: 'Zorunlu alan degeri gecersiz: test' }));
       return;
     }
-    res.end(JSON.stringify({ status: 'success', token: 'tok' + crypto.randomBytes(12).toString('hex') }));
+    /* Gerçek PayTR token'ı base64 üretiliyor: '+', '/' ve '=' içerebilir.
+       Sahte token harf-rakam olsaydı, istemci tarafındaki biçim kontrolünün
+       gerçek token'ı reddettiği fark edilmezdi — canlıda tam olarak bu oldu.
+       46 bayt seçildi: base64'ü HER ZAMAN '==' ile bitiyor. Rastgele bir
+       uzunlukta '+' veya '/' çıkma ihtimali %87 idi, yani test yaklaşık her
+       sekiz koşudan birinde bu kusuru kaçırırdı. */
+    res.end(JSON.stringify({ status: 'success', token: crypto.randomBytes(46).toString('base64') }));
   });
 });
 
@@ -415,6 +422,35 @@ console.log('\n11) kart ödemesi kapalıysa sebebi görünür');
   process.env.PAYTR_MERCHANT_ID   = yedek.id;
   process.env.PAYTR_MERCHANT_KEY  = yedek.key;
   process.env.PAYTR_MERCHANT_SALT = yedek.salt;
+}
+
+console.log('\n12) sunucunun verdiği token, tarayıcının kabul ettiği biçimde olmalı');
+{
+  /* Canlıda çıkan hata: /api/payment/initialize token'ı başarıyla alıyordu
+     (sipariş de oluşuyordu) ama odeme-guvenli.html "Ödeme formu açılamadı"
+     diyordu. Sebep, istemcideki biçim kontrolünün yalnız harf-rakam kabul
+     etmesiydi; PayTR token'ı base64 olduğu için '+', '/', '=' içerebiliyor.
+
+     İki taraf ayrı dosyalarda olduğu için bu ayrışma testlerde görünmüyordu.
+     Burada istemcinin GERÇEK deseni dosyadan okunup sunucunun ürettiği
+     token'a uygulanıyor; biri değişip diğeri değişmezse test düşer. */
+  const istemciKaynak = fs.readFileSync(new URL('../js/odeme-guvenli.js', import.meta.url), 'utf8');
+  const desenSatiri = istemciKaynak.match(/const TOKEN_DESENI = (\/.+\/);/);
+  check('istemcide token deseni bulundu', Boolean(desenSatiri), true);
+
+  const desen = eval(desenSatiri[1]);   // yalnız kendi kaynağımızdan okunan sabit
+  const r = await call(initialize, { body: ORDER_INPUT });
+
+  check('initialize token döndürdü', typeof r.json?.paymentToken, 'string');
+  check('token istemci desenine uyuyor', desen.test(r.json.paymentToken), true);
+
+  /* Desen fazla gevşemesin: ödeme sayfası URL'ine karışabilecek karakterler
+     hâlâ reddedilmeli. */
+  check('boşluklu token reddedilir',  desen.test('abc def ghijk'), false);
+  check('açılı parantez reddedilir',  desen.test('<script>alertxx'), false);
+  check('soru işareti reddedilir',    desen.test('abcdefghij?x=1'), false);
+  check('çok kısa token reddedilir',  desen.test('abc'), false);
+  check('base64 token kabul edilir',  desen.test('aB3+xY/z9Q=='), true);
 }
 
 await new Promise(resolve => gateway.close(resolve));

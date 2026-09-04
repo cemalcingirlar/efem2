@@ -20,8 +20,31 @@ document.addEventListener('DOMContentLoaded', () => {
   const wrap  = document.getElementById('frame-wrap');
   const error = document.getElementById('frame-error');
 
-  // Token yoksa/biçimi bozuksa iframe hiç açılmaz.
-  if (!/^[A-Za-z0-9]{10,128}$/.test(token)) {
+  /* Token yoksa/biçimi bozuksa iframe hiç açılmaz.
+
+     Desen neden bu kadar geniş: PayTR'nin ödeme token'ı base64 üretiliyor,
+     yani `+`, `/`, `=` içerebiliyor. Önceki desen yalnız harf-rakam kabul
+     ediyordu (`[A-Za-z0-9]{10,128}`) ve testlerdeki sahte token da harf-rakam
+     olduğu için bu hiç yakalanmamıştı; canlıda gerçek token reddedilip
+     "Ödeme formu açılamadı" hatası veriyordu. Sunucu tarafı token'ı başarıyla
+     almış oluyordu, yani para akışında değil yalnız bu kontrolde takılıyordu.
+
+     Güvenlik: token zaten encodeURIComponent ile URL'e konuyor, bu desen
+     yalnız açıkça bozuk girdiyi eleyen bir ön kontroldür. Boşluk, `<`, `"`,
+     `?`, `#` gibi karakterler hâlâ reddedilir. */
+  const TOKEN_DESENI = /^[A-Za-z0-9+/=_-]{10,256}$/;
+
+  if (!token) {
+    /* Parametresiz gelinmiş: kullanıcı bu sayfaya doğrudan girmiş ya da
+       yönlendirme parametreleri kaybolmuş. */
+    console.warn('[odeme] token parametresi yok; ödeme adımından gelinmemiş.');
+    error.hidden = false;
+    return;
+  }
+
+  if (!TOKEN_DESENI.test(token)) {
+    /* Token'ın kendisi loga YAZILMAZ; yalnız neden reddedildiği. */
+    console.warn('[odeme] token biçimi reddedildi (uzunluk: %d).', token.length);
     error.hidden = false;
     return;
   }

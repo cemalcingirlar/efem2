@@ -30,6 +30,28 @@ En yeni kayıtlar en üstte.
 - Müşteriye gösterilen mesaj değişmedi: yapılandırma eksikken kart ödemesi açılmaz,
   checkout EFT/havale sunar, sahte başarı üretilmez.
 
+## 2026-09-04
+
+### Ödeme formu açılmıyordu — token biçim kontrolü
+- Fix: **"Ödeme formu açılamadı" hatası.** `/api/payment/initialize` token'ı başarıyla
+  alıyor, sipariş de oluşuyordu (loglarda `initialize_ok`), ama `odeme-guvenli.html`
+  iframe'i hiç açmıyordu. Sebep istemcideki biçim kontrolüydü: `/^[A-Za-z0-9]{10,128}$/`
+  yalnız harf-rakam kabul ediyordu, PayTR'nin ödeme token'ı ise **base64** üretiliyor ve
+  `+`, `/`, `=` içerebiliyor. Desen `[A-Za-z0-9+/=_-]{10,256}` yapıldı. Boşluk, `<`, `"`,
+  `?`, `#` gibi karakterler hâlâ reddediliyor; token zaten `encodeURIComponent` ile URL'e
+  konuyor, bu yalnız bir ön kontrol.
+- Bu kusur para akışını etkilemiyordu: sunucu tarafı doğru çalışıyor, tahsilat yapılmıyor,
+  müşteri yalnız ödeme formuna geçemiyordu.
+- Fix: Parametresiz gelinmesi ile bozuk token ayrı ayrı loglanıyor. Eskiden ikisi de aynı
+  mesajı verdiği için teşhis edilemiyordu. Token'ın kendisi loga yazılmaz, yalnız uzunluğu.
+- Test: `scripts/test-payment-flow.mjs` bölüm 12. Sunucunun ürettiği token, **istemcinin
+  gerçek deseni dosyadan okunarak** sınanıyor; iki taraf ayrışırsa test düşer. Ayrıca
+  desenin fazla gevşemediği (boşluk, `<script>`, `?` reddi) doğrulanıyor.
+- Test kusuru da düzeltildi: sahte PayTR token'ı `tok`+hex idi, yani harf-rakam — gerçek
+  token'ın reddedildiğini hiç göstermiyordu. Artık base64 üretiliyor ve **46 bayt** seçildi:
+  çıktısı her zaman `==` ile biter. Rastgele uzunlukta özel karakter çıkma ihtimali %87'ydi,
+  yani test yaklaşık sekiz koşudan birinde kusuru kaçırırdı.
+
 ## 2026-09-03 (devam)
 
 ### Taksit tablosu — kompakt görünüm ve kart seçimi

@@ -117,9 +117,18 @@ async function firebaseLogin(email, password) {
       };
     }
 
-    // Firestore'dan profil oku
-    const profile = await getUserProfile(user.uid);
-    return { success: true, user, profile };
+    /* Profil BURADA okunmuyor.
+
+       Eskiden getUserProfile() cagriliyordu ve donen `profile` hicbir yerde
+       kullanilmiyordu (tek cagiran hesap.html, yalniz success/msg'e bakiyor).
+       Firestore'un ilk okumasi soguk baglanti yuzunden ~3,3 saniye suruyor;
+       "Giris yapiliyor..." gostergesi bu sure boyunca donuyordu.
+
+       Ustelik profil zaten js/auth.js icindeki onAuthChange tarafindan
+       okunuyor, yani ayni belge her giriste IKI kez cekiliyordu.
+       Yonlendirmeyi de hesap.html'in kendi onAuthChange'i yapiyor; bu
+       okumayi beklemesi icin bir sebep yok. */
+    return { success: true, user };
   } catch (err) {
     return reportAuthError('giriş', err);
   }

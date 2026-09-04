@@ -32,6 +32,30 @@ En yeni kayıtlar en üstte.
 
 ## 2026-09-04
 
+### Girişte "Giriş yapılıyor..." uzun süre dönüyordu
+- Fix: `firebaseLogin()` içinde **kullanılmayan** bir Firestore okuması vardı.
+  `getUserProfile()` çağrılıp dönen `profile` alanı hiçbir yerde okunmuyordu
+  (tek çağıran `hesap.html`, yalnızca `success`/`msg`'e bakıyor). Firestore'un
+  ilk okuması soğuk bağlantı yüzünden ~3,3 saniye sürdüğü için gösterge bu
+  süre boyunca dönüyordu. Okuma kaldırıldı.
+- Aynı belge zaten `js/auth.js` içindeki `onAuthChange` tarafından okunuyordu;
+  yani her girişte **iki kez** çekiliyordu. Yönlendirmeyi de `hesap.html`'in
+  kendi `onAuthChange`'i yapıyor, bu okumayı beklemesi için sebep yoktu.
+- Add: `js/firebase-config.js` → **bağlantı ısıtma.** Ölçüm: ısıtmasız ilk
+  okuma 3348 ms, ısıtma sonrası 119 ms. Fark veriden değil, bağlantının ilk
+  kez kurulmasından geliyor. Modül yüklenirken küçük bir istek atılıyor;
+  böylece Firestore bağlantısı oturum çözülürken paralel kuruluyor, arka
+  arkaya iki bekleme olmuyor.
+- Isıtma isteği var olmayan bir belgeyi okur (veri taşımaz) ve `products`
+  herkese açık okunabilir olduğu için oturum gerektirmez. Sonucu kimse
+  beklemez, hata yutulur.
+- Bu geliştirme sırasında yakalanan kusur: ısıtma kimliği önce
+  `__baglanti_isitma__` seçilmişti. Firestore `__...__` biçimini kendine
+  ayırmış ve `doc()` **senkron** istisna fırlatıyor; `.catch()` senkron
+  istisnayı yakalamaz, yani modül komple patlayıp tüm oturum sistemini
+  çökertirdi. Sıradan bir kimliğe geçildi ve `try/catch` eklendi.
+  Tarayıcıda çalıştırılmasaydı bu fark edilmezdi.
+
 ### Profil sayfası kişisel bilgileri hiç göstermiyordu
 Şikâyet "geç geliyor" diye başladı ama ölçünce **hiç gelmediği** ortaya çıktı.
 Canlıda konsol hatası: `TypeError: window.requireAuth is not a function`.

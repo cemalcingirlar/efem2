@@ -1617,3 +1617,28 @@ footer {
 }
 
 
+
+/* Kayıtlı adresler yüklenirken yerini tutan iskelet.
+   Adresler Firestore'dan geliyor ve ilk okuma soğuk bağlantı yüzünden
+   birkaç saniye sürebiliyor; boş alan "kayıtlı adresim yok" gibi
+   görünüyordu. Bu, beklendiğini söyler. */
+.saved-address-skeleton {
+  /* Liste flex kutusu; varsayilan flex-shrink dar ekranda iskeleti
+     ezip genisligini sifira indirebiliyor. Sabitleniyor. */
+  flex: 0 0 170px;
+  max-width: 100%;
+  height: 58px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--border) 50%, var(--surface-2) 75%);
+  background-size: 200% 100%;
+  animation: savedAddressShimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes savedAddressShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .saved-address-skeleton { animation: none; }
+}

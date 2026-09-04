@@ -4,6 +4,22 @@
   <script>(function(){try{var t=localStorage.getItem("efemi_theme");if(!t){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Firebase ağ ısıtması.
+       Ölçüm: giriş yapmış kullanıcıda kayıtlı adresler ~10 sn sonra geliyordu.
+       İki sebep vardı. (1) gstatic modülleri birbirini bekliyordu: önce
+       firebase-auth, o bitince firebase-app, o bitince firebase-firestore —
+       üç ardışık gidiş-dönüş. modulepreload üçünü paralel indirir.
+       (2) Firestore'un İLK okuması soğuk bağlantı el sıkışması yüzünden
+       3348 ms sürüyordu (ikinci okuma 157 ms). preconnect, DNS + TLS
+       el sıkışmasını SDK daha istemeden başlatır. -->
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://securetoken.googleapis.com" crossorigin>
+  <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js">
+  <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js">
+  <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js">
   <title>Ödeme – efemiletisim.com</title>
   <link rel="icon" type="image/png" sizes="32x32" href="assets/logos/favicon-32.png">
   <link rel="icon" type="image/png" sizes="512x512" href="assets/logos/favicon-512.png">
@@ -588,7 +604,7 @@
 <script type="module" src="js/auth.js"></script>
 <script type="module">
 import { saveOrderToFirestore, sendOrderConfirmationMail, sendSupportNotificationMail } from './js/firebase-auth.js';
-import { authReady, isLoggedIn, getCurrentUser } from './js/auth.js';
+import { authReady, authUserReady, isLoggedIn, getCurrentUser } from './js/auth.js';
 
 /* Ödeme sayfası hem üyelere hem misafirlere açıktır.
    Misafir siparişlerinde sipariş kaydı Firestore'a yazılamaz; sipariş
@@ -714,16 +730,56 @@ whenCatalogReady(async () => {
 
   setStep(1);
 
-  // Oturum hazır olduğunda üye bilgilerini otomatik doldur
+  /* Üye bilgileri İKİ aşamada gelir; tek aşamada beklemek pahalıydı.
+
+     authReady, Firestore profili okunduktan sonra çözülüyor. Firestore'un
+     ilk okuması soğuk bağlantı el sıkışması yüzünden ~3 saniye sürüyor
+     (canlıda ölçüldü: ilk okuma 3348 ms, ikinci okuma 157 ms). Ad/soyad/
+     e-posta bilgisi ise Firebase kullanıcı nesnesinde zaten var — onları
+     beklemeye gerek yok.
+
+     1. aşama (authUserReady): ad, soyad, e-posta hemen dolar.
+     2. aşama (authReady): kayıtlı adresler gelir.
+
+     Böylece form saniyeler boyunca boş durmuyor; yalnız adres listesi
+     bekleniyor ve o da beklendiğini söylüyor. */
+  await window.authUserReady;
+  const erkenUser = getCurrentUser();
+  if (erkenUser) doldurBosAlanlar(erkenUser);
+  if (isLoggedIn()) adresYukleniyorGoster();
+
   await window.authReady;
   const user = getCurrentUser();
   if (user) {
-    document.getElementById('addr-ad').value    = user.ad    || '';
-    document.getElementById('addr-soyad').value = user.soyad || '';
-    document.getElementById('addr-email').value = user.email || '';
+    /* Profilden gelen ad/soyad çoğu zaman daha doğru (displayName boş
+       olabiliyor); yine de kullanıcının yazdığının üzerine yazılmaz. */
+    doldurBosAlanlar(user);
     renderSavedAddressPicker(user.addresses || []);
   }
 });
+
+/* Alanı YALNIZCA boşsa doldurur.
+   İki aşama arasında müşteri yazmaya başlamış olabilir; ikinci aşama
+   3 saniye sonra gelip yazdığını silseydi bu, beklemekten daha kötü olurdu. */
+function doldurBosAlanlar(user) {
+  const yaz = (id, deger) => {
+    const el = document.getElementById(id);
+    if (el && !el.value && deger) el.value = deger;
+  };
+  yaz('addr-ad',    user.ad);
+  yaz('addr-soyad', user.soyad);
+  yaz('addr-email', user.email);
+}
+
+/* Adresler gelene kadar yerini tutar: boş ekran "adresim yok" gibi
+   görünüyordu, oysa yükleniyordu. */
+function adresYukleniyorGoster() {
+  const kutu = document.getElementById('saved-address-picker');
+  const liste = document.getElementById('saved-address-list');
+  if (!kutu || !liste) return;
+  kutu.classList.remove('hidden');
+  liste.innerHTML = '<div class="saved-address-skeleton"></div><div class="saved-address-skeleton"></div>';
+}
 
 /* ─── Ödeme yeteneklerini uygula ───
    Kart ödemesi ancak sunucu yapılandırması tamamsa açılır. Kapalıysa kart
@@ -770,7 +826,13 @@ function populateCitySelect(selectId, selected) {
 let editingSavedAddressId = null;
 
 function renderSavedAddressPicker(addresses) {
-  if (addresses.length === 0) return;
+  /* Yükleniyor iskeleti burada temizlenir: adres yoksa bölüm tamamen
+     gizlenir, yoksa iskelet ekranda asılı kalırdı. */
+  if (addresses.length === 0) {
+    document.getElementById('saved-address-picker').classList.add('hidden');
+    document.getElementById('saved-address-list').innerHTML = '';
+    return;
+  }
 
   document.getElementById('saved-address-picker').classList.remove('hidden');
   document.getElementById('saved-address-list').innerHTML = addresses.map(a => `

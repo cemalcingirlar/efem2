@@ -32,6 +32,42 @@ En yeni kayıtlar en üstte.
 
 ## 2026-09-04
 
+### Ödeme adımında kayıtlı adresler ~10 saniye sonra geliyordu
+Ölçüm önce yapıldı, sonra düzeltildi. Canlıda iki ayrı maliyet bulundu:
+
+1. **Firestore soğuk bağlantı: 3.348 ms.** Aynı sorgunun ikinci çalışması 157 ms.
+   Yani süre veri miktarından değil, ilk bağlantının el sıkışmasından geliyor.
+2. **gstatic modülleri birbirini bekliyordu.** Ağ zamanlaması: firebase-auth
+   603→827 ms, sonra firebase-app 832→887, sonra firebase-firestore 880→888.
+   Üç ardışık gidiş-dönüş; hiçbiri paralel değil.
+
+Bu maliyetlerin ikisi de kritik yoldaydı: `authReady` Firestore profili
+okunduktan SONRA çözüldüğü için, ad/soyad/e-posta gibi zaten elde olan
+bilgiler de adres okumasını bekliyordu.
+
+- Add: `js/auth.js` → `authUserReady`. Firebase kullanıcı nesnesi belli olur
+  olmaz, profil beklenmeden çözülür. `authReady`'nin anlamı **değişmedi**
+  (hâlâ "kullanıcı + profil hazır"); `profil.html` ve `admin.html` onu
+  kullanmaya devam ediyor, davranışları etkilenmedi.
+- Change: `odeme.html` artık iki aşamalı dolduruyor. 1. aşama: ad, soyad,
+  e-posta hemen. 2. aşama: kayıtlı adresler profil gelince. Navbar da erken
+  aşamada tazeleniyor — "Giriş Yap" yazısı saniyelerce asılı kalmıyordu.
+- Fix: `doldurBosAlanlar()` alanı **yalnızca boşsa** yazar. İki aşama arasında
+  müşteri yazmaya başlamış olabilir; ikinci aşamanın 3 saniye sonra gelip
+  yazdığını silmesi beklemekten daha kötü olurdu.
+- Add: Adresler gelene kadar iskelet (`.saved-address-skeleton`). Boş alan
+  "kayıtlı adresim yok" gibi görünüyordu. Adres yoksa iskelet temizlenip bölüm
+  gizleniyor. `prefers-reduced-motion` altında animasyon kapalı.
+- Add: `odeme.html`, `hesap.html`, `profil.html` → `preconnect`
+  (gstatic, firestore/identitytoolkit/securetoken.googleapis.com) ve üç Firebase
+  modülü için `modulepreload`. Ölçüldü: modüller artık aynı anda başlıyor
+  (13 ms), zincir 285 ms'den 10 ms'ye indi.
+- Not: 3,3 saniyelik Firestore el sıkışması tamamen yok edilemez — adres verisi
+  orada duruyor. `preconnect` DNS/TLS kısmını erkene çeker; asıl kazanç,
+  formun artık o süre boyunca boş beklememesi.
+- Doğrulama: yazılan değerin korunduğu, iskeletin gösterilip temizlendiği ve
+  adres yokken bölümün gizlendiği tarayıcıda tek tek sınandı.
+
 ### Firestore/Storage güvenlik kuralları canlıya alındı
 - Ops: `firestore.rules` ve `storage.rules` **ilk kez** deploy edildi (proje sahibi tarafından,
   `npx firebase deploy --only firestore:rules,storage --project efemiletisim`).

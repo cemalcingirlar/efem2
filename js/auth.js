@@ -30,8 +30,21 @@ const session = {
   ready:     false
 };
 
+/* authReady, PROFIL de okunduktan sonra cozulur. Firestore'un ilk okumasi
+   soguk baglanti el sikismasi yuzunden ~3 saniye suruyor (olculdu), yani
+   authReady'i bekleyen her sey o kadar bekliyordu.
+
+   authUserReady ise Firebase kullanici nesnesi belli olur olmaz cozulur —
+   profil beklenmez. Ad/soyad/e-posta gibi alanlar bu asamada doldurulabilir;
+   yalnizca Firestore'dan gelen veriler (adresler, siparisler) authReady'i
+   beklemek zorunda. Iki sinyalin anlami farkli, karistirmayin:
+     authUserReady -> "kim oldugu belli"
+     authReady     -> "kim oldugu VE profili belli"                        */
 let resolveAuthReady;
 const authReady = new Promise(resolve => { resolveAuthReady = resolve; });
+
+let resolveAuthUserReady;
+const authUserReady = new Promise(resolve => { resolveAuthUserReady = resolve; });
 
 /* ─── Misafir oturumu oku/yaz ─── */
 function getGuest() {
@@ -203,6 +216,12 @@ function validatePassword(password) {
 /* ─── Firebase oturum dinleyicisi ─── */
 onAuthChange(async (user) => {
   session.user = user && user.emailVerified ? user : null;
+  if (!session.user) session.guest = getGuest();
+
+  /* Erken sinyal: profil okumasi BASLAMADAN once. Navbar da burada
+     tazeleniyor, boylece "Giriş Yap" yazisi 3 saniye asili kalmiyor. */
+  resolveAuthUserReady(session);
+  updateNavAuth();
 
   if (session.user) {
     session.profile = await getUserProfile(session.user.uid);
@@ -210,7 +229,6 @@ onAuthChange(async (user) => {
     if (localStorage.getItem(GUEST_KEY)) clearGuest();
   } else {
     session.profile = null;
-    session.guest   = getGuest();
   }
 
   session.ready = true;
@@ -225,6 +243,7 @@ onAuthChange(async (user) => {
 /* ─── Inline handler'lar ve klasik script'ler için window'a bağla ─── */
 Object.assign(window, {
   authReady,
+  authUserReady,
   isLoggedIn,
   isGuest,
   getCurrentUser,
@@ -244,6 +263,7 @@ Object.assign(window, {
 
 export {
   authReady,
+  authUserReady,
   isLoggedIn,
   isGuest,
   getCurrentUser,

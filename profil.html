@@ -4,6 +4,22 @@
   <script>(function(){try{var t=localStorage.getItem("efemi_theme");if(!t){t=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}document.documentElement.setAttribute("data-theme",t);}catch(e){}})();</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Firebase ağ ısıtması.
+       Ölçüm: giriş yapmış kullanıcıda kayıtlı adresler ~10 sn sonra geliyordu.
+       İki sebep vardı. (1) gstatic modülleri birbirini bekliyordu: önce
+       firebase-auth, o bitince firebase-app, o bitince firebase-firestore —
+       üç ardışık gidiş-dönüş. modulepreload üçünü paralel indirir.
+       (2) Firestore'un İLK okuması soğuk bağlantı el sıkışması yüzünden
+       3348 ms sürüyordu (ikinci okuma 157 ms). preconnect, DNS + TLS
+       el sıkışmasını SDK daha istemeden başlatır. -->
+  <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://securetoken.googleapis.com" crossorigin>
+  <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js">
+  <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js">
+  <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js">
   <title>Profilim – efemiletisim.com</title>
   <link rel="icon" type="image/png" sizes="32x32" href="assets/logos/favicon-32.png">
   <link rel="icon" type="image/png" sizes="512x512" href="assets/logos/favicon-512.png">

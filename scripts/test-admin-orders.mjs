@@ -90,6 +90,18 @@ const fakeStore = {
     orders.set(id, next);
     return { applied: true, order: next, changed: Boolean(yeni) };
   },
+  /* Gerçek store ile aynı sözleşme: takip numarasını üye profilindeki
+     sipariş kopyasına da yazar. Bu yansıtma olmadan müşteri numarayı
+     yalnız e-postada görüyor, sitede hiç göremiyordu. */
+  syncUserOrderTracking: async (uid, orderId, trackingNumber) => {
+    const u = users.get(uid);
+    if (!u) return { applied: false, reason: 'user_not_found' };
+    let found = false;
+    u.orders = u.orders.map(o => (o.id === orderId
+      ? (found = true, { ...o, trackingNumber: trackingNumber || null, carrier: trackingNumber ? 'hepsijet' : null })
+      : o));
+    return found ? { applied: true } : { applied: false, reason: 'order_not_in_profile' };
+  },
   syncUserOrderStatus: async (uid, orderId, status, label) => {
     const u = users.get(uid);
     if (!u) return { applied: false, reason: 'user_not_found' };
@@ -239,6 +251,16 @@ console.log('\nX) kargo takip numarası ve müşteri bildirimi');
   check('numara döndü', ilk.json.trackingNumber, '1234567890');
   check('takip linki döndü', ilk.json.trackingUrl, 'https://hepsijet.com/coklu-gonderi-takibi/1234567890');
   check('siparişe yazıldı', orders.get('EFM260818AAAAAA').trackingNumber, '1234567890');
+
+  /* Asıl mesele: numara MÜŞTERİYE ulaşıyor mu?
+     setOrderTracking yalnız orders/{id} belgesine yazıyor; profil.html ise
+     users/{uid}.orders dizisini okuyor. Yansıtma olmadan müşteri takip
+     numarasını sipariş ekranında hiç göremiyordu. */
+  {
+    const uyeSiparis = (users.get('user-1').orders || []).find(o => o.id === 'EFM260818AAAAAA');
+    check('üye profiline de yansıdı', uyeSiparis && uyeSiparis.trackingNumber, '1234567890');
+    check('taşıyıcı bilgisi yazıldı', uyeSiparis && uyeSiparis.carrier, 'hepsijet');
+  }
   check('taşıyıcı kaydedildi', orders.get('EFM260818AAAAAA').shipping.carrier, 'hepsijet');
   check('müşteriye e-posta gitti', ilk.json.mailed, true);
   check('e-posta doğru adrese', mails.length && mails[0].to, 'ali@example.com');
@@ -272,6 +294,12 @@ console.log('\nX) kargo takip numarası ve müşteri bildirimi');
     body: { orderId: 'EFM260818AAAAAA', trackingNumber: '' }
   });
   check('numara kaldırıldı', silindi.json.trackingNumber, null);
+  {
+    /* Kaldırma da yansımalı: aksi hâlde müşteri artık geçersiz bir takip
+       numarasını görmeye devam ederdi. */
+    const uyeSiparis = (users.get('user-1').orders || []).find(o => o.id === 'EFM260818AAAAAA');
+    check('üye profilinden de kaldırıldı', uyeSiparis && uyeSiparis.trackingNumber, null);
+  }
   check('silmede e-posta gitmez', mails.length, 0);
 
   // Geçersiz girdiler

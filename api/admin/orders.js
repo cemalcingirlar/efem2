@@ -215,6 +215,15 @@ async function trackingHandler(req, res, admin) {
      aynı numara tekrar kaydedilirse müşteriye ikinci bildirim gitmez.
      Gönderim başarısız olursa yönetici işlemi bloklanmaz — numara zaten
      yazıldı, sonuç `mailed: false` ile bildirilir. */
+  /* Numara müşterinin sipariş ekranında da görünsün.
+     setOrderTracking yalnız orders/{id}'ye yazıyor; profil.html ise
+     users/{uid}.orders dizisini okuyor. Bu satır olmadan müşteri takip
+     numarasını yalnız e-postada görüyordu, sitede hiç göremiyordu.
+     Hata yönetici işlemini bloklamaz: numara zaten kaydedildi. */
+  if (result.applied && result.order && result.order.userId) {
+    await store.syncUserOrderTracking(result.order.userId, orderId, takipNo || null);
+  }
+
   let mailed = false;
   const order = result.order;
   const alici = order && ((order.buyer && order.buyer.email) || order.customerEmail);

@@ -618,6 +618,13 @@ async function confirmDeleteAccount() {
   setTimeout(() => { window.location.href = 'index.html'; }, 1000);
 }
 
+const STATUS_MAP = {
+  processing: { cls: 'processing', label: 'Hazırlanıyor', icon: '<svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>' },
+  shipping:   { cls: 'shipping',   label: 'Kargoda',       icon: '<svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="2" y="8" width="12" height="8" rx="1"/><path d="M14 11h4l3 3v2h-2"/><circle cx="6" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>' },
+  delivered:  { cls: 'delivered',  label: 'Teslim Edildi', icon: '<svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9"/></svg>' },
+  cancelled:  { cls: 'cancelled',  label: 'İptal Edildi',  icon: '<svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>' }
+};
+
 function renderOrders() {
   const orders    = firestoreOrders;
   const container = document.getElementById('orders-list');
@@ -633,43 +640,152 @@ function renderOrders() {
     return;
   }
 
-  const statusMap = {
-    processing: { cls: 'processing', label: 'Hazırlanıyor', icon: '<svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>' },
-    shipping:   { cls: 'shipping',   label: 'Kargoda',       icon: '<svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="2" y="8" width="12" height="8" rx="1"/><path d="M14 11h4l3 3v2h-2"/><circle cx="6" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>' },
-    delivered:  { cls: 'delivered',  label: 'Teslim Edildi', icon: '<svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9"/></svg>' },
-    cancelled:  { cls: 'cancelled',  label: 'İptal Edildi',  icon: '<svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>' }
-  };
 
-  container.innerHTML = orders.map(o => {
-    const s = statusMap[o.status] || statusMap.processing;
-    const date = new Date(o.date).toLocaleDateString('tr-TR', { day:'numeric', month:'long', year:'numeric' });
-    return `
-      <div class="order-card">
-        <div class="order-card-header">
-          <div>
-            <div class="order-id">${o.id}</div>
-            <div class="order-date">${date}</div>
-          </div>
-          <span class="order-status ${s.cls}">${s.icon} ${s.label}</span>
+  container.innerHTML = orders.map((o, i) => siparisKarti(o, i)).join('');
+}
+
+/* ─── Sipariş kartı ───
+   Kart eskiden yalnız ürün satırlarını ve toplamı gösteriyordu. Müşteri
+   "kargom nerede, hangi kartla ödedim, nereye gidiyor" sorularının hiçbirini
+   buradan yanıtlayamıyordu; oysa bu alanlar sipariş kaydında zaten vardı
+   (paymentMethod, delivery, address, invoice, eftReceiptNo).
+
+   Kargo takip numarası ayrı bir hikâyeydi: sunucu onu yalnız orders/{id}
+   belgesine yazıyordu, bu sayfa ise users/{uid}.orders dizisini okuyor.
+   Numara müşteriye e-posta ile gidiyor ama sitede hiç görünmüyordu.
+   api/_lib/store.js → syncUserOrderTracking bunu düzeltti. */
+function siparisKarti(o, sira) {
+  const s = STATUS_MAP[o.status] || STATUS_MAP.processing;
+  const date = new Date(o.date).toLocaleDateString('tr-TR', { day:'numeric', month:'long', year:'numeric' });
+  const detayId = 'siparis-detay-' + sira;
+
+  const takipNo = (o.trackingNumber || '').trim();
+  const magazadan = o.delivery === 'magaza';
+
+  return `
+    <div class="order-card">
+      <div class="order-card-header">
+        <div>
+          <div class="order-id">${kacis(o.id)}</div>
+          <div class="order-date">${date}</div>
         </div>
-        <div class="order-card-body">
-          <div style="display:flex;flex-direction:column;gap:var(--space-2);margin-bottom:var(--space-4)">
-            ${(o.items || []).map(item => `
-              <div style="display:flex;justify-content:space-between;font-size:0.875rem">
-                <span>${item.name}${[item.color, item.size].filter(Boolean).length
-                  ? ` <span style="color:var(--text-muted)">(${[item.color, item.size].filter(Boolean).join(' · ')})</span>` : ''} × ${item.qty}</span>
-                <span style="font-weight:600">${formatPrice(item.price * item.qty)}</span>
-              </div>`).join('')}
-          </div>
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <div style="font-weight:700;font-size:1rem">
-              Toplam: <span style="color:var(--primary)">${formatPrice(o.total)}</span>
-            </div>
-            <div class="order-shipping-note"><svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="2" y="8" width="12" height="8" rx="1"/><path d="M14 11h4l3 3v2h-2"/><circle cx="6" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg> Ücretsiz Kargo</div>
+        <span class="order-status ${s.cls}">${s.icon} ${s.label}</span>
+      </div>
+      <div class="order-card-body">
+        <div style="display:flex;flex-direction:column;gap:var(--space-2);margin-bottom:var(--space-4)">
+          ${(o.items || []).map(item => `
+            <div style="display:flex;justify-content:space-between;font-size:0.875rem;gap:var(--space-3)">
+              <span>${kacis(item.name)}${[item.color, item.size].filter(Boolean).length
+                ? ` <span style="color:var(--text-muted)">(${kacis([item.color, item.size].filter(Boolean).join(' · '))})</span>` : ''} × ${item.qty}</span>
+              <span style="font-weight:600;white-space:nowrap">${formatPrice(item.price * item.qty)}</span>
+            </div>`).join('')}
+        </div>
+
+        ${kargoBlogu(takipNo, magazadan)}
+
+        <div class="order-meta-row">
+          <span class="order-chip">${odemeSimgesi(o.paymentMethod)} ${odemeEtiketi(o.paymentMethod)}</span>
+          <span class="order-chip">${magazadan
+            ? '<svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M3 9l1.5-5h15L21 9"/><path d="M4 9v11h16V9"/><path d="M9 20v-6h6v6"/></svg> Mağazadan Teslim'
+            : '<svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="2" y="8" width="12" height="8" rx="1"/><path d="M14 11h4l3 3v2h-2"/><circle cx="6" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg> Ücretsiz Kargo'}</span>
+          <button type="button" class="order-detay-btn" onclick="siparisDetayAc('${detayId}', this)">
+            Detayları Gör
+          </button>
+        </div>
+
+        <div id="${detayId}" class="order-detay hidden">
+          ${detaySatiri('Sipariş No', o.id)}
+          ${detaySatiri('Ödeme Yöntemi', odemeEtiketi(o.paymentMethod))}
+          ${o.eftReceiptNo ? detaySatiri('Havale Dekont No', o.eftReceiptNo) : ''}
+          ${takipNo ? detaySatiri('Kargo Takip No', takipNo) : ''}
+          ${detaySatiri('Teslimat', magazadan ? 'Mağazadan teslim alınacak' : 'Adrese kargo')}
+          ${!magazadan && o.address ? detaySatiri('Teslimat Adresi', adresMetni(o.address)) : ''}
+          ${faturaSatiri(o.invoice)}
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:var(--space-4)">
+          <div style="font-weight:700;font-size:1rem">
+            Toplam: <span style="color:var(--primary)">${formatPrice(o.total)}</span>
           </div>
         </div>
-      </div>`;
-  }).join('');
+      </div>
+    </div>`;
+}
+
+/* Kargo takip bloğu. Numara yoksa müşteriyi boşuna HepsiJET'e göndermek
+   yerine durumu açıkça söyler — "numara yok" ile "numara var ama tıklayamam"
+   arasındaki fark müşteri için önemli. */
+function kargoBlogu(takipNo, magazadan) {
+  if (magazadan) {
+    return `<div class="order-kargo bilgi">
+      <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M3 9l1.5-5h15L21 9"/><path d="M4 9v11h16V9"/><path d="M9 20v-6h6v6"/></svg>
+      <span>Bu sipariş mağazadan teslim alınacak; kargo takibi yoktur.</span>
+    </div>`;
+  }
+  if (!takipNo) {
+    return `<div class="order-kargo bilgi">
+      <svg class="icon icon-sm" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+      <span>Kargo takip numarası siparişiniz kargoya verildiğinde burada görünecek.</span>
+    </div>`;
+  }
+  return `<div class="order-kargo aktif">
+    <svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="2" y="8" width="12" height="8" rx="1"/><path d="M14 11h4l3 3v2h-2"/><circle cx="6" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/></svg>
+    <div>
+      <div class="order-kargo-baslik">Kargo Takip No: <strong>${kacis(takipNo)}</strong></div>
+      <a href="https://hepsijet.com/coklu-gonderi-takibi/${encodeURIComponent(takipNo)}"
+         target="_blank" rel="noopener noreferrer" class="order-kargo-link">HepsiJET'te takip et →</a>
+    </div>
+  </div>`;
+}
+
+/* Sipariş kaydındaki adres/fatura alanları MÜŞTERİNİN kendi yazdığı
+   metinler. innerHTML ile basıldıkları için kaçış şart: aksi hâlde adresine
+   `<img onerror=...>` yazan biri kendi sayfasında betik çalıştırabilir.
+   Zararı kendisiyle sınırlı (self-XSS) ama kaçırılacak bir şey değil —
+   aynı veri ileride yönetici ekranında da gösterilebilir. */
+function kacis(deger) {
+  return String(deger == null ? '' : deger)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function odemeEtiketi(yontem) {
+  if (yontem === 'eft') return 'EFT / Havale';
+  if (yontem === 'kart') return 'Kredi / Banka Kartı';
+  return 'Belirtilmemiş';
+}
+
+function odemeSimgesi(yontem) {
+  return yontem === 'eft'
+    ? '<svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M3 10l9-6 9 6"/><path d="M5 10v9M19 10v9M9 10v9M15 10v9"/><path d="M3 21h18"/></svg>'
+    : '<svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2.5"/><path d="M2 10h20"/></svg>';
+}
+
+function adresMetni(a) {
+  if (!a) return '';
+  const satir = [a.adres, [a.ilce, a.sehir].filter(Boolean).join(' / '), a.posta].filter(Boolean).join(', ');
+  const kisi  = [a.ad, a.soyad].filter(Boolean).join(' ');
+  return [kisi, satir, a.telefon].filter(Boolean).join(' · ');
+}
+
+/* Fatura bilgisi yalnız kurumsal faturada anlamlı; bireyselde teslimat
+   adresiyle aynı olduğu için tekrar göstermek gürültü olurdu. */
+function faturaSatiri(inv) {
+  if (!inv || !inv.unvan) return '';
+  const parcalar = [inv.unvan, inv.vergiNo ? ('VKN ' + inv.vergiNo) : '', inv.vergiDairesi].filter(Boolean);
+  return detaySatiri('Fatura', parcalar.join(' · '));
+}
+
+function detaySatiri(baslik, deger) {
+  if (!deger) return '';
+  return `<div class="order-detay-satir"><span>${kacis(baslik)}</span><strong>${kacis(deger)}</strong></div>`;
+}
+
+function siparisDetayAc(id, btn) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const acik = !el.classList.toggle('hidden');
+  btn.textContent = acik ? 'Detayları Gizle' : 'Detayları Gör';
 }
 
 function renderFavorites() {

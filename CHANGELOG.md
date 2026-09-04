@@ -32,6 +32,41 @@ En yeni kayıtlar en üstte.
 
 ## 2026-09-04
 
+### Müşteri sipariş ekranı zenginleştirildi
+- Fix: **Kargo takip numarası müşteriye hiç ulaşmıyordu.** `setOrderTracking()`
+  numarayı yalnız `orders/{id}` belgesine yazıyor, `profil.html` ise
+  `users/{uid}.orders` dizisini okuyor. `syncUserOrderStatus` bu diziye sadece
+  `status`/`statusLabel` yansıtıyordu. Sonuç: numara e-posta ile gidiyor ama
+  sitede hiçbir yerde görünmüyordu.
+  `store.patchUserOrder()` / `syncUserOrderTracking()` eklendi; `/api/admin/orders`
+  takip kaydından sonra üye kopyasını da güncelliyor. Numara silinince kopyadan
+  da siliniyor — aksi hâlde müşteri geçersiz bir numarayı görmeye devam ederdi.
+- Add: Sipariş kartı artık şunları gösteriyor:
+  - **Kargo takip numarası** ve HepsiJET takip bağlantısı
+  - Numara yoksa "kargoya verildiğinde burada görünecek" bilgisi (boş kutu değil)
+  - Mağazadan teslimde "kargo takibi yoktur" — müşteriyi boşuna HepsiJET'e yollamaz
+  - **Ödeme yöntemi** (Kredi/Banka Kartı · EFT/Havale) ve varsa dekont numarası
+  - **Teslimat türü** (adrese kargo / mağazadan teslim)
+  - Açılır **Detaylar**: sipariş no, ödeme yöntemi, takip no, teslimat adresi,
+    kurumsal fatura bilgisi
+- Fatura satırı yalnız kurumsal faturada gösteriliyor; bireyselde teslimat
+  adresiyle aynı olduğu için tekrar göstermek gürültü olurdu.
+- Fix: Sipariş kartındaki metinler artık HTML kaçışından geçiyor. Adres alanlarını
+  müşteri yazıyor ve `innerHTML` ile basılıyorlardı; adresine `<img onerror=...>`
+  yazan biri kendi sayfasında betik çalıştırabilirdi. Zarar kendisiyle sınırlıydı
+  (self-XSS) ama aynı veri yönetici ekranında da gösterilebilir.
+- Geliştirme sırasında yakalanan kusur: `siparisKarti()` içinde `statusMap`
+  kullanılıyordu ama o değişken `renderOrders()`'ın yerel kapsamındaydı —
+  tarayıcıda sipariş listesi `ReferenceError` ile komple patlardı. `STATUS_MAP`
+  modül kapsamına alındı. Test yazılmasaydı bu canlıya giderdi.
+- Add: `scripts/test-order-card.mjs` (`npm run test:order-card`) — 33 test.
+  Kart fonksiyonları `profil.html` kaynağından okunup yalıtılmış bağlamda
+  çalıştırılıyor; takip numarasının/HepsiJET bağlantısının doğru üretildiği,
+  mağazadan teslimde gösterilmediği, ödeme yöntemi etiketleri, adres biçimi ve
+  HTML kaçışı doğrulanıyor. `npm test` bu takımı da çalıştırıyor.
+- Add: `test-admin-orders.mjs` → takip numarasının üye profiline yansıdığı ve
+  silinince kaldırıldığı sınanıyor (52 test).
+
 ### Girişte "Giriş yapılıyor..." uzun süre dönüyordu
 - Fix: `firebaseLogin()` içinde **kullanılmayan** bir Firestore okuması vardı.
   `getUserProfile()` çağrılıp dönen `profile` alanı hiçbir yerde okunmuyordu

@@ -206,6 +206,53 @@ async function setOrderTracking(orderId, trackingNumber, actorEmail) {
   });
 }
 
+/* ─── Üye profilindeki sipariş kopyasına alan yaz ───
+   users/{uid}.orders bir DİZİ; Firestore dizi içi alan güncellemesi
+   desteklemiyor, bu yüzden dizi okunup yeniden yazılıyor. İki yönetici
+   aynı anda yazarsa biri diğerini ezmesin diye transaction içinde. */
+async function patchUserOrder(uid, orderId, patch) {
+  const store = getStore();
+  if (!store || !uid) return { applied: false, reason: 'no_user' };
+  const ref = store.db.collection('users').doc(uid);
+
+  try {
+    return await store.db.runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      if (!snap.exists) return { applied: false, reason: 'user_not_found' };
+
+      const data = snap.data() || {};
+      const orders = Array.isArray(data.orders) ? data.orders : [];
+      let found = false;
+
+      const next = orders.map(o => {
+        if (o && o.id === orderId) { found = true; return { ...o, ...patch }; }
+        return o;
+      });
+
+      if (!found) return { applied: false, reason: 'order_not_in_profile' };
+
+      tx.update(ref, { orders: next });
+      return { applied: true };
+    });
+  } catch (err) {
+    console.error('[store] users/%s.orders yamalanamadı: %s', uid, err.message);
+    return { applied: false, reason: 'error' };
+  }
+}
+
+/* Kargo takip numarasını üye profilindeki kopyaya da yansıtır.
+
+   setOrderTracking yalnız orders/{id} belgesine yazıyor; müşteri sayfası
+   (profil.html) ise users/{uid}.orders dizisini okuyor. Bu yansıtma
+   olmadan takip numarası müşteriye HİÇ görünmüyordu — e-posta gidiyor
+   ama sipariş ekranında hiçbir iz kalmıyordu. */
+async function syncUserOrderTracking(uid, orderId, trackingNumber) {
+  return patchUserOrder(uid, orderId, {
+    trackingNumber: trackingNumber || null,
+    carrier:        trackingNumber ? 'hepsijet' : null
+  });
+}
+
 async function syncUserOrderStatus(uid, orderId, status, statusLabel) {
   const store = getStore();
   if (!store || !uid) return { applied: false, reason: 'no_user' };
@@ -454,5 +501,7 @@ module.exports = {
   uploadImage,
   recordEventOnce,
   appendOrderToUserProfile,
+  patchUserOrder,
+  syncUserOrderTracking,
   queueMail
 };

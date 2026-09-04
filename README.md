@@ -39,7 +39,7 @@
 - **Hesap paneli** — sipariş geçmişi, favoriler, adres ve profil yönetimi
 - **Admin paneli** (`admin.html`) — ürün/sipariş yönetimi arayüzü
 - **Kurumsal tek-kaynak yapı** — tüm marka/iletişim/yasal bilgiler `js/site-config.js`'ten besleniyor, sayfalarda tekrar yok
-- **SEO** — `sitemap.xml`, `robots.txt`, Organization/Product schema.org enjeksiyonu
+- **SEO** — dinamik `sitemap.xml` (canlı katalogdan; satıştan kaldırılan ürünler girmez), `robots.txt`, Organization/Product schema.org enjeksiyonu
 - **Yasal sayfalar** — KVKK/gizlilik, mesafeli satış sözleşmesi, iptal/iade
 - **Güvenlik başlıkları** — CSP, HSTS, X-Frame-Options vb. `vercel.json` üzerinden
 - **Mikro etkileşimler** — magnetic hover butonlar, scroll-reveal, sayaç animasyonları
@@ -79,7 +79,7 @@
 │                                          PAYTR-ENTEGRASYON.md, ARKADAS-YAPILACAKLAR.md
 ├─ vercel.json / firebase.json           → hosting + güvenlik başlıkları
 ├─ .env.example                          → sunucu ortam değişkenleri şablonu
-└─ sitemap.xml / robots.txt
+└─ robots.txt              (sitemap.xml dinamik: api/sitemap.js)
 ```
 
 ## Kurulum

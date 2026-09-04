@@ -53,6 +53,19 @@ Kurulum ve doğrulama listesi: `docs/ADMIN-KURULUMU.md`.
 
 Panel/katalog tarafını değiştirdikten sonra `npm run test:admin` çalıştırılmalı.
 
+## Sitemap
+
+Sitemap **statik dosya değildir**. `/sitemap.xml` adresi `vercel.json` içindeki
+rewrite ile `/api/sitemap`'e gider ve canlı katalogdan üretilir; satıştan
+kaldırılmış (`active: false`) ürünler girmez. Sabit sayfa listesi tek yerdedir:
+`api/_lib/sitemap.js`.
+
+Kök dizine `sitemap.xml` dosyası **geri eklenmez**: Vercel yönlendirmeden önce
+dosya sistemine baktığı için dosya rewrite'ı gölgeler ve sitemap yeniden
+satıştan kaldırılmış ürünleri bildirmeye başlar.
+
+Değiştirdikten sonra `npm run test:admin` çalıştırılmalı.
+
 ## Kök dizin
 
-Proje kök dizini: sayfa HTML'leri (routing gereği taşınamaz), `css/`/`js/`/`assets/`, sunucu tarafı ödeme için `api/` ve `scripts/`, hosting/config dosyaları (`vercel.json`, `firebase.json`, `firestore.rules`, `storage.rules`, `robots.txt`, `sitemap.xml`, `.gitignore`, `.vercelignore`, `package.json`, `.env.example`, `dev-server.js`) ve `CLAUDE.md`/`CHANGELOG.md`/`README.md` içerir. Rapor/yardımcı doküman `docs/`'a, logo kaynak dosyası `assets/logos/source/`'a taşındı.
+Proje kök dizini: sayfa HTML'leri (routing gereği taşınamaz), `css/`/`js/`/`assets/`, sunucu tarafı ödeme için `api/` ve `scripts/`, hosting/config dosyaları (`vercel.json`, `firebase.json`, `firestore.rules`, `storage.rules`, `robots.txt`, `.gitignore`, `.vercelignore`, `package.json`, `.env.example`, `dev-server.js`) ve `CLAUDE.md`/`CHANGELOG.md`/`README.md` içerir. Rapor/yardımcı doküman `docs/`'a, logo kaynak dosyası `assets/logos/source/`'a taşındı.

@@ -66,6 +66,7 @@ require.cache[require.resolve('../api/_lib/store.js')] = {
 };
 
 const adminProducts = require('../api/admin/products.js');
+const publicCatalog = require('../api/catalog.js');
 const adminCoupons  = require('../api/admin/coupons.js');
 const adminUpload   = require('../api/admin/upload.js');
 const verifyAdmin   = require('../api/verify-admin.js');
@@ -311,6 +312,84 @@ console.log('\n7) görsel yükleme');
 
   const empty = await call(adminUpload, { method: 'POST', body: { fileName: 'a.png', data: '' } });
   check('boş dosya 400', empty.res.statusCode, 400);
+}
+
+
+console.log('\nSatış durumu (active) korunuyor mu');
+{
+  /* Panelde iki kaydetme yolu (ürün formu ve toplu stok) `active: true`
+     sabitini gönderiyordu; satıştan kaldırılmış bir ürünün stoğunu düzeltmek
+     onu sessizce vitrine geri koyuyordu. İstemci artık mevcut durumu
+     gönderiyor — bu bölüm sunucunun o değeri OLDUĞU GİBİ yazdığını sınar,
+     yoksa istemci düzeltmesinin bir anlamı kalmaz. */
+  const temel = {
+    name: 'Durum Testi', category: 'saat', brand: 'Test',
+    price: 100, images: ['assets/images/products/placeholder-product.svg'],
+    variants: [{ sku: 'DT-1', color: 'Siyah', size: '', stock: 5 }]
+  };
+
+  const kapali = await call(adminProducts, { method: 'POST', body: { product: { ...temel, id: 9101, active: false } } });
+  check('active:false kabul edildi', kapali.res.statusCode, 200);
+  check('active:false olduğu gibi yazıldı', kapali.json?.product?.active, false);
+
+  const acik = await call(adminProducts, { method: 'POST', body: { product: { ...temel, id: 9102, active: true } } });
+  check('active:true yazıldı', acik.json?.product?.active, true);
+
+  /* Alan hiç gönderilmezse ürün satışta sayılır. Bu yüzden istemci gizli bir
+     ürünü kaydederken `active: false` göndermek ZORUNDA. */
+  const yok = await call(adminProducts, { method: 'POST', body: { product: { ...temel, id: 9103 } } });
+  check('alan yoksa satışta varsayılır', yok.json?.product?.active, true);
+
+  /* Vitrin ucu yalnız active:false olanları gizler. */
+  invalidateCatalog();
+  const vitrin = await call(publicCatalog, { method: 'GET' });
+  const gizliler = vitrin.json?.hiddenIds || [];
+  const gorunenler = (vitrin.json?.products || []).map(p => Number(p.id));
+  check('kapalı ürün gizliler listesinde', gizliler.includes(9101), true);
+  check('kapalı ürün vitrinde yok', gorunenler.includes(9101), false);
+  check('açık ürün vitrinde var', gorunenler.includes(9102), true);
+}
+
+
+console.log('\nSitemap satıştan kaldırılan ürünü bildirmiyor');
+{
+  /* Sitemap eskiden derleme anında üretilen statik bir dosyaydı ve statik
+     kataloğu okuduğu için TÜM ürünleri listeliyordu. "Satıştan kaldır"
+     durumu Firestore'da tutulduğundan, kaldırılmış ürünler de arama
+     motorlarına bildiriliyor; tıklayan bot ürün listesine geri atılıyordu
+     (yumuşak 404). Artık canlı katalogdan üretiliyor. */
+  const sitemap = require('../api/sitemap.js');
+
+  const temel = {
+    name: 'Sitemap Testi', category: 'saat', brand: 'Test',
+    price: 100, images: ['assets/images/products/placeholder-product.svg'],
+    variants: [{ sku: 'SM-1', color: 'Siyah', size: '', stock: 3 }]
+  };
+  await call(adminProducts, { method: 'POST', body: { product: { ...temel, id: 9201, active: true } } });
+  await call(adminProducts, { method: 'POST', body: { product: { ...temel, id: 9202, active: false } } });
+  invalidateCatalog();
+
+  const r = await call(sitemap, { method: 'GET' });
+  const xml = r.res.body;
+
+  check('HTTP 200', r.res.statusCode, 200);
+  check('XML içerik türü', /application\/xml/.test(r.res.headers['content-type'] || ''), true);
+  check('satıştaki ürün bildirilir', xml.includes('urun-detay.html?id=9201'), true);
+  check('kaldırılan ürün BİLDİRİLMEZ', xml.includes('urun-detay.html?id=9202'), false);
+  check('ana sayfa var', xml.includes('<loc>https://efemiletisim.com/</loc>'), true);
+  check('ürün listesi var', xml.includes('/urunler.html'), true);
+  check('mesafeli satış sözleşmesi var', xml.includes('/mesafeli-satis-sozlesmesi.html'), true);
+  check('geçerli urlset', /^<\?xml version="1\.0" encoding="UTF-8"\?>\n<urlset /.test(xml), true);
+  check('sepet/ödeme gibi sayfalar sitemap\'te yok', /sepet\.html|odeme\.html|admin\.html|hesap\.html/.test(xml), false);
+
+  // POST kabul edilmez
+  const post = await call(sitemap, { method: 'POST' });
+  check('POST 405', post.res.statusCode, 405);
+
+  /* Sıralama kararlı olmalı: her istekte farklı sıra dönerse arama
+     motorları sitemap'i sürekli değişmiş sayar. */
+  const r2 = await call(sitemap, { method: 'GET' });
+  check('aynı katalog aynı XML', r2.res.body, xml);
 }
 
 console.log(`\n${passed} test geçti, ${failed} test başarısız.`);

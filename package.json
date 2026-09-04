@@ -17,9 +17,7 @@
     "test:admin:orders": "node scripts/test-admin-orders.mjs",
     "test:admin:catalog": "node scripts/test-admin-catalog.mjs",
     "test": "npm run test:payment && npm run test:admin && npm run test:stock && npm run test:installments",
-    "test:stock": "node scripts/test-stock.mjs",
-    "sync-sitemap": "node scripts/sync-sitemap.mjs",
-    "check-sitemap": "node scripts/sync-sitemap.mjs --check"
+    "test:stock": "node scripts/test-stock.mjs"
   },
   "dependencies": {
     "firebase-admin": "^12.7.0"

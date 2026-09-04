@@ -2350,7 +2350,10 @@ async function saveProduct() {
     colorImages:   existing?.colorImages || {},
     variants:      variantSonuc.variants,
     sizeLabel:     existing?.sizeLabel || null,
-    active:        true
+    /* Satış durumu KORUNUR. Sabit `true` yazılıyordu; satıştan kaldırılmış
+       bir ürünün stoğunu veya fiyatını düzeltip kaydetmek onu sessizce
+       vitrine geri koyuyordu. Yeni ürün satışta başlar. */
+    active:        existing ? existing.active !== false : true
   };
 
   if (!payload.images.length) {
@@ -3157,7 +3160,11 @@ async function openBulkStockDialog() {
   if (girdi === null) return;
   const adet = Math.max(0, parseInt(girdi) || 0);
   if (!adet) { showToast('Geçerli bir adet girin.', 'error'); return; }
-  if (!confirm(`${hedef.length} ürünün her seçeneğine ${adet} adet yazılacak. Onaylıyor musunuz?`)) return;
+  const kapali = hedef.filter(p => p.active === false).length;
+  const kapaliNot = kapali
+    ? `\n\n${kapali} tanesi satıştan kaldırılmış durumda; stoğu yazılır ama vitrine geri konmaz.`
+    : '';
+  if (!confirm(`${hedef.length} ürünün her seçeneğine ${adet} adet yazılacak. Onaylıyor musunuz?${kapaliNot}`)) return;
 
   let basarili = 0, hatali = 0;
   for (const p of hedef) {
@@ -3172,7 +3179,8 @@ async function openBulkStockDialog() {
           specs: p.specs || [], images: p.images || [],
           colorImages: p.colorImages || {},
           variants: p.variants.map(v => ({ sku: v.sku, color: v.color, size: v.size || '', barcode: v.barcode || '', stock: adet })),
-          sizeLabel: p.sizeLabel || null, active: true
+          // Satış durumu korunur; toplu stok düzeltmesi bir ürünü vitrine geri koymaz.
+          sizeLabel: p.sizeLabel || null, active: p.active !== false
         } })
       });
       basarili++;

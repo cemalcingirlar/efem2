@@ -39,6 +39,7 @@ loadEnvFile(path.join(__dirname, '.env.local'));
    çıkar ve "yerelde çalışıyordu" durumuna düşülür.
    Vercel'in kural sırası: aynı başlık birden çok kuralda varsa SONUNCU kazanır. */
 const vercelHeaderRules = loadVercelHeaders(path.join(__dirname, 'vercel.json'));
+const vercelRewrites    = loadVercelRewrites(path.join(__dirname, 'vercel.json'));
 
 function loadVercelHeaders(file) {
   try {
@@ -51,6 +52,28 @@ function loadVercelHeaders(file) {
   } catch {
     return [];
   }
+}
+
+/* Vercel yönlendirmeleri (rewrites). Yerelde uygulanmazsa yerel ile canlı
+   ayrışır: /sitemap.xml canlıda /api/sitemap'e gidiyor, yerelde 404 verirdi.
+   Vercel önce dosya sistemine baktığı için burada da aynı sıra korunuyor. */
+function loadVercelRewrites(file) {
+  try {
+    const config = JSON.parse(fs.readFileSync(file, 'utf8'));
+    return (config.rewrites || []).map(rule => ({
+      test: new RegExp('^' + rule.source + '$'),
+      destination: rule.destination
+    }));
+  } catch {
+    return [];
+  }
+}
+
+function applyVercelRewrite(pathname) {
+  for (const rule of vercelRewrites) {
+    if (rule.test.test(pathname)) return rule.destination;
+  }
+  return null;
 }
 
 function applyVercelHeaders(res, pathname) {
@@ -155,6 +178,15 @@ const server = http.createServer(async (req, res) => {
   if (url.pathname.startsWith('/api/')) {
     await handleApi(req, res, url);
     return;
+  }
+
+  /* Dosya yoksa yönlendirme kuralına bak (Vercel de bu sırayla çalışır). */
+  if (!fs.existsSync(path.join(__dirname, decodeURI(url.pathname)))) {
+    const hedef = applyVercelRewrite(url.pathname);
+    if (hedef && hedef.startsWith('/api/')) {
+      await handleApi(req, res, new URL(hedef, `http://localhost:${PORT}`));
+      return;
+    }
   }
 
   let reqPath = decodeURI(url.pathname);

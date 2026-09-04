@@ -388,6 +388,21 @@ console.log('\nSitemap satıştan kaldırılan ürünü bildirmiyor');
   check('geçerli urlset', /^<\?xml version="1\.0" encoding="UTF-8"\?>\n<urlset /.test(xml), true);
   check('sepet/ödeme gibi sayfalar sitemap\'te yok', /sepet\.html|odeme\.html|admin\.html|hesap\.html/.test(xml), false);
 
+
+  /* Firestore'da HİÇ kaydı olmayan statik ürünler de girmeli.
+     Vitrin bu ürünleri gösteriyor ve müşteri satın alabiliyor; sitemap
+     yalnız Firestore'u okusaydı bunlar arama motorlarına bildirilmezdi.
+     Canlıda ölçüldü: vitrin 35 ürün, sitemap 31 — 4 ürün eksikti.
+     Not: 9201/9202 testin kendi eklediği kayıtlar, 1 ise statik katalogda
+     olup bu testte Firestore'a hiç yazılmamış bir ürün. */
+  check('Firestore kaydı olmayan statik ürün de bildirilir',
+        xml.includes('urun-detay.html?id=1<') || xml.includes('urun-detay.html?id=1</loc>'), true);
+
+  /* Ama satıştan kaldırma her zaman kazanır: ürün statik katalogda dursa
+     bile Firestore'da active:false ise sitemap'e girmez. Bu satır olmazsa
+     kaldırılan ürünler statik katalog üzerinden geri sızardı. */
+  check('kaldırma statik kaydı ezer', xml.includes('urun-detay.html?id=9202'), false);
+
   // POST kabul edilmez
   const post = await sitemapCagir('POST');
   check('POST 405', post.res.statusCode, 405);

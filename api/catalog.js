@@ -79,6 +79,29 @@ module.exports = async (req, res) => {
   return send(res, { ok: true, source: 'firestore', count: active.length, products: active, hiddenIds });
 };
 
+/* Sitemap'e girecek ürün id'leri.
+
+   Vitrin (js/data.js) statik BASE_PRODUCTS üzerine Firestore listesini
+   biniyor: aynı id → Firestore kazanır, Firestore'da HİÇ kaydı olmayan
+   statik ürün listede kalır. Sitemap yalnız Firestore'u okusaydı, panelden
+   hiç kaydedilmemiş ürünler (müşteri onları görüyor ve satın alabiliyor)
+   sitemap'e girmezdi — ölçüldü: vitrin 35 ürün, sitemap 31.
+
+   Bu yüzden aynı birleştirme burada da yapılıyor:
+     - Firestore'da satışta olanlar,
+     - artı Firestore'da hiç kaydı olmayan statik ürünler.
+   Firestore'da satıştan KALDIRILMIŞ bir ürün, statik katalogda dursa bile
+   girmez; kaldırma kararı her zaman kazanır. */
+function sitemapIdleri(products) {
+  const kayitli = new Set(products.map(p => Number(p.id)));
+  const satistakiler = products.filter(p => p.active !== false).map(p => Number(p.id));
+  const yalnizStatik = staticCatalog.products
+    .map(p => Number(p.id))
+    .filter(id => !kayitli.has(id));
+
+  return [...satistakiler, ...yalnizStatik];
+}
+
 /* ─── /sitemap.xml ───
    Sitemap canlı katalogdan üretilir; satıştan kaldırılmış ürün girmez.
 
@@ -91,9 +114,7 @@ module.exports = async (req, res) => {
    fazladan ürün bildirmesinden daha kötüdür. X-Sitemap-Source hangi kaynağın
    kullanıldığını söyler.                                                  */
 function sendSitemap(req, res, products, kaynak) {
-  const ids = products
-    ? products.filter(p => p.active !== false).map(p => p.id)
-    : staticCatalog.products.filter(p => p.active !== false).map(p => p.id);
+  const ids = products ? sitemapIdleri(products) : staticCatalog.products.map(p => p.id);
 
   const xml = buildSitemap(ids);
 

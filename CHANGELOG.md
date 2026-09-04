@@ -32,6 +32,25 @@ En yeni kayıtlar en üstte.
 
 ## 2026-09-04
 
+### Firestore/Storage güvenlik kuralları canlıya alındı
+- Ops: `firestore.rules` ve `storage.rules` **ilk kez** deploy edildi (proje sahibi tarafından,
+  `npx firebase deploy --only firestore:rules,storage --project efemiletisim`).
+- Öncesinde proje Firestore'un varsayılan "her şey kapalı" modundaydı; repodaki kurallar hiç
+  yayınlanmamıştı. Bunu ölçmenin yolu: repo `products` için `allow read: if true` diyor, ama
+  canlıda istemci okuması `permission-denied` alıyordu. Diğer koleksiyonlar iki kural setinde
+  de reddedildiği için farkı yalnız `products` gösteriyor.
+- Sipariş akışı etkilenmiyordu (kart ve EFT siparişleri sunucuda Admin SDK ile yazılıyor,
+  kurallar oraya uygulanmaz). Kırık olanlar istemci tarafındaki özelliklerdi: üyelik profili
+  (`users/{uid}` yazma/okuma, adres defteri, hesap silme), stok bildirimi (`stockAlerts`) ve
+  e-posta kuyruğu (`mail`).
+- Deploy sonrası doğrulama (canlı siteden istemci olarak, giriş yapmadan):
+  `products` okunabiliyor; `coupons`, `orders`, `paymentEvents`, `users`, `mail`, `stockAlerts`
+  reddediliyor. Yani doğru olan açıldı, kapalı kalması gerekenler kapalı kaldı.
+- Yazma denemesi **yapılmadı**: başarılı olsaydı canlı veriye çöp kayıt düşerdi. Okuma matrisi
+  dosyanın yürürlüğe girdiğini zaten kanıtlıyor; yazma izinleri de aynı dosyadan geliyor.
+- Girişli kullanıcı gerektiren yollar (profil yazma, stok bildirimi oluşturma) doğrulanamadı;
+  bunları mağaza sahibinin bir hesapla denemesi gerekir.
+
 ### Ödeme formu açılmıyordu — token biçim kontrolü
 - Fix: **"Ödeme formu açılamadı" hatası.** `/api/payment/initialize` token'ı başarıyla
   alıyor, sipariş de oluşuyordu (loglarda `initialize_ok`), ama `odeme-guvenli.html`

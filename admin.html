@@ -1322,7 +1322,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (e.key === 'Enter') adminLogin();
   });
 
-  // Zaten açık bir oturum varsa yetkisi sunucuda kontrol edilir
+  /* Zaten açık bir oturum varsa yetkisi sunucuda kontrol edilir.
+     Eskiden `if (window.authReady)` yazıyordu: js/auth.js ertelenmiş bir
+     modül olduğu için bu satır çalıştığında değer çoğu zaman tanımsızdı ve
+     bekleme SESSİZCE atlanıyordu. Yetki zaten sunucuda doğrulanıyor, yani
+     güvenlik açığı değildi; ama oturum hazır olmadan verifyAdminSession()
+     çağrıldığı için panel gereksiz yere giriş ekranında kalabiliyordu. */
+  await (window.authReady
+    ? Promise.resolve()
+    : new Promise(r => addEventListener('authModuleReady', r, { once: true })));
   if (window.authReady) await window.authReady;
   const admin = await verifyAdminSession();
   if (admin && !admin.error) {

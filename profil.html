@@ -345,36 +345,86 @@ let firestoreOrders = [];
 
 // Oturum yönetimi js/auth.js modülüne aittir; profil sayfası giriş zorunludur.
 (async () => {
-  const authenticated = await window.requireAuth({ redirectTo: 'hesap.html' });
-  if (!authenticated) return;
+  /* Sayfa İKİ aşamada çizilir.
 
+     Eskiden tek aşama vardı: requireAuth() → authReady, o da Firestore
+     profilini bekliyordu. Firestore'un ilk okuması soğuk bağlantı el
+     sıkışması yüzünden ~3,3 saniye sürüyor (canlıda ölçüldü). Bu süre
+     boyunca sayfanın TAMAMI boştu: ad/soyad alanları, e-posta, avatar,
+     hatta "Yükleniyor..." yazısı ekranda asılı kalıyordu.
+
+     Oysa e-posta ve çoğu zaman ad/soyad, Firebase kullanıcı nesnesinde
+     zaten var. Onlar için Firestore'u beklemeye gerek yok. */
+  /* js/auth.js bir modül, yani ERTELENMİŞ; bu blok ondan önce çalışıyor.
+     Dinleyici burada kurulur, olay modül değerlendirilince gelir. */
+  await (window.authUserReady
+    ? Promise.resolve()
+    : new Promise(r => addEventListener('authModuleReady', r, { once: true })));
+
+  await window.authUserReady;
+
+  if (!window.isLoggedIn()) {
+    window.location.href = 'hesap.html?redirect=' + encodeURIComponent(window.location.href);
+    return;
+  }
+
+  // 1. aşama: kullanıcı nesnesinden bilinenler
+  currentUser = window.getCurrentUser();
+  renderProfileInfo({ profilHazir: false });
+
+  // 2. aşama: Firestore profili (adresler, siparişler)
+  await window.authReady;
   currentUser     = window.getCurrentUser();
   firestoreOrders = [...currentUser.orders].reverse(); // Yeniden eskiye
+  renderProfileInfo({ profilHazir: true });
 
-  renderProfileInfo();
   const tab = getUrlParam('tab');
   if (tab === 'orders' || tab === 'favorites') showTab(tab);
 })();
 
-function renderProfileInfo() {
+/* profilHazir: false → yalnız Firebase kullanıcı nesnesinden bilinenler.
+   true → Firestore profili de geldi, sipariş/adres çizilebilir. */
+function renderProfileInfo({ profilHazir = true } = {}) {
   if (!currentUser) return;
-  document.getElementById('profile-avatar').textContent = currentUser.ad ? currentUser.ad[0].toUpperCase() : '?';
-  document.getElementById('profile-name').textContent   = (currentUser.ad + ' ' + currentUser.soyad).trim();
-  document.getElementById('profile-email').textContent  = currentUser.email;
 
-  document.getElementById('edit-ad').value    = currentUser.ad    || '';
-  document.getElementById('edit-soyad').value = currentUser.soyad || '';
-  document.getElementById('edit-email').value = currentUser.email || '';
-  document.getElementById('edit-telefon').value      = currentUser.telefon     || '';
-  document.getElementById('edit-dogum-tarihi').value = currentUser.dogumTarihi || '';
-  document.getElementById('edit-tck').value          = currentUser.tck         || '';
+  const adSoyad   = ((currentUser.ad || '') + ' ' + (currentUser.soyad || '')).trim();
+  const gorunenAd = adSoyad || (currentUser.email || '').split('@')[0];
+
+  document.getElementById('profile-avatar').textContent = gorunenAd ? gorunenAd[0].toUpperCase() : '?';
+  document.getElementById('profile-name').textContent   = gorunenAd || 'Hesabım';
+  document.getElementById('profile-email').textContent  = currentUser.email || '-';
+
+  /* Alanlar YALNIZCA boşsa doldurulur. İki aşama arasında müşteri yazmaya
+     başlamış olabilir; 2. aşamanın 3 saniye sonra gelip yazdığını silmesi
+     beklemekten daha kötü olurdu. */
+  const yaz = (id, deger) => {
+    const el = document.getElementById(id);
+    if (el && !el.value && deger) el.value = deger;
+  };
+  yaz('edit-ad',            currentUser.ad);
+  yaz('edit-soyad',         currentUser.soyad);
+  yaz('edit-email',         currentUser.email);
+  yaz('edit-telefon',       currentUser.telefon);
+  yaz('edit-dogum-tarihi',  currentUser.dogumTarihi);
+  yaz('edit-tck',           currentUser.tck);
+
+  /* Favori sayısı localStorage'da, hemen bilinir. */
+  document.getElementById('stat-favs').textContent = getFavorites().length;
+
+  if (!profilHazir) {
+    /* Sipariş sayısı ve harcama Firestore'dan gelir. 1. aşamada "0 sipariş"
+       yazmak yanlış bilgi olurdu — bekleniyor demek daha doğru. */
+    document.getElementById('stat-orders').textContent = '–';
+    document.getElementById('stat-total').textContent  = '–';
+    document.getElementById('address-list').innerHTML  =
+      '<div class="saved-address-skeleton"></div>';
+    return;
+  }
 
   const totalSpent = firestoreOrders.reduce((s, o) => s + (o.total || 0), 0);
-  const favCount   = getFavorites().length;
 
   document.getElementById('stat-orders').textContent = firestoreOrders.length;
   document.getElementById('stat-total').textContent  = formatPrice(totalSpent);
-  document.getElementById('stat-favs').textContent   = favCount;
 
   renderAddressList();
 }

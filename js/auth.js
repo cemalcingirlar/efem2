@@ -261,6 +261,23 @@ Object.assign(window, {
   deleteAccount
 });
 
+/* Modül DEĞERLENDİRİLDİ bildirimi.
+
+   Bu dosya <script type="module"> ile yükleniyor, yani ERTELENİR: sayfanın
+   satır içi klasik <script> blokları bundan ÖNCE çalışır. O bloklar
+   window.requireAuth / window.authReady gibi değerleri henüz tanımsız
+   bulurdu ve "is not a function" ile patlardı — profil sayfası tam olarak
+   bu yüzden hiç çizilmiyordu.
+
+   Klasik betikler bu olayı bekleyerek yarışı kapatır:
+     const hazir = window.authUserReady
+       ? Promise.resolve()
+       : new Promise(r => addEventListener('authModuleReady', r, { once: true }));
+
+   Dinleyici satır içi betikte, olay burada; sıra hangisi olursa olsun
+   iki durumdan biri tutar. */
+window.dispatchEvent(new Event('authModuleReady'));
+
 export {
   authReady,
   authUserReady,

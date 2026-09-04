@@ -32,6 +32,34 @@ En yeni kayıtlar en üstte.
 
 ## 2026-09-04
 
+### Profil sayfası kişisel bilgileri hiç göstermiyordu
+Şikâyet "geç geliyor" diye başladı ama ölçünce **hiç gelmediği** ortaya çıktı.
+Canlıda konsol hatası: `TypeError: window.requireAuth is not a function`.
+
+- Fix: **Klasik betik ile modül arasında yarış.** `js/auth.js` bir ES modülü,
+  yani ERTELENİR; sayfanın satır içi `<script>` bloğu ondan ÖNCE çalışıyor.
+  O anda `window.requireAuth` henüz tanımsız olduğu için başlangıç bloğu ilk
+  satırında patlıyor, `renderProfileInfo()` hiç çağrılmıyordu. Sonuç: avatar
+  "?", ad "Yükleniyor...", tüm alanlar boş — kalıcı olarak.
+  Bu kusur bugünkü değişikliklerden önce de canlıda vardı; eski sürümde
+  doğrulandı.
+- `js/auth.js` artık değerlendirildiğinde `authModuleReady` olayı yayıyor.
+  Klasik betikler `window.authUserReady ? Promise.resolve() : olayı bekle`
+  kalıbıyla yarışı kapatıyor: dinleyici satır içi betikte kurulduğu için
+  sıra hangisi olursa olsun iki koşuldan biri tutuyor.
+- Fix: `admin.html` aynı kusurdan etkileniyordu ama sessizce:
+  `if (window.authReady) await window.authReady;` — değer tanımsız olduğu için
+  bekleme atlanıyor, `verifyAdminSession()` oturum hazır olmadan çağrılıyordu.
+  Yetki zaten sunucuda doğrulandığı için güvenlik açığı değildi; panel gereksiz
+  yere giriş ekranında kalabiliyordu.
+- Change: `profil.html` de ödeme sayfasıyla aynı iki aşamalı çizime geçti.
+  1. aşama (`authUserReady`): avatar, ad, e-posta, favori sayısı ve düzenleme
+  alanları. 2. aşama (`authReady`): sipariş sayısı, harcama ve adres listesi.
+  Ad/soyad boşsa e-postanın kullanıcı adı gösteriliyor.
+- Sipariş sayısı ve harcama 1. aşamada **"–"** gösteriliyor, "0" değil:
+  profil daha yüklenmemişken "0 sipariş" yazmak yanlış bilgi olurdu.
+- Alanlar yine yalnızca boşsa dolduruluyor; 2. aşama müşterinin yazdığını silmez.
+
 ### Ödeme adımında kayıtlı adresler ~10 saniye sonra geliyordu
 Ölçüm önce yapıldı, sonra düzeltildi. Canlıda iki ayrı maliyet bulundu:
 

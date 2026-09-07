@@ -32,6 +32,45 @@ En yeni kayıtlar en üstte.
 
 ## 2026-09-04
 
+### Barkod listesi panele yüklendi
+- Add: `assets/barkodlar.json` — tedarikçi stok listesindeki **435 barkod**
+  (barkod + ürün adı + arama anahtarı). Kaynak: `03_09_2026 STOK.xls`.
+- Add: `scripts/sync-barcodes.mjs` (`npm run sync-barcodes "<csv>"`) — liste
+  güncellendiğinde yeniden üretmek için. Sıralı ve kararlı çıktı verir;
+  gereksiz diff çıkmaz.
+- Add: Yönetim panelinde **barkod seçici**. Ürün barkodu alanında "Listeden
+  Seç" düğmesi, her varyant satırında da aynı seçici. Ürün adı veya barkodla
+  aranır, tıklayınca alana yazılır. Yeni ürün açarken barkodu elle yazmak
+  gerekmiyor — tek yanlış hane kasada başka ürüne düşürüyordu.
+- Liste **tembel yükleniyor**: 56 KB'lik dosya panel açılışında değil, seçici
+  ilk kullanıldığında iniyor.
+- Statik dosya olarak duruyor, API ucu **eklenmedi**: Vercel Hobby planı deploy
+  başına 12 fonksiyonla sınırlı ve proje tam sınırda (bkz. CLAUDE.md).
+- Arama kelime sırasından bağımsız ("mavi jbl" = "jbl mavi") ve Türkçe yazım
+  farkını yok sayıyor ("kulaklik" = "kulaklık"). Sadeleştirme kuralı üretim
+  betiği ile panelde **aynı**; ayrışsalardı "MAVİ" kaydı "mavi" aramasında
+  bulunamazdı — test bu eşleşmeyi ayrıca doğruluyor.
+- Teşhir/demo cihazlar listede duruyor ama **TEŞHİR** rozetiyle işaretli
+  (78 kayıt); satılık ürün değiller, yanlışlıkla seçilmesinler.
+
+Veri notları:
+- Dosyada 1974 satır vardı, **435 benzersiz barkod**; 1539 satır tekrardı.
+  Aynı barkodun farklı ürün adı verdiği tek bir çakışma bile yok.
+- Bir kayıtta hücre içinde satır sonu vardı (iPad). Naif satır bölme onu ikiye
+  ayırıp barkodu bozuyordu; betik tırnak farkındalı CSV ayrıştırması yapıyor.
+- Kaynak dosya gerçek eski XLS (OLE2). Excel'den CSV alırken **UTF-8** seçmek
+  şart: düz CSV Windows-1254 yazıyor ve İ/ı/ş/ğ bozuluyor.
+
+Geliştirme sırasında yakalanan kusur: sonuç satırları önce
+`onclick="barkodSec(...)"` ile yazılıyordu. Barkod `JSON.stringify` ile
+gömülünce çift tırnak özniteliği kapatıyor, HTML bozuluyor ve **tıklama hiç
+çalışmıyordu**. `data-barkod` + tek bir olay dinleyicisine geçildi.
+
+- Add: `scripts/test-barcodes.mjs` (`npm run test:barcodes`) — 28 test.
+  Liste bütünlüğü, iki taraftaki sadeleştirmenin aynılığı, kelime sırasından
+  bağımsız arama, HTML kaçışı ve panel bağlantılarının yerinde durduğu
+  doğrulanıyor. `npm test` toplam **397 test**.
+
 ### Müşteri sipariş ekranı zenginleştirildi
 - Fix: **Kargo takip numarası müşteriye hiç ulaşmıyordu.** `setOrderTracking()`
   numarayı yalnız `orders/{id}` belgesine yazıyor, `profil.html` ise

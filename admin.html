@@ -335,6 +335,47 @@
 
     .admin-modal-overlay.open { display: flex; }
 
+    /* Barkod seçici listesi */
+    .barkod-sonuc-kutu {
+      max-height: 46vh;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+    }
+    .barkod-satir {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      width: 100%;
+      padding: 8px 12px;
+      border: 0;
+      border-bottom: 1px solid var(--border);
+      background: transparent;
+      text-align: left;
+      cursor: pointer;
+      font-size: 0.8125rem;
+    }
+    .barkod-satir:last-child { border-bottom: 0; }
+    .barkod-satir:hover { background: var(--surface-2); }
+    .barkod-no {
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+      color: var(--primary-text, var(--primary));
+      white-space: nowrap;
+    }
+    .barkod-ad { color: var(--text-secondary); }
+    /* Teşhir cihazı satılık ürün değil; yanlış seçilmesin diye işaretli. */
+    .barkod-demo {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 999px;
+      background: var(--warning, #F59E0B);
+      color: #fff;
+      font-size: 0.625rem;
+      font-weight: 700;
+      vertical-align: middle;
+    }
+
     .admin-modal {
       background: white;
       border-radius: var(--radius-xl);
@@ -974,7 +1015,12 @@
             </div>
             <div class="form-group">
               <label class="form-label">Barkod</label>
-              <input type="text" class="form-input" id="p-barcode" placeholder="8697654321098" maxlength="40">
+              <div style="display:flex;gap:8px">
+                <input type="text" class="form-input" id="p-barcode" placeholder="8697654321098" maxlength="40" style="flex:1">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="barkodSeciciAc('p-barcode')" title="Stok listesinden barkod seç">
+                  <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M3 5v14M7 5v14M11 5v14M14 5v14M18 5v14M21 5v14"/></svg> Listeden Seç
+                </button>
+              </div>
               <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px">EAN/UPC veya firma içi kod — kasa ve stok eşleştirmesi için.</div>
             </div>
           </div>
@@ -1117,6 +1163,30 @@
 </div>
 
 <!-- Silme Onay Modal -->
+<!-- Barkod seçici -->
+<div class="admin-modal-overlay" id="barkod-modal">
+  <div class="admin-modal" style="max-width:640px">
+    <div class="admin-modal-header">
+      <h3>Stok Listesinden Barkod Seç</h3>
+      <button class="btn-icon" onclick="barkodSeciciKapat()" title="Kapat">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="admin-modal-body">
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:var(--space-3)">
+        <input type="text" class="form-input" id="barkod-arama" placeholder="Ürün adı veya barkod…"
+               oninput="barkodSonucCiz()" autocomplete="off" style="flex:1">
+        <span id="barkod-sayac" style="font-size:0.75rem;color:var(--text-muted);white-space:nowrap"></span>
+      </div>
+      <div id="barkod-sonuc" class="barkod-sonuc-kutu"></div>
+      <div style="font-size:0.75rem;color:var(--text-muted);margin-top:var(--space-3)">
+        Liste tedarikçi stok dosyasından gelir. Güncellemek için:
+        <code>npm run sync-barcodes "&lt;csv yolu&gt;"</code>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="admin-modal-overlay" id="confirm-modal">
   <div class="admin-modal" style="max-width:420px">
     <div class="admin-modal-body" style="text-align:center;padding:40px">
@@ -2955,7 +3025,13 @@ function variantRowHtml(v) {
     '    <input type="text" class="form-input variant-size-manual" placeholder="Beden" value=""',
     '           style="display:none;margin-top:6px" oninput="onVariantEdited()">',
     '  </div>',
-    '  <input type="text" class="form-input variant-barcode" placeholder="Barkod" value="' + escapeAttr(v.barcode) + '" maxlength="40" oninput="onVariantEdited()">',
+    '  <div style="display:flex;gap:4px">',
+    '    <input type="text" class="form-input variant-barcode" placeholder="Barkod" value="' + escapeAttr(v.barcode) + '" maxlength="40" oninput="onVariantEdited()" style="flex:1;min-width:0">',
+    '    <button type="button" class="btn-icon" title="Listeden barkod seç"',
+    '            onclick="barkodSeciciAc(this.previousElementSibling)">',
+    '      <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M3 5v14M7 5v14M11 5v14M14 5v14M18 5v14M21 5v14"/></svg>',
+    '    </button>',
+    '  </div>',
     '  <input type="number" min="0" class="form-input variant-stock-input" data-sku="' + escapeAttr(kod) + '" value="' + Math.max(0, Number(v.stock) || 0) + '" oninput="onVariantEdited()">',
     '  <button type="button" class="btn-icon" title="Bu seçeneği sil" onclick="removeVariantRow(\'' + v._row + '\')" style="color:var(--error)">',
     '    <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13"/></svg>',
@@ -2963,6 +3039,171 @@ function variantRowHtml(v) {
     '</div>'
   ].join('');
 }
+
+/* ═════════════════════════════════════════
+   BARKOD SEÇİCİ
+   ═════════════════════════════════════════
+   Tedarikçi stok listesindeki barkodlar assets/barkodlar.json içinde
+   duruyor (scripts/sync-barcodes.mjs ile CSV'den üretilir). Yeni ürün
+   açarken barkodun elle yazılması hem yavaş hem hataya açıktı; tek bir
+   yanlış hane kasada okutunca başka ürüne düşürüyor.
+
+   Liste TEMBEL yüklenir: 56 KB'lik dosya panel açılışında değil, seçici
+   ilk kez kullanıldığında iner. Panelin geri kalanı bunu beklemez.
+
+   Neden statik dosya, neden API ucu değil: Vercel Hobby planı deploy
+   başına 12 fonksiyonla sınırlı ve proje tam sınırda (bkz. CLAUDE.md).
+   Liste salt okunur bir başvuru tablosu; statik dosya olarak CDN'den
+   gelmesi hem sınırı aşmıyor hem daha hızlı.                            */
+
+let barkodListesi = null;      // [{barkod, ad, ara}]
+let barkodYukleniyor = null;   // aynı anda iki istek gitmesin
+let barkodHedefInput = null;   // seçim hangi alana yazılacak
+
+async function barkodlariYukle() {
+  if (barkodListesi) return barkodListesi;
+  if (barkodYukleniyor) return barkodYukleniyor;
+
+  barkodYukleniyor = fetch('assets/barkodlar.json')
+    .then(r => (r.ok ? r.json() : null))
+    .then(j => {
+      barkodListesi = (j && Array.isArray(j.kayitlar)) ? j.kayitlar : [];
+      return barkodListesi;
+    })
+    .catch(() => { barkodListesi = []; return barkodListesi; })
+    .finally(() => { barkodYukleniyor = null; });
+
+  return barkodYukleniyor;
+}
+
+/* Arama anahtarı sync-barcodes.mjs ile AYNI kuralları uygular; ikisi
+   ayrışırsa panelde yazılan "İ" listedeki "i" ile eşleşmez. */
+function barkodAramaAnahtari(metin) {
+  return String(metin || '')
+    .toLocaleLowerCase('tr')
+    .replace(/ı/g, 'i').replace(/İ/g, 'i')
+    .replace(/ş/g, 's').replace(/ğ/g, 'g')
+    .replace(/ü/g, 'u').replace(/ö/g, 'o').replace(/ç/g, 'c')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+}
+
+/* Kelimelerin HEPSİ geçmeli (sırası önemsiz): "jbl mavi" araması
+   "JBL LIVE 670 ... MAVİ" kaydını bulur. Tek parça arama kullanılsaydı
+   kelime sırasını bilmek gerekirdi. */
+function barkodAra(sorgu) {
+  const ham = String(sorgu || '').trim();
+  if (ham.length < 2) return [];
+
+  const kod = ham.replace(/[\s\-_.]/g, '');
+  const kelimeler = barkodAramaAnahtari(ham).split(' ').filter(Boolean);
+
+  return (barkodListesi || []).filter(k => {
+    if (/^\d/.test(kod) && k.barkod.includes(kod)) return true;
+    return kelimeler.length > 0 && kelimeler.every(kel => k.ara.includes(kel));
+  }).slice(0, 40);
+}
+
+/* Seçiciyi açar. hedefId: barkodun yazılacağı input'un id'si;
+   varyant satırları için doğrudan eleman da verilebilir. */
+async function barkodSeciciAc(hedef, onSorgu) {
+  barkodHedefInput = typeof hedef === 'string' ? document.getElementById(hedef) : hedef;
+  if (!barkodHedefInput) return;
+
+  document.getElementById('barkod-modal').classList.add('open');
+  const arama = document.getElementById('barkod-arama');
+
+  /* Ürün adı zaten yazılmışsa aramayı onunla başlat — çoğu durumda
+     aranan kayıt ilk sırada çıkar. */
+  const baslangic = onSorgu || document.getElementById('p-name')?.value || '';
+  arama.value = baslangic;
+
+  document.getElementById('barkod-sonuc').innerHTML =
+    '<div style="padding:var(--space-4);color:var(--text-muted);font-size:0.875rem">Liste yükleniyor…</div>';
+
+  await barkodlariYukle();
+
+  if (!barkodListesi.length) {
+    document.getElementById('barkod-sonuc').innerHTML =
+      '<div style="padding:var(--space-4);color:var(--error);font-size:0.875rem">' +
+      'Barkod listesi okunamadı (assets/barkodlar.json). Barkodu elle girebilirsiniz.</div>';
+    return;
+  }
+
+  barkodSonucCiz();
+  arama.focus();
+  arama.select();
+}
+
+function barkodSeciciKapat() {
+  document.getElementById('barkod-modal').classList.remove('open');
+  barkodHedefInput = null;
+}
+
+function barkodSonucCiz() {
+  const sorgu = document.getElementById('barkod-arama').value;
+  const kutu  = document.getElementById('barkod-sonuc');
+  const sonuc = barkodAra(sorgu);
+
+  const toplam = (barkodListesi || []).length;
+  document.getElementById('barkod-sayac').textContent =
+    sorgu.trim().length < 2 ? `${toplam} barkod` : `${sonuc.length} eşleşme`;
+
+  if (sorgu.trim().length < 2) {
+    kutu.innerHTML = '<div style="padding:var(--space-4);color:var(--text-muted);font-size:0.875rem">' +
+      'Ürün adı veya barkod yazın (en az 2 karakter).</div>';
+    return;
+  }
+
+  if (!sonuc.length) {
+    kutu.innerHTML = '<div style="padding:var(--space-4);color:var(--text-muted);font-size:0.875rem">' +
+      'Eşleşme yok. Listede olmayan bir ürünse barkodu elle girin.</div>';
+    return;
+  }
+
+  kutu.innerHTML = sonuc.map(k => {
+    /* Teşhir cihazları listede duruyor ama satılık ürün değil; yanlışlıkla
+       seçilmesin diye işaretleniyor. */
+    const demo = /\b(demo|dm)\b/i.test(k.ad);
+    /* onclick="barkodSec(...)" KULLANILMIYOR: JSON.stringify çift tırnak
+       üretiyor ve öznitelik çift tırnakla kapatıldığı için HTML bozuluyordu
+       — tıklama hiç çalışmıyordu. Değer data- özniteliğinde taşınıyor,
+       tıklama aşağıdaki tek dinleyiciyle yakalanıyor. */
+    return '<button type="button" class="barkod-satir" data-barkod="' + escapeHtmlAdmin(k.barkod) + '">' +
+      '<span class="barkod-no">' + escapeHtmlAdmin(k.barkod) + '</span>' +
+      '<span class="barkod-ad">' + escapeHtmlAdmin(k.ad) +
+        (demo ? ' <span class="barkod-demo">TEŞHİR</span>' : '') +
+      '</span>' +
+    '</button>';
+  }).join('');
+}
+
+/* Sonuç listesi her aramada yeniden çiziliyor; dinleyici satırlara değil
+   kapsayıcıya bağlanıyor ki her çizimde yeniden bağlamak gerekmesin. */
+document.addEventListener('click', (e) => {
+  const satir = e.target.closest && e.target.closest('.barkod-satir');
+  if (satir && satir.dataset.barkod) barkodSec(satir.dataset.barkod);
+});
+
+function barkodSec(barkod) {
+  if (barkodHedefInput) {
+    barkodHedefInput.value = barkod;
+    /* Varyant alanları oninput ile toplamı yeniden hesaplıyor; program
+       tarafından yazınca olay kendiliğinden tetiklenmez. */
+    barkodHedefInput.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  barkodSeciciKapat();
+  showToast('Barkod eklendi: ' + barkod, 'success');
+}
+
+/* admin.html'de genel bir kaçış yardımcısı yok; liste tedarikçiden
+   geldiği için ürün adları innerHTML'e ham basılmamalı. */
+function escapeHtmlAdmin(deger) {
+  return String(deger == null ? '' : deger)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 
 /* "Diğer…" seçilince elle giriş kutusunu açar, aksi halde gizler. */
 function onVariantSelect(el, alan) {

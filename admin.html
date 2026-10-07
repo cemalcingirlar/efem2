@@ -854,10 +854,8 @@
         </div>
       </div>
       <div class="admin-content" style="padding-top:24px">
-        <div class="admin-demo-info" style="background:rgba(37,99,235,0.08);color:var(--primary-dark);margin-bottom:20px">
-          <svg class="icon icon-sm" viewBox="0 0 24 24" style="vertical-align:-2px"><circle cx="12" cy="12" r="9"/><path d="M12 8v.01M12 11v5"/></svg>
-          Bu liste yalnızca <strong>bu tarayıcıda</strong> verilen siparişleri gösterir (gerçek zamanlı, çok cihazlı sipariş yönetimi için backend bağlantısı gerekir — bkz. <code>docs/ARKADAS-YAPILACAKLAR.md</code>, Prompt 3).
-        </div>
+        <!-- Sipariş kaynağı (sunucu / yerel defter) sabit metin değil:
+             renderOrdersSourceNote() başlığın altına duruma göre yazar. -->
         <div class="admin-card">
           <table class="admin-table" id="orders-table">
             <thead>

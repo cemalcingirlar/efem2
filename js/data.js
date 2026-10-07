@@ -27,10 +27,10 @@ function applyProductOverrides(products) {
 }
 
 /* ─── Sipariş defteri (localStorage) ───
-   Gerçek çoklu-cihaz sipariş yönetimi Firestore backend gerektirir (bkz.
-   docs/ARKADAS-YAPILACAKLAR.md — Prompt 3). Bu, o backend'e geçene kadar
-   admin panelinin AYNI TARAYICIDA verilen (üye + misafir) siparişleri
-   görüp durumunu güncelleyebilmesi için yerel bir defter. */
+   Panelin asıl sipariş kaynağı artık sunucudur: /api/admin/orders
+   (admin.html → loadServerOrders/getOrdersForAdmin). Burası YEDEK defter —
+   sunucu listesi okunamadığında panel bu tarayıcıda verilmiş (üye + misafir)
+   siparişlere düşer. Hangisinin kullanıldığını renderOrdersSourceNote() yazar. */
 const ORDERS_KEY = 'efemi_all_orders';
 
 function getAllOrders() {
